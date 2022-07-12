@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	  lang="cs">
+	<head> 
+		<title>Team</title> 
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	</head>
+	<body>
+		<form th:if="${user}"
+			  th:action="@{/logout}"
+			  method="post">
+			<input type="submit" value="Sign Out"/>
+		</form>
+
+		<div>
+			User: "[[${user != null ? user.email : 'anonym'}]]"
+		</div>
+		
+		<div>
+			Team: "[[${team != null ? team.name : 'NA'}]]"
+		</div>
+		
+		<div th:if="${teamMembers != null and !teamMembers.isEmpty()}">
+			<!--/*
+			*	Seznam členů týmu
+			*/-->
+			<ul>
+				<li th:each="member : ${teamMembers}"
+					th:with="properties=${member.properties}">
+					Member name: "[[${member.name}]]"
+					<!--/*
+					*	Atributy člena týmu
+					*/-->
+					<dl th:if="${properties != null and !properties.isEmpty()}">
+						<th:block th:each="entry : ${properties.entrySet()}">
+							<dt>[[${entry.key}]]</dt>
+							<dd>[[${entry.value}]]</dd>
+						</th:block>
+					</dl>
+				</li>
+			</ul>
+		</div>
+
+	</body>
+</html>

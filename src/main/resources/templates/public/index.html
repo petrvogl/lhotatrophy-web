@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	  lang="cs">
+	<head th:replace="public/fragments/HtmlDocument.html :: Head">
+		<!--/* PROTOTYPE */-->
+		<title>24th Lhota Trophy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	</head>
+	<body>
+		<!--/* Common page header */-->
+		<header th:replace="public/fragments/PageHeader.html :: PageHeader"> [ Page Header ] </header>
+
+		<!--/* Main content */-->
+		<div id="content">
+
+			<div class="content-zone clearfix">
+				<div class="content-zone-inner">
+					<div class="block full">
+						<div class="block-inner">
+
+							<h1>Slunce nad Mount Trophy už zapadá&hellip;</h1>
+
+							<p class="p_1">&hellip;a&nbsp;s&nbsp;jeho posledními paprsky má vyhasnout další nevinný život.</p>
+
+							<p class="indent">Bělostné tělo pastorovy dcery vrhá dlouhý stín napříč hřbitovní kaplí. Banda Bessie Bonesové prchá z městečka. Kat strojí šibenici, zatím co červánky barví hladinu Western Creek do odstínu krve. Jen hrůzou vytřeštěné oči za stěnou šatlavy už přivykly tmě.</p>
+							<p>Spěchej, Paule! Tenhle západ bude divoký.</p>
+
+						</div>
+					</div>
+
+					<div class="block golden-ratio">
+						<div class="block-inner">
+
+							<h2 class="indent">24. Lhota Trophy</h2>
+
+							<p>Lhota Trophy je jednodenní týmový šifrovací a ostře
+								konkurenční závod, kterého se můžeš účastnit i&nbsp;ty. Ty a maximálně další čtyři
+								tvoji kumpáni či kumdámy. Pojedete autem, obstojně si zaluštíte, zastavíte se
+								na překrásných místech, kde můžete zažít všelijaká dobrodružství. Ale všeho s&nbsp;mírou,
+								v&nbsp;první řadě obezřetně. A&nbsp;když vám půjde luštění šifer od ruky, hravě
+								splníte další úkoly a nikde se neztratíte, máte šanci vyhrát. A&nbsp;pak se jen
+								veselit z&nbsp;faktu, že další ročník Lhota Trophy si uděláte po svém.</p>
+
+							<ul>
+								<li><a href="/doc/pravidla-lt24-prvni-verze.pdf">Pravidla hry</a></li>
+								<li><a href="/doc/podminky_ucasti_lt.pdf">Podmínky účasti ve hře</a></li>
+							</ul>
+
+							<h3 class="indent">Důležitá data</h3>
+
+							<p>
+								<strong>4. 7. v&nbsp;18:00</strong>&nbsp;&ndash; start registrace<br />								
+								<strong>15. 7. ve 23:59</strong>&nbsp;&ndash; ukončení registrace a objednávek<br />
+								<strong>31. 7.</strong>&nbsp;&ndash; poslední termín pro zaplacení<br />
+								<strong>12. 8.</strong>&nbsp;&ndash; případné doplnění týmů z řad náhradníků<br />
+								<strong>1. 10.</strong>&nbsp;&ndash; zveřejnění místa startu<br />
+								<strong>7. 10.</strong>&nbsp;&ndash; Prolog<br />
+								<strong>8. 10.</strong>&nbsp;&ndash; Lhota Trophy</p>
+
+						</div>
+					</div>
+
+					<!--/*
+					*	Velké logo
+					*/-->
+					<div class="block rest-of-golden-ratio" id="logo">
+						<div class="block-inner">
+						</div>
+					</div>					
+				</div>
+			</div>
+
+			<div th:if="${#dates.createNow().getTime() gt #dates.create(2022,7,4,18,00).getTime()}"
+				 id="registrace"
+				 class="content-zone clearfix">
+				<div class="content-zone-inner">
+					<div class="block golden-ratio">
+						<div class="block-inner visible firewatch-8 bg-firewatch-2">
+
+							<form th:action="@{/register}"
+								  th:object="${teamRegistrationForm}"
+								  method="post"
+								  class="form">
+								<fieldset>
+									<legend class="h2 inverted">Registrace týmu</legend>
+									<!--/*
+									*	Global errors
+									*/-->
+									<th:block th:if="${#fields.hasGlobalErrors()}">
+										<p th:each="err : ${#fields.globalErrors()}"
+										   th:text="${err}"
+										   class="p-1 formalert"> [ global error message ] </p>
+									</th:block>
+									<!--/*
+									*	Název týmu
+									*/-->
+									<label for="team-name" class="hidden">Název týmu</label>
+									<input th:field="*{teamName}"
+										   id="team-name"
+										   name="teamName"
+										   type="text"
+										   placeholder="Název týmu*"
+										   required="required"
+										   class="golden-ratio" />
+									<p class="p-1 formalert">
+										<th:block th:if="${#fields.hasErrors('teamName')}"
+												  th:errors="*{teamName}"> [ team name error message ]
+										</th:block>
+									</p>
+									<!--/*
+									*	E-mail
+									*/-->
+									<label for="team-mail" class="hidden">E-mail</label>
+									<input th:field="*{email}"
+										   id="team-mail"
+										   name="email"
+										   type="text"
+										   placeholder="E-mail*"
+										   required="required"
+										   class="golden-ratio"/>
+									<p class="p-1 formalert">
+										<th:block th:if="${#fields.hasErrors('email')}"
+												  th:errors="*{email}"> [ email error message ]
+										</th:block>
+									</p>
+									<!--/*
+									*	Heslo
+									*/-->
+									<label for="team-password" class="hidden">Heslo</label>
+									<input id="team-password"
+										   name="password"
+										   type="text"
+										   placeholder="Heslo*"
+										   required="required"
+										   class="golden-ratio"/>
+									<p class="p-1 formalert">
+										<th:block th:if="${#fields.hasErrors('password')}"
+												  th:errors="*{password}"> [ password error message ]
+										</th:block>
+									</p>
+									<!--/*
+									*	Souhlas
+									*/-->
+									<label class="container indent">Souhlasíme <a href="/doc/podminky_ucasti_lt.pdf" target="_blank" class="inverted">s&nbsp;podmínkami účasti ve hře</a>*
+										<input th:checked="*{termsAgreement}"
+											   name="termsAgreement"
+											   type="checkbox">
+											<span class="checkmark"></span>
+									</label>
+									<p class="p-1 formalert">
+										<th:block th:if="${#fields.hasErrors('termsAgreement')}"
+												  th:errors="*{termsAgreement}">
+											[ terms agreement error message ]
+										</th:block>
+									</p>
+									<input class="btn indent" type="submit" value="Odeslat">
+								</fieldset>
+							</form>
+
+						</div>
+					</div>
+
+				</div>
+			</div>
+
+			<!--/* Common page footer */-->
+			<footer th:replace="public/fragments/PageFooter.html :: PageFooter"> [ Page Footer ] </footer>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	  lang="cs">
+	<head> 
+		<title>Registrace — LhotaTrophy Admin</title> 
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	</head>
+	<body>
+		<!--/*
+		*	Registration success message
+		*	
+		*/-->
+		<th:block th:if="${user}">
+			<p>Registrace se povedla. Vyčkejte na aktivaci uživatelského profilu správcem webu.</p>
+		</th:block>
+		
+		<!--/*
+		*	Registration form
+		*	
+		*/-->
+		<th:block th:unless="${user}">
+			<form th:action="@{/admin/register}"
+				  th:object="${userRegistrationForm}"
+				  method="post">
+				<div><label>E-mail:</label> <input th:field="*{email}" type="text" name="email"/></div>
+				<div th:if="${#fields.hasErrors('email')}"
+					 th:errors="*{email}"> [ email error message ] </div>
+
+				<div><label>Password:</label> <input type="password" name="password"/></div>
+				<div th:if="${#fields.hasErrors('password')}"
+					 th:errors="*{password}"> [ password error message ] </div>
+
+				<div><input type="submit" value="Register"/></div>
+
+				<div th:if="${#fields.hasGlobalErrors()}">
+					<p th:each="err : ${#fields.globalErrors()}" th:text="${err}"> [ global error message ] </p>
+				</div>
+			</form>
+		</th:block>
+	</body>
+</html>

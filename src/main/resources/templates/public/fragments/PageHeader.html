@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	  lang="cs">
+	<head>
+		<!--/* PROTOTYPE */-->
+		<title>24th Lhota Trophy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	</head>
+	<body>
+		
+		<!--/*
+		*	
+		*	Common page header
+		*	
+		*	
+		*/-->
+		<th:block th:fragment="PageHeader">
+			<header th:if="${#dates.createNow().getTime() gt #dates.create(2022,7,4,18,00).getTime()}"
+					class="content-zone clearfix">
+				<!--/* TEST */-->
+				<nav th:if="${false}">
+					<ul>
+						<li><a href="/testing/v2">Úvod a registrace</a></li>
+						<li><a href="/testing/v2/prihlasene-tymy">Přihlášené týmy</a></li>
+						<li><a href="https://www.facebook.com/groups/lhotatrophy">Facebook</a></li>
+						<li><a href="/testing/v2/muj-tym">Můj tým</a></li>
+					</ul>
+					<form th:if="${user}"
+						  th:action="@{/logout}"
+						  method="post"
+						  id="header-form-logout">
+						<input type="submit" value="Odhlásit se"/>
+					</form>
+				</nav>
+				<!--/* PRODUCTION */-->
+				<nav th:if="${true}">
+					<ul>
+						<li><a href="/">Úvod a registrace</a></li>
+						<li><a href="/prihlasene-tymy">Přihlášené týmy</a></li>
+						<li><a href="https://www.facebook.com/groups/lhotatrophy">Facebook</a></li>
+						<li><a href="/muj-tym">Můj tým</a></li>
+					</ul>
+					<form th:if="${user}"
+						  th:action="@{/logout}"
+						  method="post"
+						  id="header-form-logout">
+						<input type="submit" value="Odhlásit se"/>
+					</form>
+				</nav>
+			</header>
+		</th:block>
+
+	</body>
+</html>

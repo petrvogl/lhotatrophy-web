@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	  lang="cs">
+	<head th:replace="public/fragments/HtmlDocument.html :: Head(pageTitle='Můj tým')">
+		<!--/* PROTOTYPE */-->
+		<title>24th Lhota Trophy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	</head>
+	<body>
+		<!--/* Common page header */-->
+		<header th:replace="public/fragments/PageHeader.html :: PageHeader"> [ Page Header ] </header>
+
+		<!--/* Main content */-->
+		<div id="content">
+
+			<div class="content-zone clearfix">
+				<div class="content-zone-inner"
+					 th:with="
+					 zaplaceno=${user.getProperty('zaplaceno').orElse(false)}">
+
+					<div class="block full">
+						<div class="block-inner">
+							<h1 th:text="${team?.name} ?: _">Můj tým</h1>
+						</div>
+					</div>
+
+					<!--/*
+					*	Hlášení o úspěšném uložení nastavení
+					*/-->
+					<div th:if="${#session.getAttribute('TeamUpdateSuccess') == true}"
+						 th:with="_=${#session.setAttribute('TeamUpdateSuccess', false)}"
+						 class="block golden-ratio">
+						<div class="block-inner visible white bg-lt-color-3">
+							<p>Nastavení týmu bylo uloženo.</p>
+						</div>
+					</div>
+					
+					<!--/*
+					*	Hlášení o úspěšné registraci
+					*/-->
+					<div th:if="${#session.getAttribute('TeamRegistrationSuccess') == true}"
+						 th:with="_=${#session.setAttribute('TeamRegistrationSuccess', false)}"
+						 class="block golden-ratio">
+						<div class="block-inner visible white bg-lt-color-3">
+							<p>Registrace se podařila. Váš tým získal pořadové číslo [[${team.id}]].</p>
+						</div>
+					</div>
+
+					<!--/*
+					*	Upozoznění pro týmy pod čarou
+					*/-->
+					<div th:if="${team != null and team.id gt appConfig.get('teamRegistrationLimit')}"
+						 class="block golden-ratio">
+						<div class="block-inner visible white bg-lt-color-2">
+							<p>Z&nbsp;kapacitních důvodů patří váš tým zatím mezi náhradníky.
+								S platbou prosím vyčkejte na další instrukce od organizátorů.</p>
+						</div>
+					</div>
+
+
+					<div class="block rest-of-2-fifths">
+						<div class="block-inner">
+
+							<p>V nastavení prosím vyplňte za každého člena týmu jeho jméno a&nbsp;požadavky na ubytování,
+								jídlo a soutěžní tričko. Pod formulářem pak naleznete výši celkové platby,
+								kterou je třeba uhradit do <strong>31.&nbsp;července 2022</strong>.
+								V&nbsp;případě neuhrazení bude účast ve hře nabídnuta případným náhradníkům.</p>
+
+							<h3 class="indent">Poznámky</h3>
+							<ul>
+								<li>Startovné týmu je 2000&nbsp;Kč.</li>
+								<li>Kapacita ubytování je omezená! Rozhodující pro udělení ubytování je okamžik přijetí platby.</li>
+								<li>V&nbsp;ceně pátečního i&nbsp;sobotního ubytování je také snídaně následujícího rána.</li>
+								<li>V&nbsp;ceně pátečního ubytování je i&nbsp;večeře dle výběru.</li>
+								<li>Sobotní večeře proběhne formou samoobslužného bufetu s nabídkou masových i vegetariánských jídel.</li>
+								<li>Pokud máte zájem o&nbsp;více triček, než umožňuje formulář, napište nám na <a href="mailto:lhotatrophyxxiv@gmail.com">lhotatrophyxxiv@gmail.com</a>.</li>
+							</ul>
+
+						</div>
+					</div>
+
+					<div class="block fifth nahled-tricka">
+						<div class="block-inner visible firewatch-0 bg-firewatch-5">
+
+							<a href="/img/tricko-panske.jpg" target="_blank"><img src="/img/tricko_panske_mini.png" /></a>
+							<p class="center"><strong>Pánské tričko</strong></p>
+							<p class="p-1 center"><a href="/img/tricko-panske.jpg" target="_blank">&raquo;&nbsp;zobrazit detail</a></p>
+
+						</div>
+					</div>
+
+					<div class="block fifth nahled-tricka">
+						<div class="block-inner visible firewatch-0 bg-firewatch-5">
+
+							<a href="/img/tricko-damske.jpg" target="_blank"><img src="/img/tricko_damske_mini.png" /></a>
+							<p class="center"><strong>Dámské tričko</strong></p>
+							<p class="p-1 center"><a href="/img/tricko-damske.jpg" target="_blank">&raquo;&nbsp;zobrazit detail</a></p>
+
+						</div>
+					</div>
+
+					<div th:if="${team != null and teamSettings != null}"
+						 class="block full">
+						<div class="block-inner visible firewatch-8 bg-firewatch-2">
+
+							<h2 class="inverted">Nastavení týmu</h2>							
+							<form th:action="@{__${zaplaceno ? '#' : '/muj-tym'}__}"
+								  method="post"
+								  id="team-settings">
+								<fieldset th:disabled="${zaplaceno ? 'disabled' : null}">
+									<th:block th:each="member, stat : ${teamSettings}"
+											  th:with="
+											  memberName=${#strings.isEmpty(member.name) ? null : member.name},
+											  memberFriday=${member.getProperty('friday').orElse('NONE')},
+											  memberSaturday=${member.getProperty('saturday').orElse('NONE')},
+											  memberTshirt=${member.getProperty('tshirtCode').orElse('NONE')}
+											  ">
+										<!--/* KAPITÁN */-->
+										<th:block th:if="${stat.count == 1}">
+											<label class="label-type-1" for="member-1" id="column-label-name-member-1">Jméno</label>
+											<label class="label-type-4" for="friday-member-1" id="column-label-friday">Pátek</label>
+											<label class="label-type-4" for="saturday-member-1">Sobota</label>
+											<label class="label-type-4" for="tshirt-member-1">Tričko</label>
+											<label class="label-type-3" for="member-1">Jméno</label>
+											<input th:value="${memberName}"
+												   type="text"
+												   name="name_1"
+												   id="member-1"
+												   placeholder="Kapitán*"
+												   required="required"
+												   class="input-name"/>
+										</th:block>
+
+										<!--/* OSTATNÍ */-->
+										<th:block th:if="${stat.count != 1}">
+											<label class="label-type-3" th:for="|member-${stat.count}|">Jméno</label>
+											<label class="label-type-2" th:for="|member-${stat.count}|">Jméno</label>
+											<label class="label-type-2" th:for="|friday-member-${stat.count}|">Pátek</label>
+											<label class="label-type-2" th:for="|saturday-member-${stat.count}|">Sobota</label>
+											<label class="label-type-2" th:for="|tshirt-member-${stat.count}|">Tričko</label>
+											<input th:value="${memberName}"
+												   type="text"
+												   th:name="|name_${stat.count}|"
+												   th:id="|member-${stat.count}|"
+												   th:placeholder="|${stat.count}. člen týmu|"
+												   class="input-name"/>
+										</th:block>
+
+										<label class="label-type-3" th:for="|friday-member-${stat.count}|">Pátek</label>
+										<select class="select" th:name="|friday_${stat.count}|" th:id="|friday-member-${stat.count}|">
+											<option value="NONE" th:selected="${memberFriday == 'NONE'}">bez ubytování (0&nbsp;Kč)</option>
+											<option value="RIZOTO" th:selected="${memberFriday == 'RIZOTO'}">ubytování + bulgurové rizoto (870&nbsp;Kč)</option>
+											<option value="VRABEC" th:selected="${memberFriday == 'VRABEC'}">ubytování + moravský vrabec s&nbsp;bramborovým knedlíkem (870&nbsp;Kč)</option>
+											<option value="KURE" th:selected="${memberFriday == 'KURE'}">ubytování + kuřecí prsíčko s&nbsp;tymiánem a pečenými bramborami (870&nbsp;Kč)</option>
+										</select>
+
+										<label class="label-type-3" th:for="|saturday-member-${stat.count}|">Sobota</label>
+										<select class="select" th:name="|saturday_${stat.count}|" th:id="|saturday-member-${stat.count}|">
+											<option value="NONE" th:selected="${memberSaturday == 'NONE'}">bez ubytování (0&nbsp;Kč)</option>
+											<option value="VECERE" th:selected="${memberSaturday == 'VECERE'}">bez ubytování, ale s&nbsp;večeří (260&nbsp;Kč)</option>
+											<option value="ALL_INCLUSIVE" th:selected="${memberSaturday == 'ALL_INCLUSIVE'}">ubytování + večeře (970&nbsp;Kč)</option>
+										</select>
+
+										<label class="label-type-3" th:for="|tshirt-member-${stat.count}|">Tričko</label>
+										<select class="select" th:name="|tshirt_${stat.count}|" th:id="|tshirt-member-${stat.count}|">
+											<option value="NONE" th:selected="${memberTshirt == 'NONE'}">žádné tričko</option>
+											<option value="P_M" th:selected="${memberTshirt == 'P_M'}">pánské velikosti M (350&nbsp;Kč)</option>
+											<option value="P_L" th:selected="${memberTshirt == 'P_L'}">pánské velikosti L (350&nbsp;Kč)</option>
+											<option value="P_XL" th:selected="${memberTshirt == 'P_XL'}">pánské velikosti XL (350&nbsp;Kč)</option>
+											<option value="P_XXL" th:selected="${memberTshirt == 'P_XXL'}">pánské velikosti XXL (350&nbsp;Kč)</option>
+											<option value="D_S" th:selected="${memberTshirt == 'D_S'}">dámské velikosti S (350&nbsp;Kč)</option>
+											<option value="D_M" th:selected="${memberTshirt == 'D_M'}">dámské velikosti M (350&nbsp;Kč)</option>
+											<option value="D_L" th:selected="${memberTshirt == 'D_L'}">dámské velikosti L (350&nbsp;Kč)</option>
+											<option value="D_XL" th:selected="${memberTshirt == 'D_XL'}">dámské velikosti XL (350&nbsp;Kč)</option>									
+										</select>
+									</th:block>
+
+									<input th:unless="${zaplaceno}" class="btn" type="submit" value="Uložit">
+								</fieldset>
+							</form>
+						</div>
+					</div>
+
+					<!--/*
+					*	Kalkulačku zobrazím jen tehdy, když uživatel provedl
+					*	editaci týmu.
+					*/-->
+					<div th:if="${team != null and team.hasBeenEdited()}"
+						 th:with="
+						 isWithinLimit=${team.id le appConfig.get('teamRegistrationLimit')},
+						 startPrice=${2000},
+						 totalPrice=${team.expenses}"
+						 class="block golden-ratio">
+						<div class="block-inner visible white bg-firewatch-6">
+							<p class="p-1">
+								Startovné týmu: [[${startPrice}]]&nbsp;Kč<br />
+								Souhrnná cena ubytování, jídla a triček: [[${totalPrice - startPrice}]]&nbsp;Kč
+							</p>
+
+							<!--/*
+							*	Pro ty, co jsou NAD čarou
+							*/-->
+							<th:block th:if="${isWithinLimit}">
+								<p>
+									Celková částka: <strong>[[${totalPrice}]]&nbsp;Kč</strong><br />
+									Číslo účtu: <strong>2317156010/3030</strong><br />
+									Variabilní symbol: <strong>[[${team.id}]]</strong>
+								</p>
+								<p>
+									Do poznámky pro příjemce napište jméno týmu.<br />
+									Platbu prosím proveďte do 31.&nbsp;7.&nbsp;2022.
+								</p>
+							</th:block>
+
+							<!--/*
+							*	Pro ty, co jsou POD čarou
+							*	
+							*/-->
+							<th:block th:unless="${isWithinLimit}">
+								<p>
+									Celková částka: <strong>[[${totalPrice}]]&nbsp;Kč</strong><br />
+									(Jako náhradníci zatím neplaťte.)
+								</p>
+							</th:block>
+							
+							<!--/*
+							*	Pro všechny
+							*	
+							*/-->
+							<p th:unless="${zaplaceno}">
+								Výpočet celkové částky nezohledňuje případné neuložené položky nastavení.
+								Pro přepočet stiskněte formulářové tlačítko Uložit.
+							</p>
+							<p>
+								Zaplaceno:
+								<strong th:text="${zaplaceno ? 'ANO' : 'NE'}">
+									[ NE ]
+								</strong>
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+			<div th:if="${false and teamMembers != null and !teamMembers.isEmpty()}">
+				<!--/*
+				*	Seznam členů týmu
+				*/-->
+				<ul>
+					<li th:each="member : ${teamMembers}"
+						th:with="properties=${member.properties}">
+						Member name: "[[${member.name}]]"
+						<!--/*
+						*	Atributy člena týmu
+						*/-->
+						<dl th:if="${properties != null and !properties.isEmpty()}">
+							<th:block th:each="entry : ${properties.entrySet()}">
+								<dt>[[${entry.key}]]</dt>
+								<dd>[[${entry.value}]]</dd>
+							</th:block>
+						</dl>
+					</li>
+				</ul>
+			</div>
+
+			<!--/* Common page footer */-->
+			<footer th:replace="public/fragments/PageFooter.html :: PageFooter"> [ Page Footer ] </footer>
+		</div>
+	</body>
+</html>

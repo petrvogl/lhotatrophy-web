@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	  lang="cs">
+	<head th:replace="public/fragments/HtmlDocument.html :: Head(pageTitle='Registrace týmu')">
+		<!--/* PROTOTYPE */-->
+		<title>24th Lhota Trophy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	</head>
+	<body>
+		<!--/* Common page header */-->
+		<header th:replace="public/fragments/PageHeader.html :: PageHeader"> [ Page Header ] </header>
+
+		<!--/* Main content */-->
+		<div id="content">
+
+			<div th:if="${#dates.createNow().getTime() gt #dates.create(2022,7,4,18,00).getTime()}"
+				 id="registrace" class="content-zone clearfix">
+				<div class="content-zone-inner">
+					<div class="block golden-ratio">
+						<div class="block-inner visible firewatch-8 bg-firewatch-2">
+
+							<form th:action="@{/register}"
+								  th:object="${teamRegistrationForm}"
+								  method="post"
+								  class="form">
+								<fieldset>
+									<legend class="h2 inverted">Registrace týmu</legend>
+									<!--/*
+									*	Global errors
+									*/-->
+									<th:block th:if="${#fields.hasGlobalErrors()}">
+										<p th:each="err : ${#fields.globalErrors()}"
+										   th:text="${err}"
+										   class="p-1 formalert"> [ global error message ] </p>
+									</th:block>
+									<!--/*
+									*	Název týmu
+									*/-->
+									<label for="team-name" class="hidden">Název týmu</label>
+									<input th:field="*{teamName}"
+										   id="team-name"
+										   name="teamName"
+										   type="text"
+										   placeholder="Název týmu*"
+										   required="required"
+										   class="golden-ratio" />
+									<p class="p-1 formalert">
+										<th:block th:if="${#fields.hasErrors('teamName')}"
+												  th:errors="*{teamName}"> [ team name error message ]
+										</th:block>
+									</p>
+									<!--/*
+									*	E-mail
+									*/-->
+									<label for="team-mail" class="hidden">E-mail</label>
+									<input th:field="*{email}"
+										   id="team-mail"
+										   name="email"
+										   type="text"
+										   placeholder="E-mail*"
+										   required="required"
+										   class="golden-ratio"/>
+									<p class="p-1 formalert">
+										<th:block th:if="${#fields.hasErrors('email')}"
+												  th:errors="*{email}"> [ email error message ]
+										</th:block>
+									</p>
+									<!--/*
+									*	Heslo
+									*/-->
+									<label for="team-password" class="hidden">Heslo</label>
+									<input id="team-password"
+										   name="password"
+										   type="text"
+										   placeholder="Heslo*"
+										   required="required"
+										   class="golden-ratio"/>
+									<p class="p-1 formalert">
+										<th:block th:if="${#fields.hasErrors('password')}"
+												  th:errors="*{password}"> [ password error message ]
+										</th:block>
+									</p>
+									<!--/*
+									*	Souhlas
+									*/-->
+									<label class="container indent">Souhlasíme <a href="/doc/podminky_ucasti_lt.pdf" target="_blank" class="inverted">s&nbsp;podmínkami účasti ve hře</a>*
+										<input th:checked="*{termsAgreement}"
+											   name="termsAgreement"
+											   type="checkbox">
+											<span class="checkmark"></span>
+									</label>
+									<p class="p-1 formalert">
+										<th:block th:if="${#fields.hasErrors('termsAgreement')}"
+												  th:errors="*{termsAgreement}">
+											[ terms agreement error message ]
+										</th:block>
+									</p>
+									<input class="btn indent" type="submit" value="Odeslat">
+								</fieldset>
+							</form>
+
+						</div>
+					</div>
+
+				</div>
+			</div>
+
+			<!--/* Common page footer */-->
+			<footer th:replace="public/fragments/PageFooter.html :: PageFooter"> [ Page Footer ] </footer>
+		</div>
+	</body>
+</html>

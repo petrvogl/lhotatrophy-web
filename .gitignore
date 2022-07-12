@@ -1,0 +1,65 @@
+
+### Local app data ###
+
+/bin/start-app.properties
+/bin/dbdump.sh
+/bin/deploy.sh
+/sql/dump/
+*.devel.*
+*.prod.*
+
+
+### App build ###
+
+/target/
+#!.mvn/wrapper/maven-wrapper.jar
+#!**/src/main/**/target/
+#!**/src/test/**/target/
+
+
+### Global ###
+
+.dbname
+.directory
+Thumbs.db
+*.orig
+*.DS_Store
+
+### STS ###
+
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+
+### IntelliJ IDEA ###
+
+.idea
+*.iws
+*.iml
+*.ipr
+
+
+### NetBeans ###
+
+/nbbuild/
+/dist/
+/nbdist/
+**/.nb-gradle/
+**/*.jsdtscope
+build/
+nbproject
+nbactions.xml
+nb-configuration.xml
+.project
+#!**/src/main/**/build/
+#!**/src/test/**/build/
+
+
+### VS Code ###
+
+.vscode/
