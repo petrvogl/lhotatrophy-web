@@ -1,0 +1,120 @@
+@font-face {
+	font-family: "JetBrainsMono-Light";
+	/*	src: url("/vendor/JetBrainsMono/JetBrainsMono-Light.otf");
+		src: url("/vendor/JetBrainsMono/JetBrainsMono-Light.otf")
+			format("opentype"),
+			url("/vendor/JetBrainsMono/JetBrainsMono-Light.woff2")
+			format("woff2"),
+			url("/vendor/JetBrainsMono/JetBrainsMonoNL-Light.ttf")
+			format("truetype");*/
+	src: url("/vendor/JetBrainsMono/JetBrainsMonoNL-Light.ttf")
+		format("truetype");
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "JetBrainsMono-Light";
+	/*	src: url("/vendor/JetBrainsMono/JetBrainsMono-LightItalic.otf");
+		src: url("/vendor/JetBrainsMono/JetBrainsMono-LightItalic.otf")
+			format("opentype"),
+			url("/vendor/JetBrainsMono/JetBrainsMono-LightItalic.woff2")
+			format("woff2"),
+			url("/vendor/JetBrainsMono/JetBrainsMonoNL-LightItalic.ttf")
+			format("truetype");*/
+	src: url("/vendor/JetBrainsMono/JetBrainsMonoNL-LightItalic.ttf")
+		format("truetype");
+	font-weight: normal;
+	font-style: italic;
+	font-display: swap;
+}
+@font-face {
+	font-family: "JetBrainsMono-Medium";
+	/*	src: url("/vendor/JetBrainsMono/JetBrainsMono-Medium.otf");
+		src: url("/vendor/JetBrainsMono/JetBrainsMono-Medium.otf")
+			format("opentype"),
+			url("/vendor/JetBrainsMono/JetBrainsMono-Medium.woff2")
+			format("woff2"),
+			url("/vendor/JetBrainsMono/JetBrainsMonoNL-Medium.ttf")
+			format("truetype");*/
+	src: url("/vendor/JetBrainsMono/JetBrainsMonoNL-Medium.ttf")
+		format("truetype");
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "JetBrainsMono-Medium";
+	/*	src: url("/vendor/JetBrainsMono/JetBrainsMono-MediumItalic.otf");
+		src: url("/vendor/JetBrainsMono/JetBrainsMono-MediumItalic.otf")
+			format("opentype"),
+			url("/vendor/JetBrainsMono/JetBrainsMono-MediumItalic.woff2")
+			format("woff2"),
+			url("/vendor/JetBrainsMono/JetBrainsMonoNL-MediumItalic.ttf")
+			format("truetype");*/
+	src: url("/vendor/JetBrainsMono/JetBrainsMonoNL-MediumItalic.ttf")
+		format("truetype");
+	font-weight: normal;
+	font-style: italic;
+	font-display: swap;
+}
+@font-face {
+	font-family: "JetBrainsMono-Regular";
+	/*	src: url("/vendor/JetBrainsMono/JetBrainsMono-Regular.otf");
+		src: url("/vendor/JetBrainsMono/JetBrainsMono-Regular.otf")
+			format("opentype"),
+			url("/vendor/JetBrainsMono/JetBrainsMono-Regular.woff2")
+			format("woff2"),
+			url("/vendor/JetBrainsMono/JetBrainsMonoNL-Regular.ttf")
+			format("truetype");*/
+	src: url("/vendor/JetBrainsMono/JetBrainsMonoNL-Regular.ttf")
+		format("truetype");
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "JetBrainsMono-Regular";
+	/*	src: url("/vendor/JetBrainsMono/JetBrainsMono-Italic.otf");
+		src: url("/vendor/JetBrainsMono/JetBrainsMono-Italic.otf")
+			format("opentype"),
+			url("/vendor/JetBrainsMono/JetBrainsMono-Italic.woff2")
+			format("woff2"),
+			url("/vendor/JetBrainsMono/JetBrainsMonoNL-Italic.ttf")
+			format("truetype");*/
+	src: url("/vendor/JetBrainsMono/JetBrainsMonoNL-Italic.ttf")
+		format("truetype");
+	font-weight: normal;
+	font-style: italic;
+	font-display: swap;
+}
+@font-face {
+	font-family: "JetBrainsMono-Regular";
+	/*	src: url("/vendor/JetBrainsMono/JetBrainsMono-Bold.otf");
+		src: url("/vendor/JetBrainsMono/JetBrainsMono-Bold.otf")
+			format("opentype"),
+			url("/vendor/JetBrainsMono/JetBrainsMono-Bold.woff2")
+			format("woff2"),
+			url("/vendor/JetBrainsMono/JetBrainsMonoNL-Bold.ttf")
+			format("truetype");*/
+	src: url("/vendor/JetBrainsMono/JetBrainsMonoNL-Bold.ttf")
+		format("truetype");
+	font-weight: bold;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "JetBrainsMono-Regular";
+	/*	src: url("/vendor/JetBrainsMono/JetBrainsMono-BoldItalic.otf");
+		src: url("/vendor/JetBrainsMono/JetBrainsMono-BoldItalic.otf")
+			format("opentype"),
+			url("/vendor/JetBrainsMono/JetBrainsMono-BoldItalic.woff2")
+			format("woff2"),
+			url("/vendor/JetBrainsMono/JetBrainsMonoNL-BoldItalic.ttf")
+			format("truetype");*/
+	src: url("/vendor/JetBrainsMono/JetBrainsMonoNL-BoldItalic.ttf")
+		format("truetype");
+	font-weight: bold;
+	font-style: italic;
+	font-display: swap;
+}

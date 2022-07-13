@@ -1,95 +1,93 @@
 <!DOCTYPE html>
-
-<html lang="cs-cz">
-
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	  lang="cs">
 	<head>
+		<title>Administrace — 24th Lhota Trophy</title>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="stylesheet" href="css/base.css" type="text/css" />
-		<link rel="stylesheet" href="css/style.css" type="text/css" />
-		<link rel="stylesheet" href="https://use.typekit.net/klu5rvk.css">
-		<title>24th Lhota Trophy</title>
-		<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
-		<link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
-		<link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
-		<link rel="manifest" href="favicon/site.webmanifest">
-		<link rel="mask-icon" href="favicon/safari-pinned-tab.svg" color="#5bbad5">
-		<meta name="msapplication-TileColor" content="#da532c">
-		<meta name="theme-color" content="#ffffff">
-		<meta property="og:description" content="Základní informace a registrace k závodu Lhota Trophy XXIV" />
-		<meta property="og:site_name" content="24th Lhota Trophy" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="/css/admin.css" type="text/css" />
+
+		<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png" />
+		<link rel="manifest" href="favicon/site.webmanifest" />
+		<link rel="mask-icon" href="favicon/safari-pinned-tab.svg" color="#5bbad5" />
+		<meta name="msapplication-TileColor" content="#da532c" />
+		<meta name="theme-color" content="#ffffff" />
 	</head>
+	<body class="docu-theme">
+		<!--/*
+		*	Page Footer
+		*/-->
+		<header data-noindex="" class="site-header">
+			<div class="base-pane">
+				<h1>Administrace</h1>
+			</div>
+		</header>
 
-	<body>
+		<!--/*
+		*	Navigation
+		*/-->
+		<nav class="breadcrumbs">
+			<div class="base-pane">
+				<ul>
+					<li>Administrace</li>
+				</ul>
+			</div>
+		</nav>
 
-		<div id="content">
+		<!--/*
+		*	Page Content
+		*/-->
+		<main class="page-content">
 
-			<div class="content-zone clearfix">
-				<div class="content-zone-inner">
-					<div class="block full">
-						<div class="block-inner">
+			<p>
+				Logged user: <span sec:authentication="name">Bob</span>
+			</p>
+			<p>
+				Roles: <span sec:authentication="principal.authorities">[USER, ADMIN]</span>
+			</p>
 
-							<h1>Slunce nad Mount Trophy už zapadá&hellip;</h1>
-
-							<p class="p_1">&hellip;a&nbsp;s&nbsp;jeho posledními paprsky má vyhasnout další nevinný život.</p>
-
-							<p class="indent">Bělostné tělo pastorovy dcery vrhá dlouhý stín napříč hřbitovní kaplí. Banda Bessie Bonesové prchá z městečka. Kat strojí šibenici, zatím co červánky barví hladinu Western Creek do odstínu krve. Jen hrůzou vytřeštěné oči za stěnou šatlavy už přivykly tmě.</p>
-							<p>Spěchej, Paule! Tenhle západ bude divoký.</p>
-
-						</div>
-					</div>
-
-					<div class="block golden-ratio">
-						<div class="block-inner">
-
-							<h2 class="indent">24. Lhota Trophy</h2>
-
-							<p>Lhota Trophy je jednodenní týmový šifrovací a ostře
-								konkurenční závod, kterého se můžeš účastnit i&nbsp;ty. Ty a maximálně další čtyři
-								tvoji kumpáni či kumdámy. Pojedete autem, obstojně si zaluštíte, zastavíte se
-								na překrásných místech, kde můžete zažít všelijaká dobrodružství. Ale všeho s&nbsp;mírou,
-								v&nbsp;první řadě obezřetně. A&nbsp;když vám půjde luštění šifer od ruky, hravě
-								splníte další úkoly a nikde se neztratíte, máte šanci vyhrát. A&nbsp;pak se jen
-								veselit z&nbsp;faktu, že další ročník Lhota Trophy si uděláte po svém.</p>
-
-							<ul>
-								<li><a href="doc/pravidla-lt24-prvni-verze.pdf">Pravidla hry</a></li>
-								<li><a href="doc/podminky_ucasti_lt.pdf">Podmínky účasti ve hře</a></li>
-							</ul>
-
-							<h3 class="indent">Důležitá data</h3>
-							
-							<p>
-								<strong>4. 7. v&nbsp;18:00</strong>&nbsp;&ndash; start registrace<br />								
-								<strong>15. 7. ve 23:59</strong>&nbsp;&ndash; ukončení registrace a objednávek<br />
-								<strong>31. 7.</strong>&nbsp;&ndash; poslední termín pro zaplacení<br />
-								<strong>12. 8.</strong>&nbsp;&ndash; případné doplnění týmů z řad náhradníků<br />
-								<strong>1. 10.</strong>&nbsp;&ndash; zveřejnění místa startu<br />
-								<strong>7. 10.</strong>&nbsp;&ndash; Prolog<br />
-								<strong>8. 10.</strong>&nbsp;&ndash; Lhota Trophy</p>
-
-						</div>
-					</div>
-
-					<div class="block rest-of-golden-ratio" id="logo">
-						<div class="block-inner">
-
-
-
-						</div>
-					</div>					
-				</div>
+			<div sec:authorize="hasRole('SUPERADMIN')">
+				SUPERADMIN
+			</div>
+			<div sec:authorize="hasRole('ADMIN')">
+				ADMIN
+			</div>
+			<div sec:authorize="hasRole('USER')">
+				USER
 			</div>
 
-			<div class="content-zone clearfix">
-				<div class="content-zone-inner">
-					<div class="block-inner">
-						<p class="p-1">24. ročník Lhota Trophy pořádá OLIVOUN PROFI TEAM PRAHA | Kontakt: <a href="mailto:lhotatrophyxxiv@gmail.com">lhotatrophyxxiv@gmail.com</a></p>
-						<p class="p-2">Web využívá grafiku hry Firewatch studia Campo Santo.</p>
-					</div>
-				</div>
+			<div th:if="${#authorization.expression('hasRole(''SUPERADMIN'')')}">
+				This will only be displayed if authenticated user has role ROLE_SUPERADMIN.
 			</div>
-		</div>
+			<div th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+				This will only be displayed if authenticated user has role ROLE_ADMIN.
+			</div>
+
+			<table class="simple-theme" style="min-width: 420px;">
+				<tr>
+					<th class="center">ID</th>
+					<th class="center">Název týmu</th>
+					<th class="center">Zaplatili</th>
+				</tr>
+				<tr>
+					<td class="center">1</td>
+					<td>TEST</td>
+					<td>Ne</td>
+				</tr>
+			</table>
+		</main>
+
+		<!--/*
+		*	Page Footer
+		*/-->
+		<footer data-noindex="" class="site-footer">
+			<div class="base-pane center">
+				<p th:text="|&copy; 24th Lhota Trophy ${#dates.year(#dates.createNow())}|"> Copyright </p>
+			</div>
+		</footer>
 	</body>
-
 </html>

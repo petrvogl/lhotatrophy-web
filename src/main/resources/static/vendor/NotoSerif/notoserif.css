@@ -1,0 +1,32 @@
+@font-face {
+	font-family: "NotoSerif-Regular";
+	src: url("/vendor/NotoSerif/NotoSerif-Regular.ttf")
+		format("truetype");
+	font-weight: normal;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "NotoSerif-Regular";
+	src: url("/vendor/NotoSerif/NotoSerif-Italic.ttf")
+		format("truetype");
+	font-weight: normal;
+	font-style: italic;
+	font-display: swap;
+}
+@font-face {
+	font-family: "NotoSerif-Regular";
+	src: url("/vendor/NotoSerif/NotoSerif-Bold.ttf")
+		format("truetype");
+	font-weight: bold;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "NotoSerif-Regular";
+	src: url("/vendor/NotoSerif/NotoSerif-BoldItalic.ttf")
+		format("truetype");
+	font-weight: bold;
+	font-style: italic;
+	font-display: swap;
+}

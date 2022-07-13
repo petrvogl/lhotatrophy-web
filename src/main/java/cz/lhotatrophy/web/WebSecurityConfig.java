@@ -27,6 +27,7 @@ public class WebSecurityConfig {
 				.antMatchers("/doc/**").permitAll()
 				.antMatchers("/img/**").permitAll()
 				.antMatchers("/favicon/**").permitAll()
+				.antMatchers("/vendor/**").permitAll()
 				.antMatchers("/register").permitAll()
 				.antMatchers("/prihlasene-tymy").permitAll()
 				.antMatchers("/admin/register").permitAll()

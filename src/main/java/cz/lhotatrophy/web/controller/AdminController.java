@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import javax.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,17 @@ public class AdminController {
 	private TeamService teamService;
 
 	/**
+	 * Homepage
+	 */
+	@GetMapping()
+	public String index(final Model model) {
+		log.info("USER INFO");
+		
+		//initModel(model);
+		return "admin/index";
+	}
+	
+	/**
 	 * Registration
 	 */
 	@GetMapping("/user-info")
@@ -50,7 +62,7 @@ public class AdminController {
 	 * Registration
 	 */
 	@GetMapping("/register")
-	public String register(
+	public String getRegistration(
 			final UserRegistrationForm userRegistrationForm
 	) {
 		log.info("ADMIN REGISTRATION (GET)");
@@ -61,7 +73,7 @@ public class AdminController {
 	 * Registration
 	 */
 	@PostMapping("/register")
-	public String registerPost(
+	public String postRegistration(
 			@Valid final UserRegistrationForm userRegistrationForm,
 			final BindingResult bindingResult,
 			final Model model
@@ -111,25 +123,34 @@ public class AdminController {
 	}
 	
 	private void initModel(final Model model) {
-		
+
 		// FIXME - udelat lepe
 		final Map<String, Object> appConfig;
 		{
 			appConfig = new HashMap<>();
 			// TOTO - system property
-			appConfig.put("teamRegistrationLimit", 1L);
+			appConfig.put("teamRegistrationLimit", 50L);
 			model.addAttribute("appConfig", appConfig);
 		}
-		
+
+		final Function<Team, User> getOwner = (t) -> {
+			final Long userId = t.getOwner().getId();
+			return userService.getUserByIdFromCache(userId).orElse(null);
+		};
+
 		// logged in user and team
-		final Optional<User> optUser = userService.getLoggedInUser();
+		final Optional<User> optUser = userService.getLoggedInUser()
+				.map(User::getId)
+				.flatMap(userId -> userService.getUserByIdFromCache(userId));
 		final Optional<Team> optTeam = optUser
 				.map(User::getTeam)
 				.map(Team::getId)
-				.flatMap(teamId -> teamService.getTeamById(teamId));
-		// set model
+				.flatMap(teamId -> teamService.getTeamByIdFromCache(teamId));
+		// set data
 		model.addAttribute("user", optUser.orElse(null));
 		model.addAttribute("team", optTeam.orElse(null));
 		model.addAttribute("teamMembers", optTeam.map(Team::getMembers).orElse(Collections.emptySet()));
+		// set methods
+		model.addAttribute("getOwner", getOwner);
 	}
 }
