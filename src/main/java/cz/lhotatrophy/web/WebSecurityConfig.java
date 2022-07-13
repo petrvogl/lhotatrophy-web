@@ -21,6 +21,7 @@ public class WebSecurityConfig {
 	public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
 		http
 				.authorizeRequests()
+				// public
 				.antMatchers("/").permitAll()
 				.antMatchers("/js/**").permitAll()
 				.antMatchers("/css/**").permitAll()
@@ -31,16 +32,15 @@ public class WebSecurityConfig {
 				.antMatchers("/register").permitAll()
 				.antMatchers("/prihlasene-tymy").permitAll()
 				.antMatchers("/admin/register").permitAll()
-				// testing
-//				.antMatchers("/testing").permitAll()
-//				.antMatchers("/testing/v2").permitAll()
-//				.antMatchers("/testing/v2/prihlasene-tymy").permitAll()
-//				.antMatchers("/testing/v2/register").permitAll()
+				// admin
+				.antMatchers("/admin/**").access("hasAuthority('ADMIN')")
+				.antMatchers("/rest/admin*").access("hasAuthority('ADMIN')")
+				//.antMatchers("/rest/admin/**").permitAll()
 				// the rest
 				.anyRequest().authenticated()
+				.and().csrf().ignoringAntMatchers("/rest/**")
 				.and()
-				.formLogin()
-				.loginPage("/login").permitAll()
+				.formLogin().loginPage("/login").permitAll()
 				.and()
 				.logout().permitAll().logoutSuccessUrl("/");
 		return http.build();

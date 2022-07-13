@@ -2,6 +2,7 @@ package cz.lhotatrophy.web.controller;
 
 import cz.lhotatrophy.core.exceptions.UsernameOrEmailIsTakenException;
 import cz.lhotatrophy.core.exceptions.WeakPasswordException;
+import cz.lhotatrophy.core.service.TeamListingQuery;
 import cz.lhotatrophy.core.service.TeamService;
 import cz.lhotatrophy.core.service.UserService;
 import cz.lhotatrophy.persist.entity.Team;
@@ -37,27 +38,26 @@ public class AdminController {
 	private TeamService teamService;
 
 	/**
-	 * Homepage
+	 * Admin homepage
 	 */
 	@GetMapping()
 	public String index(final Model model) {
-		log.info("USER INFO");
-		
-		//initModel(model);
+		log.info("ADMIN");
+		model.addAttribute("teamListing", teamService.getTeamListing(new TeamListingQuery()));
 		return "admin/index";
 	}
-	
+
 	/**
 	 * Registration
 	 */
 	@GetMapping("/user-info")
 	public String userInfo(final Model model) {
 		log.info("USER INFO");
-		
+
 		initModel(model);
 		return "admin/user-info";
 	}
-	
+
 	/**
 	 * Registration
 	 */
@@ -121,7 +121,7 @@ public class AdminController {
 		model.addAttribute("user", user);
 		return "admin/register";
 	}
-	
+
 	private void initModel(final Model model) {
 
 		// FIXME - udelat lepe

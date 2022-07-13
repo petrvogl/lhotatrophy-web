@@ -1,15 +1,10 @@
 package cz.lhotatrophy.persist.entity;
 
-import cz.lhotatrophy.persist.MapToJsonStringConverter;
 import cz.lhotatrophy.persist.SchemaConstants;
 import cz.lhotatrophy.utils.DateTimeUtils;
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -20,7 +15,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
