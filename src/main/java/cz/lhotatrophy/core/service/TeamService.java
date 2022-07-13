@@ -19,6 +19,12 @@ public interface TeamService extends Service {
 	@NonNull
 	List<Team> getAllTeams();
 	
+	Optional<Team> getTeamByIdFromCache(@NonNull Long id);
+	
+	List<Team> getTeamListing(@NonNull TeamListingQuery query);
+	
+	void removeTeamFromCache(@NonNull Long id);
+	
 	Team registerNewTeam(@NonNull String name, @NonNull User owner);
 	
 	void updateTeam(@NonNull Team team);

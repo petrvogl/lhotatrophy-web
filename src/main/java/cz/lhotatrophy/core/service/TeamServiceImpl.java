@@ -1,5 +1,7 @@
 package cz.lhotatrophy.core.service;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import cz.lhotatrophy.persist.dao.TeamDao;
 import cz.lhotatrophy.persist.dao.TeamMemberDao;
 import cz.lhotatrophy.persist.entity.Team;
@@ -7,9 +9,11 @@ import cz.lhotatrophy.persist.entity.TeamMember;
 import cz.lhotatrophy.persist.entity.User;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +34,26 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 	private transient TeamMemberDao teamMemberDao;
 	@Autowired
 	private transient UserService userService;
+
+	/**
+	 * Cache storage to temporarily store frequently used data to avoid
+	 * redundant/unnecessary accessing a database.
+	 */
+	private static final Cache<Long, Team> teamCache = CacheBuilder
+			.newBuilder()
+			.maximumSize(1000)
+			.expireAfterWrite(60, TimeUnit.MINUTES)
+			.build();
+	
+	/**
+	 * Cache storage to temporarily store frequently used data lists to avoid
+	 * redundant/unnecessary accessing a database.
+	 */
+	private static final Cache<TeamListingQuery, List<Team>> teamListingCache = CacheBuilder
+			.newBuilder()
+			.maximumSize(10)
+			.expireAfterWrite(2, TimeUnit.MINUTES)
+			.build();
 
 	@NonNull
 	public Team createTeam(@NonNull final UnaryOperator<Team> initializer) {
@@ -68,17 +92,56 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 		return all == null ? Collections.emptyList() : all;
 	}
 
-	public Optional<TeamMember> getTeamMemberById(@NonNull final Long id) {
-		return teamMemberDao.findById(id);
+	@Override
+	public Optional<Team> getTeamByIdFromCache(@NonNull final Long id) {
+		try {
+			final Team team = teamCache.get(id, () -> {
+				return getTeamById(id).get();
+			});
+			userService.getUserByIdFromCache(team.getOwner().getId())
+					.ifPresent(owner -> {
+						team.setOwner(owner);
+						owner.setTeam(team);
+					});
+			return Optional.of(team);
+		} catch (final Exception ex) {
+			final String err = String.format("Can't load team from cache by ID [%d].", id);
+			log.error(err, ex);
+			return Optional.empty();
+		}
+	}
+	
+	@Override
+	public List<Team> getTeamListing(@NonNull final TeamListingQuery query) {
+		try {
+			final List<Team> listing = teamListingCache.get(query, () -> {
+				final List<Long> allIds = teamDao.findAllIds();
+				return allIds.stream()
+						.map(id -> getTeamByIdFromCache(id))
+						.filter(Optional::isPresent)
+						.map(Optional::get)
+						// filter by query.active
+						.filter(t -> query.getActive() == null || Objects.equals(query.getActive(), t.getActive()))
+						.collect(Collectors.toList());
+			});
+			return listing;
+		} catch (final Exception ex) {
+			final String err = String.format("Can't load team listing from cache by query [%s].", query.toString());
+			log.error(err, ex);
+			return Collections.emptyList();
+		}
 	}
 
-	public List<TeamMember> getAllTeamMembers(@NonNull final Team team) {
-		return teamMemberDao.findAllByTeamId(team.getId());
+	@Override
+	public void removeTeamFromCache(@NonNull final Long id) {
+		teamCache.invalidate(id);
+		teamListingCache.invalidateAll();
+		teamListingCache.cleanUp();
 	}
 
 	@Override
 	public Team registerNewTeam(@NonNull final String name, @NonNull final User owner) {
-		if (teamDao.findByName(name).isPresent()) {
+		if (getTeamByName(name).isPresent()) {
 			throw new RuntimeException("Tým s tímto názvem už existuje.");
 		}
 		if (owner.getTeam() != null) {
@@ -92,6 +155,7 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 			});
 			// just for consistency
 			owner.setTeam(team);
+			userService.removeUserFromCache(owner.getId());
 			// logging
 			log.info("New team has been registered: [ {} / {} ]", team.getId(), team.getName());
 			log.info("\nLhotaTrophy:\n    CREATED {}", team.toString());
@@ -101,10 +165,7 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 
 	@Override
 	public void updateTeam(@NonNull final Team team) {
-		teamDao.save(team);
-	}
-
-	public void updateTeamMembers(@NonNull final Long teamId, final Set<TeamMember> members) {
-		// TODO
+		final Team t = teamDao.save(team);
+		removeTeamFromCache(t.getId());
 	}
 }

@@ -2,6 +2,7 @@ package cz.lhotatrophy.web.controller;
 
 import cz.lhotatrophy.core.exceptions.UsernameOrEmailIsTakenException;
 import cz.lhotatrophy.core.exceptions.WeakPasswordException;
+import cz.lhotatrophy.core.service.TeamListingQuery;
 import cz.lhotatrophy.core.service.TeamService;
 import cz.lhotatrophy.core.service.UserService;
 import cz.lhotatrophy.persist.entity.Team;
@@ -68,12 +69,12 @@ public class MainController {
 		initModel(model);
 		return "public/login";
 	}
-	
+
 	/**
 	 * Registration
 	 */
 	@GetMapping("/register")
-	public String register(
+	public String getRegistration(
 			final TeamRegistrationForm teamRegistrationForm
 	) {
 		log.info("TEAM REGISTRATION (GET)");
@@ -84,7 +85,7 @@ public class MainController {
 	 * Registration
 	 */
 	@PostMapping("/register")
-	public String registerPost(
+	public String postRegistration(
 			@Valid final TeamRegistrationForm teamRegistrationForm,
 			final BindingResult bindingResult,
 			final HttpServletRequest request,
@@ -156,7 +157,7 @@ public class MainController {
 		request.getSession().setAttribute("TeamRegistrationSuccess", true);
 		return "redirect:/muj-tym";
 	}
-	
+
 	/**
 	 * Team
 	 */
@@ -170,9 +171,9 @@ public class MainController {
 		final Mutable<List<TeamMember>> members = new MutableObject();
 
 		userService.getLoggedInUser().ifPresent(user -> {
-			if (user.getTeam() != null) {
+			if (hasTeamAssigned(user)) {
 				final Long teamId = user.getTeam().getId();
-				teamService.getTeamById(teamId).ifPresent(team -> {
+				teamService.getTeamByIdFromCache(teamId).ifPresent(team -> {
 					List<TeamMember> members_ = team.getMembersOrdered();
 					if (members_ == null || members_.isEmpty()) {
 						members_ = new ArrayList(5);
@@ -191,7 +192,7 @@ public class MainController {
 		initModel(model);
 		return "public/my-team";
 	}
-	
+
 	/**
 	 * Team settings edit
 	 */
@@ -230,16 +231,31 @@ public class MainController {
 	public String teamList(final Model model) {
 		log.info("TEAM LISTING");
 
-		model.addAttribute("allTeamsList", teamService.getAllTeams());
-		
+		model.addAttribute("allTeamsList", teamService.getTeamListing(new TeamListingQuery()));
+
 		initModel(model);
 		return "public/team-list";
 	}
-	
+
+	/**
+	 * Returns {@code true} only if the given {@code user} is not {@code null}
+	 * and has a team assigned.
+	 *
+	 * @param user The user entity
+	 * @return {@code true} if a team is assigned
+	 */
+	private boolean hasTeamAssigned(final User user) {
+		return user != null
+				&& user.getId() != null
+				&& userService.getUserByIdFromCache(user.getId())
+						.map(User::getTeam)
+						.isPresent();
+	}
+
 	/**
 	 * Initialize the model.
-	 * 
-	 * @param model 
+	 *
+	 * @param model
 	 */
 	private void initModel(final Model model) {
 
@@ -251,24 +267,25 @@ public class MainController {
 			appConfig.put("teamRegistrationLimit", 50L);
 			model.addAttribute("appConfig", appConfig);
 		}
-		
+
 		final Function<Team, User> getOwner = (t) -> {
 			final Long userId = t.getOwner().getId();
-			return userService.getUserById(userId).orElse(null);
+			return userService.getUserByIdFromCache(userId).orElse(null);
 		};
 
 		// logged in user and team
 		final Optional<User> optUser = userService.getLoggedInUser()
 				.map(User::getId)
-				.flatMap(userId -> userService.getUserById(userId));
+				.flatMap(userId -> userService.getUserByIdFromCache(userId));
 		final Optional<Team> optTeam = optUser
 				.map(User::getTeam)
 				.map(Team::getId)
-				.flatMap(teamId -> teamService.getTeamById(teamId));
-		// set model
+				.flatMap(teamId -> teamService.getTeamByIdFromCache(teamId));
+		// set data
 		model.addAttribute("user", optUser.orElse(null));
 		model.addAttribute("team", optTeam.orElse(null));
 		model.addAttribute("teamMembers", optTeam.map(Team::getMembers).orElse(Collections.emptySet()));
+		// set methods
 		model.addAttribute("getOwner", getOwner);
 	}
 }
