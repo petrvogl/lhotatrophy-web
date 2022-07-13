@@ -2,6 +2,7 @@ package cz.lhotatrophy.core.service;
 
 import cz.lhotatrophy.core.security.UserDetails;
 import cz.lhotatrophy.persist.SessionHelper;
+import cz.lhotatrophy.persist.entity.Entity;
 import cz.lhotatrophy.persist.entity.User;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -24,9 +25,15 @@ public abstract class AbstractService implements Service {
 	/**
 	 * Flush current Hibernate session.
 	 */
-	@Override
-	public void flush() {
+	protected void flush() {
 		sessionHelper.flush();
+	}
+	
+	/**
+	 * Remove entity instance from the session cache.
+	 */
+	protected void detach(@NonNull final Entity entity) {
+		sessionHelper.detach(entity);
 	}
 
 	/**

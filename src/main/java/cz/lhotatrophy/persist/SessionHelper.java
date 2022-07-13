@@ -1,12 +1,14 @@
 package cz.lhotatrophy.persist;
 
+import cz.lhotatrophy.persist.entity.Entity;
 import java.util.concurrent.Callable;
+import lombok.NonNull;
 import org.hibernate.Session;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Helpful methods to deal with Hibernate session.
- * 
+ *
  * @author Petr Vogl
  */
 public interface SessionHelper {
@@ -24,16 +26,24 @@ public interface SessionHelper {
 	void flush();
 
 	/**
-	 * Run command in transaction.
+	 * Remove entity instance from the session cache. Changes to the instance
+	 * will not be synchronized with the database.
+	 *
+	 * @param entity The entity to detach
 	 */
-	@Transactional
-	<T> T runInTransaction(final Callable<T> command);
+	void detach(@NonNull Entity entity);
 
 	/**
 	 * Run command in transaction.
 	 */
 	@Transactional
-	void runInTransaction(final Runnable command);
+	<T> T runInTransaction(Callable<T> command);
+
+	/**
+	 * Run command in transaction.
+	 */
+	@Transactional
+	void runInTransaction(Runnable command);
 
 	/**
 	 * Rollback transaction.

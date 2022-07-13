@@ -9,11 +9,6 @@ import java.util.concurrent.Callable;
 public interface Service {
 
 	/**
-	 * Flush current Hibernate session.
-	 */
-	void flush();
-
-	/**
 	 * Run command in transaction.
 	 */
 	<T> T runInTransaction(final Callable<T> command);

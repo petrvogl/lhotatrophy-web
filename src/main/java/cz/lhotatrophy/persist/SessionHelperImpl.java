@@ -1,8 +1,10 @@
 package cz.lhotatrophy.persist;
 
+import cz.lhotatrophy.persist.entity.Entity;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -44,6 +46,14 @@ public class SessionHelperImpl implements SessionHelper {
 	@Override
 	public void flush() {
 		getSession().flush();
+	}
+
+	/**
+	 * Remove entity instance from the session cache.
+	 */
+	@Override
+	public void detach(@NonNull final Entity entity) {
+		getSession().evict(entity);
 	}
 
 	/**

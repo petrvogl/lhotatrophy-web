@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @Log4j2
 @Configuration
-@EnableTransactionManagement(proxyTargetClass = false)
+@EnableTransactionManagement
 @PropertySources({
 	@PropertySource("classpath:application.properties"),
 	@PropertySource("file:${WEB_LOCAL_CONFIG}")})

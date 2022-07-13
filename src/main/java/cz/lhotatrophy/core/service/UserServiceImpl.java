@@ -1,11 +1,14 @@
 package cz.lhotatrophy.core.service;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import cz.lhotatrophy.core.exceptions.UsernameOrEmailIsTakenException;
 import cz.lhotatrophy.core.exceptions.WeakPasswordException;
 import cz.lhotatrophy.persist.dao.UserDao;
 import cz.lhotatrophy.persist.entity.User;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 import javax.servlet.http.HttpServletRequest;
 import lombok.NonNull;
@@ -34,6 +37,16 @@ public class UserServiceImpl extends AbstractService implements UserService {
 	private transient PasswordEncoder passwordEncoder;
 	@Autowired
 	private transient UserDetailsService userDetailsService;
+
+	/**
+	 * Cache storage to temporarily store frequently used data to avoid
+	 * redundant/unnecessary accessing a database.
+	 */
+	private static final Cache<Long, User> userCache = CacheBuilder
+			.newBuilder()
+			.maximumSize(1000)
+			.expireAfterWrite(60, TimeUnit.MINUTES)
+			.build();
 
 	@NonNull
 	public User createUser(@NonNull final UnaryOperator<User> initializer) {
@@ -67,6 +80,29 @@ public class UserServiceImpl extends AbstractService implements UserService {
 		return userDao.findById(id);
 	}
 
+	@Override
+	public Optional<User> getUserByIdFromCache(@NonNull final Long id) {
+		try {
+			return Optional.of(userCache.get(id, () -> {
+				final User user = getUserById(id).get();
+				return user;
+			}));
+		} catch (final Exception ex) {
+			final String err = String.format("Can't load user from cache by ID [%d].", id);
+			log.error(err, ex);
+			return Optional.empty();
+		}
+	}
+
+	@Override
+	public void removeUserFromCache(@NonNull final Long id) {
+		userCache.invalidate(id);
+	}
+
+	/**
+	 * @deprecated TODO - checkEmailIsFree(...)
+	 */
+	@Deprecated
 	@Override
 	public Optional<User> getUserByEmail(@NonNull final String email) {
 		return userDao.findByEmail(email);
@@ -107,14 +143,16 @@ public class UserServiceImpl extends AbstractService implements UserService {
 
 	@Override
 	public void updateUser(@NonNull final User user) {
-		userDao.save(user);
+		final User u = userDao.save(user);
+		removeUserFromCache(u.getId());
 	}
 
 	@Override
 	public void updateUserProperties(@NonNull final Long id, final Map<String, Object> properties) {
 		final User user = userDao.getReferenceById(id);
 		user.setProperties(properties);
-		userDao.save(user);
+		final User u = userDao.save(user);
+		removeUserFromCache(u.getId());
 	}
 
 	@Override

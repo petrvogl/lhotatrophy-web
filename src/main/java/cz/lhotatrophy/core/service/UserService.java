@@ -18,15 +18,30 @@ public interface UserService extends Service {
 	/**
 	 * Provides {@code User} entity from persistence context.
 	 *
-	 * @param id User id.
-	 * @return User entity
+	 * @param id User id
+	 * @return Optional User entity
 	 */
 	Optional<User> getUserById(Long id);
 
 	/**
+	 * Provides {@code User} entity from cache.
+	 *
+	 * @param id User id
+	 * @return Optional User entity
+	 */
+	Optional<User> getUserByIdFromCache(@NonNull Long id);
+
+	/**
+	 * Removes {@code User} entity from cache.
+	 *
+	 * @param id User id
+	 */
+	void removeUserFromCache(@NonNull final Long id);
+
+	/**
 	 * Provides {@code User} entity from persistence context.
 	 *
-	 * @param email User email address.
+	 * @param email User email address
 	 * @return User entity
 	 */
 	Optional<User> getUserByEmail(String email);
@@ -74,18 +89,18 @@ public interface UserService extends Service {
 	) throws WeakPasswordException, UsernameOrEmailIsTakenException;
 
 	/**
-	 * 
-	 * @param user 
+	 *
+	 * @param user
 	 */
 	void updateUser(@NonNull User user);
-	
+
 	/**
 	 * Saves user properties.
 	 *
 	 * @param id User ID
 	 * @param properties User properties
 	 */
-	void updateUserProperties(final Long id, final Map<String, Object> properties);
+	void updateUserProperties(Long id, Map<String, Object> properties);
 
 	/**
 	 * Perform user login in current HTTP session.
