@@ -103,14 +103,15 @@
 					</div>
 
 					<div th:if="${team != null and teamSettings != null}"
+						 th:with="ordersClosed=${#dates.createNow().getTime() lt #dates.create(2022,7,4,18,00).getTime() or #dates.createNow().getTime() gt #dates.create(2022,7,16,0,00).getTime()}"
 						 class="block full">
 						<div class="block-inner visible firewatch-8 bg-firewatch-2">
 
 							<h2 class="inverted">Nastavení týmu</h2>							
-							<form th:action="@{__${zaplaceno ? '#' : '/muj-tym'}__}"
+							<form th:action="@{__${(zaplaceno or ordersClosed) ? '#' : '/muj-tym'}__}"
 								  method="post"
 								  id="team-settings">
-								<fieldset th:disabled="${zaplaceno ? 'disabled' : null}">
+								<fieldset th:disabled="${(zaplaceno or ordersClosed) ? 'disabled' : null}">
 									<th:block th:each="member, stat : ${teamSettings}"
 											  th:with="
 											  memberName=${#strings.isEmpty(member.name) ? null : member.name},
@@ -178,7 +179,7 @@
 										</select>
 									</th:block>
 
-									<input th:unless="${zaplaceno}" class="btn" type="submit" value="Uložit">
+									<input th:unless="${(zaplaceno or ordersClosed)}" class="btn" type="submit" value="Uložit">
 								</fieldset>
 							</form>
 						</div>
