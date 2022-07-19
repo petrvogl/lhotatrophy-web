@@ -3,45 +3,105 @@
 	  xmlns:th="http://www.thymeleaf.org"
 	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	  lang="cs">
-	<head> 
-		<title>Team</title> 
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHeadAdmin">
+		<!--/* PROTOTYPE */-->
+		<title>Administrace — 24th Lhota Trophy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	</head>
-	<body>
-		<form th:if="${user}"
-			  th:action="@{/logout}"
-			  method="post">
-			<input type="submit" value="Sign Out"/>
-		</form>
+	<body class="docu-theme">
+		<!--/* Page header */-->
+		<header th:replace="public/fragments/PageHeader.html :: PageHeaderAdmin"> [ Page Header ] </header>
+		<!--/* Page navigation */-->
+		<nav th:replace="public/fragments/PageNavigation.html :: PageNavigationAdmin"> [ Navigation ] </nav>
 
-		<div>
-			User: "[[${user != null ? user.email : 'anonym'}]]"
-		</div>
-		
-		<div>
-			Team: "[[${team != null ? team.name : 'NA'}]]"
-		</div>
-		
-		<div th:if="${teamMembers != null and !teamMembers.isEmpty()}">
-			<!--/*
-			*	Seznam členů týmu
-			*/-->
-			<ul>
-				<li th:each="member : ${teamMembers}"
-					th:with="properties=${member.properties}">
-					Member name: "[[${member.name}]]"
-					<!--/*
-					*	Atributy člena týmu
-					*/-->
-					<dl th:if="${properties != null and !properties.isEmpty()}">
-						<th:block th:each="entry : ${properties.entrySet()}">
-							<dt>[[${entry.key}]]</dt>
-							<dd>[[${entry.value}]]</dd>
-						</th:block>
-					</dl>
-				</li>
-			</ul>
-		</div>
+		<!--/*
+		*	Page Content
+		*/-->
+		<main class="page-content"
+			  th:with="
+			  zaplaceno=${user.getProperty('zaplaceno').orElse(false)},
+			  passwdRecoveryToken=${user.getProperty('passwdRecoveryToken').orElse(null)}
+			  ">
 
+			<h2>Detail uživatele</h2>
+
+			<p>
+				<strong>Uživatel:</strong> <th:block th:text="${user != null} ? ${user.email + ' [ID=' + user.id + ']'} : _"> anonym </th:block><br />
+				<strong>Tým:</strong> <th:block th:text="${team != null} ? ${team.name + ' [ID=' + team.id + ']'} : _"> — </th:block><br />
+				<strong>Zaplaceno:</strong> <code th:text="${zaplaceno ? 'ANO' : 'NE'}" th:style="|background-color: ${zaplaceno ? 'lightgreen' : 'lightcoral'};|"> ANO/NE </code>
+			</p>
+
+			<th:block th:if="${team != null}">
+				<h2>Členové týmu</h2>
+
+				<table class="simple-theme" style="min-width: 420px;">
+					<tr>
+						<th>Jméno člena</th>
+						<th>Atributy</th>
+					</tr>
+					<tr th:each="member : ${team.getMembersOrdered()}"
+						th:with="properties=${member.properties}">
+						<td> [[${member.name}]] </td>
+						<td>
+							<th:block th:if="${properties != null and !properties.isEmpty()}">
+								<th:block th:each="entry, stat : ${properties.entrySet()}">
+									<th:block th:if="${stat.count != 1}"> , </th:block>
+									<code>
+										[[${entry.key}]]: [[${entry.value}]]
+									</code>
+								</th:block>
+							</th:block>
+						</td>
+					</tr>
+				</table>
+			</th:block>
+
+			<h2>Obnova přihlašovacího hesla</h2>
+
+			<p><label>Jednorázový odkaz pro změnu zapomenutého hesla:</label> <input id="passwdRecoveryButton" type="button" value="Vygenerovat"></input></p>
+			<p>
+				Následující odkaz je jen na jedno použití a je možné ho použít pouze pro změnu hesla. Po úspěšné změně hesla se ze systému smaže.
+				Pro případnou opakovanou změnu hesla bude nutné vygenerovat odkaz nový.
+			</p>
+			<pre id="passwdRecoveryLink" th:text="${passwdRecoveryToken}
+				 ? ${'https://24.lhotatrophy.net/zmena-hesla/' + user?.id + '/' + passwdRecoveryToken}
+				 : _">—odkaz—</pre>
+
+			<script type="text/javascript" th:inline="javascript">
+				/* <![CDATA[ */
+				const passwdRecoveryButton = document.getElementById("passwdRecoveryButton");
+
+				passwdRecoveryButton.addEventListener("click", even => {
+					const userId = /*[[${user?.id}]]*/"";
+					LT.log.debug("Generate for user: " + userId);
+
+					let onCompleteFn = function (xhr, textStatus) {
+						const data = xhr.responseJSON;
+						if (textStatus === "success" && data.success === true) {
+							const passwdRecoveryLink = document.getElementById("passwdRecoveryLink");
+							passwdRecoveryLink.innerText = 'https://24.lhotatrophy.net/zmena-hesla/' + userId + '/' + data.token;
+						} else {
+							window.alert("Došlo k chbě při generování odkazu.");
+							passwdRecoveryLink.innerText = '—odkaz—';
+						}
+					};
+
+					let requestParams = {
+						url: "/rest/admin/getPasswdRecoveryLink/" + userId,
+						//data: JSON.stringify({user: userId}),
+						onComplete: onCompleteFn,
+						onError: LT.function.noop,
+						onTimeout: LT.function.noop,
+					};
+					LT.ajax.send(requestParams, "passwdRecovery");
+				});
+				/* ]]> */
+			</script>
+
+		</main>
+
+		<!--/* Page footer */-->
+		<footer th:replace="public/fragments/PageFooter.html :: PageFooterAdmin"> [ Copyright ] </footer>
 	</body>
 </html>

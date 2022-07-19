@@ -8,11 +8,7 @@ import cz.lhotatrophy.core.service.UserService;
 import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.User;
 import cz.lhotatrophy.web.form.UserRegistrationForm;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import javax.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -50,11 +47,23 @@ public class AdminController {
 	/**
 	 * Registration
 	 */
-	@GetMapping("/user-info")
-	public String userInfo(final Model model) {
-		log.info("USER INFO");
+	@GetMapping("/user-info/{userId}")
+	public String userInfo(
+			@PathVariable Long userId,
+			final Model model
+	) {
+		log.info("USER INFO [" + userId + "]");
 
-		initModel(model);
+		// logged in user and team
+		final Optional<User> optUser = userService.getUserByIdFromCache(userId);
+		final Optional<Team> optTeam = optUser
+				.map(User::getTeam)
+				.map(Team::getId)
+				.flatMap(teamId -> teamService.getTeamByIdFromCache(teamId));
+		// set data
+		model.addAttribute("user", optUser.orElse(null));
+		model.addAttribute("team", optTeam.orElse(null));
+		// render template
 		return "admin/user-info";
 	}
 
@@ -120,37 +129,5 @@ public class AdminController {
 		// success message
 		model.addAttribute("user", user);
 		return "admin/register";
-	}
-
-	private void initModel(final Model model) {
-
-		// FIXME - udelat lepe
-		final Map<String, Object> appConfig;
-		{
-			appConfig = new HashMap<>();
-			// TOTO - system property
-			appConfig.put("teamRegistrationLimit", 50L);
-			model.addAttribute("appConfig", appConfig);
-		}
-
-		final Function<Team, User> getOwner = (t) -> {
-			final Long userId = t.getOwner().getId();
-			return userService.getUserByIdFromCache(userId).orElse(null);
-		};
-
-		// logged in user and team
-		final Optional<User> optUser = userService.getLoggedInUser()
-				.map(User::getId)
-				.flatMap(userId -> userService.getUserByIdFromCache(userId));
-		final Optional<Team> optTeam = optUser
-				.map(User::getTeam)
-				.map(Team::getId)
-				.flatMap(teamId -> teamService.getTeamByIdFromCache(teamId));
-		// set data
-		model.addAttribute("user", optUser.orElse(null));
-		model.addAttribute("team", optTeam.orElse(null));
-		model.addAttribute("teamMembers", optTeam.map(Team::getMembers).orElse(Collections.emptySet()));
-		// set methods
-		model.addAttribute("getOwner", getOwner);
 	}
 }

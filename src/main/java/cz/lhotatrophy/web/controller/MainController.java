@@ -10,6 +10,7 @@ import cz.lhotatrophy.persist.entity.TeamMember;
 import cz.lhotatrophy.persist.entity.User;
 import cz.lhotatrophy.web.form.TeamRegistrationForm;
 import cz.lhotatrophy.web.form.TeamSettingsForm;
+import cz.lhotatrophy.web.form.UserPasswordRecoveryForm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 /**
@@ -155,6 +157,68 @@ public class MainController {
 		// autologin and redirect
 		userService.autologin(team.getOwner());
 		request.getSession().setAttribute("TeamRegistrationSuccess", true);
+		return "redirect:/muj-tym";
+	}
+
+	/**
+	 * Password recovery
+	 */
+	@GetMapping("/zmena-hesla/{userId}/{token}")
+	public String passwordRecovery(
+			@PathVariable final Long userId,
+			@PathVariable final String token,
+			final UserPasswordRecoveryForm userPasswordRecoveryForm
+	) {
+		log.info("PASSWORD RECOVERY (GET)");
+		// user must exist
+		final User user = userService.getUserByIdFromCache(userId).get();
+		// token must be valid
+		final boolean isTokenValid = user.getProperty("passwdRecoveryToken")
+				.map(Object::toString)
+				.filter(t -> t.equals(token))
+				.isPresent();
+		if (!isTokenValid) {
+			throw new RuntimeException("Invalid password recovery token.");
+		}
+		userPasswordRecoveryForm.setId(userId);
+		userPasswordRecoveryForm.setToken(token);
+		return "public/password-recovery";
+	}
+
+	/**
+	 * Password recovery
+	 */
+	@PostMapping("/zmena-hesla")
+	public String postPasswordRecovery(
+			@Valid final UserPasswordRecoveryForm userPasswordRecoveryForm,
+			final BindingResult bindingResult
+	) {
+		log.info("PASSWORD RECOVERY (POST)");
+		final Long userId = userPasswordRecoveryForm.getId();
+		final String token = userPasswordRecoveryForm.getToken();
+		// user must exist
+		final Optional<User> optUser = userService.getUserByIdFromCache(userId);
+		// token must be valid
+		final boolean isTokenValid = optUser
+				.flatMap(user -> user.getProperty("passwdRecoveryToken"))
+				.map(Object::toString)
+				.filter(t -> t.equals(token))
+				.isPresent();
+		if (optUser.isEmpty() || !isTokenValid) {
+			bindingResult.reject(
+					"GlobalError",
+					"Odkaz pro změnu hesla už není platný.");
+		}
+		if (bindingResult.hasErrors()) {
+			return "public/password-recovery";
+		}
+		// set new password
+		userService.getUserById(userId)
+				.ifPresent(u -> {
+					userService.encodeAndSetUserPassword(u, userPasswordRecoveryForm.getPassword());
+					u.removeProperty("passwdRecoveryToken");
+					userService.updateUser(u);
+				});
 		return "redirect:/muj-tym";
 	}
 

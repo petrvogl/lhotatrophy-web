@@ -31,6 +31,8 @@ public class WebSecurityConfig {
 				.antMatchers("/vendor/**").permitAll()
 				.antMatchers("/register").permitAll()
 				.antMatchers("/prihlasene-tymy").permitAll()
+				.antMatchers("/zmena-hesla").permitAll()
+				.antMatchers("/zmena-hesla/**").permitAll()
 				.antMatchers("/admin/register").permitAll()
 				// admin
 				.antMatchers("/admin/**").access("hasAuthority('ADMIN')")

@@ -67,7 +67,8 @@ public class UserServiceImpl extends AbstractService implements UserService {
 		});
 	}
 
-	private void encodeAndSetUserPassword(
+	@Override
+	public void encodeAndSetUserPassword(
 			@NonNull final User user,
 			@NonNull final String password
 	) {

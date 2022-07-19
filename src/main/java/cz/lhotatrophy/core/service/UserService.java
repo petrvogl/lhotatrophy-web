@@ -16,6 +16,15 @@ import lombok.NonNull;
 public interface UserService extends Service {
 
 	/**
+	 * Encodes and sets user's password. Changes are not stored in persistence
+	 * context.
+	 *
+	 * @param user The user entity
+	 * @param password User's password
+	 */
+	void encodeAndSetUserPassword(@NonNull User user, @NonNull String password);
+
+	/**
 	 * Provides {@code User} entity from persistence context.
 	 *
 	 * @param id User id

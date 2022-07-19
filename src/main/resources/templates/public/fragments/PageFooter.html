@@ -31,6 +31,21 @@
 				</div>
 			</div>
 		</div>
+		
+		
+		<!--/*
+		*	
+		*	Admin page footer
+		*	
+		*	
+		*/-->
+		<th:block th:fragment="PageFooterAdmin">
+			<footer data-noindex="" class="site-footer">
+				<div class="base-pane center">
+					<p th:text="|&copy; 24th Lhota Trophy ${#dates.year(#dates.createNow())}|"> Copyright </p>
+				</div>
+			</footer>
+		</th:block>
 
 	</body>
 </html>

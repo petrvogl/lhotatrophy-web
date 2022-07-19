@@ -5,6 +5,9 @@ import cz.lhotatrophy.core.service.UserService;
 import cz.lhotatrophy.persist.entity.User;
 import java.util.Map;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.mutable.Mutable;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,11 +28,11 @@ public class AdminRestController {
 	private UserService userService;
 	@Autowired
 	private TeamService teamService;
-	
+
 	@PostMapping("/setUserProperties/{userId}")
-	public Object setUserProperty(
-			@PathVariable Long userId,
-			@RequestBody Map<String, Object> properties
+	public Object setUserProperties(
+			@PathVariable final Long userId,
+			@RequestBody final Map<String, Object> properties
 	) {
 		log.info("REST ADMIN (setUserProperties)");
 		if (properties == null) {
@@ -47,5 +50,23 @@ public class AdminRestController {
 				})
 				.orElse(null);
 		return Map.of("success", u != null);
+	}
+
+	@PostMapping("/getPasswdRecoveryLink/{userId}")
+	public Object getPasswdRecoveryLink(
+			@PathVariable final Long userId
+	) {
+		log.info("REST ADMIN (getPasswdRecoveryLink)");
+
+		final Mutable<String> token = new MutableObject<>();
+		final User u = userService.getUserById(userId)
+				.map(user -> {
+					token.setValue(RandomStringUtils.randomAlphanumeric(10));
+					user.addProperty("passwdRecoveryToken", token.getValue());
+					userService.updateUser(user);
+					return user;
+				})
+				.orElse(null);
+		return Map.of("success", u != null, "token", token.getValue());
 	}
 }

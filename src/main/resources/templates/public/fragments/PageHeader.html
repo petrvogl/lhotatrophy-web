@@ -10,7 +10,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	</head>
 	<body>
-		
+
 		<!--/*
 		*	
 		*	Common page header
@@ -50,6 +50,25 @@
 						<input type="submit" value="Odhlásit se"/>
 					</form>
 				</nav>
+			</header>
+		</th:block>
+
+		<!--/*
+		*	
+		*	Admin page header
+		*	
+		*	
+		*/-->
+		<th:block th:fragment="PageHeaderAdmin">
+			<header data-noindex="" class="site-header">
+				<div class="base-pane">
+					<h1>Administrace</h1>
+					<p>
+						Přihlášený uživatel: <th:block sec:authentication="name"> [ username ] </th:block>
+						<th:block sec:authorize="hasAuthority('SUPERADMIN')"> (SUPERADMIN) </th:block>
+					</p>
+					<form th:action="@{/logout}" method="post"><input type="submit" value="Odhlásit se"/></form>
+				</div>
 			</header>
 		</th:block>
 

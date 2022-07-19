@@ -3,49 +3,17 @@
 	  xmlns:th="http://www.thymeleaf.org"
 	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	  lang="cs">
-	<head>
+	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHeadAdmin">
+		<!--/* PROTOTYPE */-->
 		<title>Administrace — 24th Lhota Trophy</title>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="/css/admin.css" type="text/css" />
-
-		<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
-		<link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png" />
-		<link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png" />
-		<link rel="manifest" href="favicon/site.webmanifest" />
-		<link rel="mask-icon" href="favicon/safari-pinned-tab.svg" color="#5bbad5" />
-		<meta name="msapplication-TileColor" content="#da532c" />
-		<meta name="theme-color" content="#ffffff" />
-
-		<link rel="stylesheet" href="/css/admin.css" type="text/css" />
-		<script src="/vendor/jquery/jquery-3.6.0.min.js" type="text/javascript"></script>
-		<script src="/js/main.js" type="text/javascript"></script>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	</head>
 	<body class="docu-theme">
-		<!--/*
-		*	Page Footer
-		*/-->
-		<header data-noindex="" class="site-header">
-			<div class="base-pane">
-				<h1>Administrace</h1>
-				<p>
-					Přihlášený uživatel: <th:block sec:authentication="name"> [ username ] </th:block>
-					<th:block sec:authorize="hasAuthority('SUPERADMIN')"> (SUPERADMIN) </th:block>
-				</p>
-				<form th:action="@{/logout}" method="post"><input type="submit" value="Odhlásit se"/></form>
-			</div>
-		</header>
-
-		<!--/*
-		*	Navigation
-		*/-->
-		<nav class="breadcrumbs">
-			<div class="base-pane">
-				<ul>
-					<li>Administrace</li>
-				</ul>
-			</div>
-		</nav>
+		<!--/* Page header */-->
+		<header th:replace="public/fragments/PageHeader.html :: PageHeaderAdmin"> [ Page Header ] </header>
+		<!--/* Page navigation */-->
+		<nav th:replace="public/fragments/PageNavigation.html :: PageNavigationAdmin"> [ Navigation ] </nav>
 
 		<!--/*
 		*	Page Content
@@ -69,7 +37,11 @@
 					"
 					th:class="${team.active} ? _ : 'disabled removed'">
 					<td class="center"> [[${team.id}]] </td>
-					<td> [[${team.name}]] </td>
+					<td>
+						<a th:href="@{~__${'/admin/user-info/' + owner.id}__}">
+							[[${team.name}]]
+						</a>
+					</td>
 					<td> [[${owner.email}]] </td>
 					<td class="right"> [[${team.expenses}]] Kč</td>
 					<td class="right" th:classappend="${!team.active or zaplaceno} ? _ : 'highlight'">
@@ -86,7 +58,7 @@
 
 		<script type="text/javascript">
 			/* <![CDATA[ */
-
+			
 			const paidCheckboxes = document.querySelectorAll("input[type=checkbox][name=paidCheckbox]");
 			paidCheckboxes.forEach(checkbox => {
 				checkbox.addEventListener("change", even => {
@@ -134,13 +106,7 @@
 			/* ]]> */
 		</script>
 
-		<!--/*
-		*	Page Footer
-		*/-->
-		<footer data-noindex="" class="site-footer">
-			<div class="base-pane center">
-				<p th:text="|&copy; 24th Lhota Trophy ${#dates.year(#dates.createNow())}|"> Copyright </p>
-			</div>
-		</footer>
+		<!--/* Page footer */-->
+		<footer th:replace="public/fragments/PageFooter.html :: PageFooterAdmin"> [ Copyright ] </footer>
 	</body>
 </html>
