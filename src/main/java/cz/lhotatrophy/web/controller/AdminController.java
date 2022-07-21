@@ -5,7 +5,10 @@ import cz.lhotatrophy.core.exceptions.WeakPasswordException;
 import cz.lhotatrophy.core.service.TeamListingQuery;
 import cz.lhotatrophy.core.service.TeamService;
 import cz.lhotatrophy.core.service.UserService;
+import cz.lhotatrophy.persist.entity.FridayOfferEnum;
+import cz.lhotatrophy.persist.entity.SaturdayOfferEnum;
 import cz.lhotatrophy.persist.entity.Team;
+import cz.lhotatrophy.persist.entity.TshirtOfferEnum;
 import cz.lhotatrophy.persist.entity.User;
 import cz.lhotatrophy.web.form.UserRegistrationForm;
 import java.util.Optional;
@@ -42,6 +45,18 @@ public class AdminController {
 		log.info("ADMIN");
 		model.addAttribute("teamListing", teamService.getTeamListing(new TeamListingQuery()));
 		return "admin/index";
+	}
+
+	/**
+	 * Orders
+	 */
+	@GetMapping("/orders")
+	public String orders(final Model model) {
+		log.info("ORDERS");
+		model.addAttribute("fridayOrders", teamService.getTeamOrdersFrequency(FridayOfferEnum.class));
+		model.addAttribute("saturdayOrders", teamService.getTeamOrdersFrequency(SaturdayOfferEnum.class));
+		model.addAttribute("tshirtOrders", teamService.getTeamOrdersFrequency(TshirtOfferEnum.class));
+		return "admin/orders";
 	}
 
 	/**

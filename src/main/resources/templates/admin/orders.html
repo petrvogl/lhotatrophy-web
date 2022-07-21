@@ -20,40 +20,59 @@
 		*/-->
 		<main class="page-content">
 
-			<h2>Seznam týmů a platby</h2>
+			<h2>Objednávky</h2>
+			
+			<h3>Pátek</h3>
 
-			<table class="simple-theme" style="min-width: 420px;">
+			<table th:with="FridayOfferEnum=${T(cz.lhotatrophy.persist.entity.FridayOfferEnum)}"
+				   class="simple-theme" style="min-width: 420px;">
 				<tr>
-					<th class="center">ID</th>
-					<th class="center">Název týmu</th>
-					<th class="center">Kontakt</th>
-					<th class="center">Částka</th>
-					<th class="center">Zaplaceno</th>
+					<th> Volba </th>
+					<th class="center"> Počet </th>
 				</tr>
-				<tr th:each="team : ${teamListing}"
+				<tr th:each="offer : ${FridayOfferEnum.values()}"
 					th:with="
-					owner=${team.owner},
-					zaplaceno=${owner.getProperty('zaplaceno').orElse(false)}
-					"
-					th:class="${team.active} ? _ : 'disabled removed'">
-					<td class="center"> [[${team.id}]] </td>
-					<td>
-						<a th:href="@{~__${'/admin/user-info/' + owner.id}__}">
-							[[${team.name}]]
-						</a>
-					</td>
-					<td> [[${owner.email}]] </td>
-					<td class="right"> [[${team.expenses}]] Kč</td>
-					<td class="right" th:classappend="${!team.active or zaplaceno} ? _ : 'highlight'">
-						<span th:id="|paidText-${owner.id}|">[[${zaplaceno ? 'ANO' : 'NE'}]]</span>
-						<input th:checked="${zaplaceno} ? 'checked' : _"
-							   th:value="${owner.id}"
-							   th:disabled="${team.active} ? _ : 'disabled'"
-							   name="paidCheckbox" type="checkbox"
-							   style="margin-left: 10px;"/>
-					</td>
+					offerText=${offer.description ?: '--'},
+					offerCount=${fridayOrders.getCount(offer)}
+					">
+					<td> [[${offerText}]] </td> <td class="center"> [[${offerCount}]] </td>
 				</tr>
 			</table>
+			
+			<h3>Sobota</h3>
+			
+			<table th:with="SaturdayOfferEnum=${T(cz.lhotatrophy.persist.entity.SaturdayOfferEnum)}"
+				   class="simple-theme" style="min-width: 420px;">
+				<tr>
+					<th> Volba </th>
+					<th class="center"> Počet </th>
+				</tr>
+				<tr th:each="offer : ${SaturdayOfferEnum.values()}"
+					th:with="
+					offerText=${offer.description ?: '--'},
+					offerCount=${saturdayOrders.getCount(offer)}
+					">
+					<td> [[${offerText}]] </td> <td class="center"> [[${offerCount}]] </td>
+				</tr>
+			</table>
+			
+			<h3>Trička</h3>
+			
+			<table th:with="TshirtOfferEnum=${T(cz.lhotatrophy.persist.entity.TshirtOfferEnum)}"
+				   class="simple-theme" style="min-width: 420px;">
+				<tr>
+					<th> Volba </th>
+					<th class="center"> Počet </th>
+				</tr>
+				<tr th:each="offer : ${TshirtOfferEnum.values()}"
+					th:with="
+					offerText=${offer.description ?: '--'},
+					offerCount=${tshirtOrders.getCount(offer)}
+					">
+					<td> [[${offerText}]] </td> <td class="center"> [[${offerCount}]] </td>
+				</tr>
+			</table>
+			
 		</main>
 
 		<script type="text/javascript">

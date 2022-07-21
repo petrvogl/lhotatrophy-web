@@ -5,6 +5,7 @@ import cz.lhotatrophy.persist.entity.User;
 import java.util.List;
 import java.util.Optional;
 import lombok.NonNull;
+import org.apache.commons.math3.stat.Frequency;
 
 /**
  *
@@ -22,6 +23,8 @@ public interface TeamService extends Service {
 	Optional<Team> getTeamByIdFromCache(@NonNull Long id);
 	
 	List<Team> getTeamListing(@NonNull TeamListingQuery query);
+	
+	Frequency getTeamOrdersFrequency(@NonNull Class<? extends Enum> enumClass);
 	
 	void removeTeamFromCache(@NonNull Long id);
 	

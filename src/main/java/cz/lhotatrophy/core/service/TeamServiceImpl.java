@@ -4,9 +4,13 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import cz.lhotatrophy.persist.dao.TeamDao;
 import cz.lhotatrophy.persist.dao.TeamMemberDao;
+import cz.lhotatrophy.persist.entity.FridayOfferEnum;
+import cz.lhotatrophy.persist.entity.SaturdayOfferEnum;
 import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.TeamMember;
+import cz.lhotatrophy.persist.entity.TshirtOfferEnum;
 import cz.lhotatrophy.persist.entity.User;
+import cz.lhotatrophy.utils.EnumUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -16,6 +20,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.math3.stat.Frequency;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Sort;
@@ -44,7 +49,7 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 			.maximumSize(1000)
 			.expireAfterWrite(60, TimeUnit.MINUTES)
 			.build();
-	
+
 	/**
 	 * Cache storage to temporarily store frequently used data lists to avoid
 	 * redundant/unnecessary accessing a database.
@@ -53,6 +58,15 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 			.newBuilder()
 			.maximumSize(10)
 			.expireAfterWrite(2, TimeUnit.MINUTES)
+			.build();
+
+	/**
+	 * Cache storage to temporarily store histogram of teams orders.
+	 */
+	private static final Cache<String, Frequency> teamOrdersCache = CacheBuilder
+			.newBuilder()
+			.maximumSize(10)
+			.expireAfterWrite(60, TimeUnit.MINUTES)
 			.build();
 
 	@NonNull
@@ -110,7 +124,7 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 			return Optional.empty();
 		}
 	}
-	
+
 	@Override
 	public List<Team> getTeamListing(@NonNull final TeamListingQuery query) {
 		try {
@@ -133,10 +147,52 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 	}
 
 	@Override
+	public Frequency getTeamOrdersFrequency(@NonNull final Class<? extends Enum> enumClass) {
+		final String cacheKey = enumClass.getSimpleName();
+		final String propertyKey;
+		if (enumClass.isAssignableFrom(FridayOfferEnum.class)) {
+			propertyKey = "friday";
+		} else if (enumClass.isAssignableFrom(SaturdayOfferEnum.class)) {
+			propertyKey = "saturday";
+		} else if (enumClass.isAssignableFrom(TshirtOfferEnum.class)) {
+			propertyKey = "tshirtCode";
+		} else {
+			throw new IllegalArgumentException();
+		}
+
+		try {
+			return teamOrdersCache.get(cacheKey, () -> {
+				// for all active teams
+				final TeamListingQuery teamListingQuery = new TeamListingQuery();
+				teamListingQuery.setActive(Boolean.TRUE);
+				final List<Team> allTeams = getTeamListing(teamListingQuery);
+				// construct histogram
+				final Frequency frequency = new Frequency();
+				allTeams.stream()
+						.filter(Team::hasBeenEdited)
+						.flatMap(t -> t.getMembers().stream())
+						.forEach(member -> {
+							member.getProperty(propertyKey)
+									.map(Object::toString)
+									.flatMap(val -> EnumUtils.decodeEnum(enumClass, val))
+									.ifPresent(e -> frequency.addValue((Enum) e));
+						});
+				return frequency;
+			});
+		} catch (final Exception ex) {
+			final String err = String.format("Can't load team orders from cache by key [%s].", cacheKey);
+			log.error(err, ex);
+			return null;
+		}
+	}
+
+	@Override
 	public void removeTeamFromCache(@NonNull final Long id) {
 		teamCache.invalidate(id);
 		teamListingCache.invalidateAll();
 		teamListingCache.cleanUp();
+		teamOrdersCache.invalidateAll();
+		teamOrdersCache.cleanUp();
 	}
 
 	@Override
