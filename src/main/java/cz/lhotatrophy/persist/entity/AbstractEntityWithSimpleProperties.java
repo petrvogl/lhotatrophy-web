@@ -21,14 +21,16 @@ import org.apache.commons.collections4.MapUtils;
  * Entity with the simple key-value properties serialized in a single column.
  *
  * @author Petr Vogl
- * @param <T> Type of entity identifier (the primary key)
+ * @param <I> Type of entity identifier (the primary key)
+ * @param <E> Type of entity
  */
 @MappedSuperclass
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
-public abstract class AbstractEntityWithSimpleProperties<T extends Serializable> extends AbstractEntity<T> {
+public abstract class AbstractEntityWithSimpleProperties<I extends Serializable, E extends Entity<I, E>>
+		extends AbstractEntity<I, E> {
 
 	@Column(name = "properties", nullable = true, columnDefinition = "TEXT")
 	@Convert(converter = MapToJsonStringConverter.class)

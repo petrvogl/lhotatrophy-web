@@ -14,6 +14,7 @@ import cz.lhotatrophy.web.form.UserRegistrationForm;
 import java.util.Optional;
 import javax.validation.Valid;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -44,6 +45,8 @@ public class AdminController {
 	public String index(final Model model) {
 		log.info("ADMIN");
 		model.addAttribute("teamListing", teamService.getTeamListing(new TeamListingQuery()));
+		model.addAttribute("fridayTotal", new MutableInt(0));
+		model.addAttribute("saturdayTotal", new MutableInt(0));
 		return "admin/index";
 	}
 

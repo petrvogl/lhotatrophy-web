@@ -18,19 +18,23 @@
 		<!--/*
 		*	Page Content
 		*/-->
-		<main class="page-content">
+		<main class="page-content"
+			  th:with="
+			  FridayOfferEnum=${T(cz.lhotatrophy.persist.entity.FridayOfferEnum)},
+			  SaturdayOfferEnum=${T(cz.lhotatrophy.persist.entity.SaturdayOfferEnum)},
+			  TshirtOfferEnum=${T(cz.lhotatrophy.persist.entity.TshirtOfferEnum)}">
 
 			<h2>Objednávky</h2>
-			
+
 			<h3>Pátek</h3>
 
-			<table th:with="FridayOfferEnum=${T(cz.lhotatrophy.persist.entity.FridayOfferEnum)}"
-				   class="simple-theme" style="min-width: 420px;">
+			<table class="simple-theme" style="min-width: 420px;">
 				<tr>
 					<th> Volba </th>
 					<th class="center"> Počet </th>
 				</tr>
 				<tr th:each="offer : ${FridayOfferEnum.values()}"
+					th:unless="${offer.equals(FridayOfferEnum.NONE)}"
 					th:with="
 					offerText=${offer.description ?: '--'},
 					offerCount=${fridayOrders.getCount(offer)}
@@ -38,16 +42,16 @@
 					<td> [[${offerText}]] </td> <td class="center"> [[${offerCount}]] </td>
 				</tr>
 			</table>
-			
+
 			<h3>Sobota</h3>
-			
-			<table th:with="SaturdayOfferEnum=${T(cz.lhotatrophy.persist.entity.SaturdayOfferEnum)}"
-				   class="simple-theme" style="min-width: 420px;">
+
+			<table class="simple-theme" style="min-width: 420px;">
 				<tr>
 					<th> Volba </th>
 					<th class="center"> Počet </th>
 				</tr>
 				<tr th:each="offer : ${SaturdayOfferEnum.values()}"
+					th:unless="${offer.equals(SaturdayOfferEnum.NONE)}"
 					th:with="
 					offerText=${offer.description ?: '--'},
 					offerCount=${saturdayOrders.getCount(offer)}
@@ -55,16 +59,16 @@
 					<td> [[${offerText}]] </td> <td class="center"> [[${offerCount}]] </td>
 				</tr>
 			</table>
-			
+
 			<h3>Trička</h3>
-			
-			<table th:with="TshirtOfferEnum=${T(cz.lhotatrophy.persist.entity.TshirtOfferEnum)}"
-				   class="simple-theme" style="min-width: 420px;">
+
+			<table class="simple-theme" style="min-width: 420px;">
 				<tr>
 					<th> Volba </th>
 					<th class="center"> Počet </th>
 				</tr>
 				<tr th:each="offer : ${TshirtOfferEnum.values()}"
+					th:unless="${offer.equals(TshirtOfferEnum.NONE)}"
 					th:with="
 					offerText=${offer.description ?: '--'},
 					offerCount=${tshirtOrders.getCount(offer)}
@@ -72,58 +76,8 @@
 					<td> [[${offerText}]] </td> <td class="center"> [[${offerCount}]] </td>
 				</tr>
 			</table>
-			
+
 		</main>
-
-		<script type="text/javascript">
-			/* <![CDATA[ */
-			
-			const paidCheckboxes = document.querySelectorAll("input[type=checkbox][name=paidCheckbox]");
-			paidCheckboxes.forEach(checkbox => {
-				checkbox.addEventListener("change", even => {
-					const target = event.target;
-					const paid = target.checked === true;
-					const userId = target.value;
-					LT.log.debug("checked:" + paid + "  val:" + userId);
-
-					const confirmed = window.confirm("Opravdu mám změnit stav platby?");
-					if (!confirmed) {
-						target.checked = !paid;
-						return;
-					}
-
-					let onCompleteFn = function (xhr, textStatus) {
-						const data = xhr.responseJSON;
-						if (textStatus === "success" && data.success === true) {
-							const paidTextElement = document.getElementById("paidText-" + userId);
-							if (paid) {
-								LT.dom.removeClass(target.parentElement, "highlight");
-								paidTextElement.innerText = "ANO";
-							} else {
-								LT.dom.addClass(target.parentElement, "highlight");
-								paidTextElement.innerText = "NE";
-							}
-						} else {
-							target.checked = !paid;
-							LT.log.error("Nepodariolo nastavit stav platby [" + userId
-									+ "]: status " + xhr.status + " / " + textStatus);
-							window.alert("Došlo k chbě při ukládání změny stavu platby.");
-						}
-					};
-					
-					let requestParams = {
-						url: "/rest/admin/setUserProperties/" + userId,
-						data: JSON.stringify({zaplaceno: paid}),
-						onComplete: onCompleteFn,
-						onError: LT.function.noop,
-						onTimeout: LT.function.noop,
-					};
-					LT.ajax.send(requestParams, "paidCheckbox-" + userId);
-				});
-			});
-
-			/* ]]> */
-		</script>
 
 		<!--/* Page footer */-->
 		<footer th:replace="public/fragments/PageFooter.html :: PageFooterAdmin"> [ Copyright ] </footer>

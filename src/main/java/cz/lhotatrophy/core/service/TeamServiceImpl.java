@@ -169,7 +169,7 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 				// construct histogram
 				final Frequency frequency = new Frequency();
 				allTeams.stream()
-						.filter(Team::hasBeenEdited)
+						.filter(Team::hasMembers)
 						.flatMap(t -> t.getMembers().stream())
 						.forEach(member -> {
 							member.getProperty(propertyKey)

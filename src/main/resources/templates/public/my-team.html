@@ -189,7 +189,7 @@
 					*	Kalkulačku zobrazím jen tehdy, když uživatel provedl
 					*	editaci týmu.
 					*/-->
-					<div th:if="${team != null and team.hasBeenEdited()}"
+					<div th:if="${team != null and team.hasMembers()}"
 						 th:with="
 						 isWithinLimit=${team.id le appConfig.get('teamRegistrationLimit')},
 						 startPrice=${2000},

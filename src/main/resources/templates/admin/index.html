@@ -18,7 +18,11 @@
 		<!--/*
 		*	Page Content
 		*/-->
-		<main class="page-content">
+		<main class="page-content"
+			  th:with="
+			  FridayOfferEnum=${T(cz.lhotatrophy.persist.entity.FridayOfferEnum)},
+			  SaturdayOfferEnum=${T(cz.lhotatrophy.persist.entity.SaturdayOfferEnum)},
+			  TshirtOfferEnum=${T(cz.lhotatrophy.persist.entity.TshirtOfferEnum)}">
 
 			<h2>Seznam týmů a platby</h2>
 
@@ -27,14 +31,18 @@
 					<th class="center">ID</th>
 					<th class="center">Název týmu</th>
 					<th class="center">Kontakt</th>
+					<th class="center" colspan="2">Ubytování</th>
 					<th class="center">Částka</th>
 					<th class="center">Zaplaceno</th>
 				</tr>
 				<tr th:each="team : ${teamListing}"
 					th:with="
 					owner=${team.owner},
-					zaplaceno=${owner.getProperty('zaplaceno').orElse(false)}
-					"
+					zaplaceno=${owner.getProperty('zaplaceno').orElse(false)},
+					friday=(${team.active} ? ${team.getCount(FridayOfferEnum.RIZOTO) + team.getCount(FridayOfferEnum.VRABEC) + team.getCount(FridayOfferEnum.KURE)} : ${0}),
+					saturday=(${team.active} ? ${team.getCount(SaturdayOfferEnum.ALL_INCLUSIVE)} : ${0}),
+					_=${fridayTotal.add(friday)},
+					_=${saturdayTotal.add(saturday)}"
 					th:class="${team.active} ? _ : 'disabled removed'">
 					<td class="center"> [[${team.id}]] </td>
 					<td>
@@ -43,6 +51,8 @@
 						</a>
 					</td>
 					<td> [[${owner.email}]] </td>
+					<td> [[${friday}]] / [[${fridayTotal.value}]] </td>
+					<td> [[${saturday}]] / [[${saturdayTotal.value}]] </td>
 					<td class="right"> [[${team.expenses}]] Kč</td>
 					<td class="right" th:classappend="${!team.active or zaplaceno} ? _ : 'highlight'">
 						<span th:id="|paidText-${owner.id}|">[[${zaplaceno ? 'ANO' : 'NE'}]]</span>
@@ -58,7 +68,7 @@
 
 		<script type="text/javascript">
 			/* <![CDATA[ */
-			
+
 			const paidCheckboxes = document.querySelectorAll("input[type=checkbox][name=paidCheckbox]");
 			paidCheckboxes.forEach(checkbox => {
 				checkbox.addEventListener("change", even => {
@@ -91,7 +101,7 @@
 							window.alert("Došlo k chbě při ukládání změny stavu platby.");
 						}
 					};
-					
+
 					let requestParams = {
 						url: "/rest/admin/setUserProperties/" + userId,
 						data: JSON.stringify({zaplaceno: paid}),

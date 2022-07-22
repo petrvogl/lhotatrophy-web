@@ -1,13 +1,18 @@
 package cz.lhotatrophy.persist.entity;
 
+import com.google.common.base.Suppliers;
+import com.google.common.collect.Lists;
 import cz.lhotatrophy.persist.SchemaConstants;
 import cz.lhotatrophy.utils.EnumUtils;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -20,14 +25,20 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.math3.stat.Frequency;
+import org.apache.commons.math3.util.Pair;
 
 /**
  * Team entity.
@@ -44,7 +55,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 @Setter
 @ToString
 @NoArgsConstructor
-public class Team extends AbstractEntity<Long> {
+public class Team extends AbstractEntity<Long, Team> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -68,11 +79,37 @@ public class Team extends AbstractEntity<Long> {
 
 	@Transient
 	@ToString.Exclude
-	private Boolean hasBeenEdited;
+	@Setter(AccessLevel.NONE)
+	private Supplier<Map<String, Frequency>> frequencyCacheSupplier;
+
+	@PrePersist
+	@PreUpdate
+	void prePersist() {
+		if (CollectionUtils.isEmpty(members)) {
+			members = null;
+		}
+	}
+
+	private synchronized Set<TeamMember> getMembersSync(final boolean createIfNotSet) {
+		if (createIfNotSet && members == null) {
+			members = new LinkedHashSet<>();
+		}
+		return members;
+	}
+
+	public Set<TeamMember> getMembers() {
+		return getMembersSync(false);
+	}
+
+	public List<TeamMember> getMembersOrdered() {
+		return getMembersSync(true).stream()
+				.sorted()
+				.collect(Collectors.toList());
+	}
 
 	public void addMember(@NonNull final TeamMember member) {
-		getMembersSync(true).add(member);
 		member.setTeam(this);
+		getMembersSync(true).add(member);
 	}
 
 	public void updateMembers(@NonNull final Set<TeamMember> members) {
@@ -84,7 +121,7 @@ public class Team extends AbstractEntity<Long> {
 			// merge
 			final Iterator<TeamMember> iterator = members.iterator();
 			thisMembers.stream()
-					.sorted(Comparator.naturalOrder())
+					.sorted()
 					.forEach(m -> {
 						if (iterator.hasNext()) {
 							final TeamMember other = iterator.next();
@@ -95,24 +132,8 @@ public class Team extends AbstractEntity<Long> {
 		}
 	}
 
-	public List<TeamMember> getMembersOrdered() {
-		return getMembersSync(true).stream()
-				.sorted(Comparator.naturalOrder())
-				.collect(Collectors.toList());
-	}
-
-	private synchronized Set<TeamMember> getMembersSync(final boolean createIfNotSet) {
-		if (createIfNotSet && members == null) {
-			members = new LinkedHashSet<>();
-		}
-		return members;
-	}
-
-	public boolean hasBeenEdited() {
-		if (hasBeenEdited == null) {
-			hasBeenEdited = members != null && !members.isEmpty();
-		}
-		return hasBeenEdited;
+	public boolean hasMembers() {
+		return members != null && !members.isEmpty();
 	}
 
 	@ToString.Include(name = "expenses")
@@ -139,18 +160,62 @@ public class Team extends AbstractEntity<Long> {
 		return totalPrice.getValue();
 	}
 
+	public long getCount(@NonNull final Enum propertyValue) {
+		if (!hasMembers()) {
+			return 0L;
+		}
+		final String cacheKey;
+		if (FridayOfferEnum.class.isInstance(propertyValue)) {
+			cacheKey = FridayOfferEnum.class.getSimpleName();
+		} else if (SaturdayOfferEnum.class.isInstance(propertyValue)) {
+			cacheKey = SaturdayOfferEnum.class.getSimpleName();
+		} else if (TshirtOfferEnum.class.isInstance(propertyValue)) {
+			cacheKey = TshirtOfferEnum.class.getSimpleName();
+		} else {
+			throw new IllegalArgumentException();
+		}
+		final Frequency frequency = getFrequencyCache().get(cacheKey);
+		return frequency == null ? 0L : frequency.getCount(propertyValue);
+	}
+
+	@SuppressWarnings("DoubleCheckedLocking")
+	private Map<String, Frequency> getFrequencyCache() {
+		if (frequencyCacheSupplier == null) {
+			synchronized (Team.class) {
+				if (frequencyCacheSupplier == null) {
+					final com.google.common.base.Supplier<Map<String, Frequency>> memoizeWithExpiration = Suppliers.memoizeWithExpiration(() -> {
+						final Map<String, Frequency> cachedMap = new HashMap<>(3);
+
+						final ArrayList<Pair<String, Class>> propertiesDef = Lists.newArrayList(
+								new Pair("friday", FridayOfferEnum.class),
+								new Pair("saturday", SaturdayOfferEnum.class),
+								new Pair("tshirtCode", TshirtOfferEnum.class)
+						);
+						propertiesDef.forEach(def -> {
+							final String propertyKey = def.getKey();
+							final Class propertyValueClass = def.getValue();
+							final Frequency frequency = new Frequency();
+							getMembers().stream().forEach(member -> {
+								member.getProperty(propertyKey)
+										.map(Object::toString)
+										.flatMap(val -> EnumUtils.decodeEnum(propertyValueClass, val))
+										.ifPresent(e -> frequency.addValue((Enum) e));
+							});
+							cachedMap.put(propertyValueClass.getSimpleName(), frequency);
+						});
+
+						return cachedMap;
+					}, 10, TimeUnit.MINUTES);
+					//
+					frequencyCacheSupplier = () -> memoizeWithExpiration.get();
+				}
+			}
+		}
+		return frequencyCacheSupplier.get();
+	}
+
 	@ToString.Include(name = "ownerId")
 	Long getOwnerId() {
 		return owner == null ? null : owner.getId();
-	}
-
-	@ToString.Include(name = "membersIds")
-	List<Long> getMembersIds() {
-		if (members == null || members.isEmpty()) {
-			return Collections.emptyList();
-		}
-		return members.stream()
-				.map(TeamMember::getId)
-				.collect(Collectors.toList());
 	}
 }

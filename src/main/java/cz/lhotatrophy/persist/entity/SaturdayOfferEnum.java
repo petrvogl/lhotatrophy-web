@@ -6,7 +6,7 @@ package cz.lhotatrophy.persist.entity;
  */
 public enum SaturdayOfferEnum {
 	NONE(""),
-	VECERE("pouze večeří") {
+	VECERE("pouze večeře") {
 		@Override
 		public int getPrice() {
 			return 260;

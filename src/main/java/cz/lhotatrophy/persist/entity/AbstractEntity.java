@@ -7,9 +7,11 @@ import java.util.Objects;
  * Entity
  *
  * @author Petr Vogl
- * @param <T> Type of entity identifier (the primary key)
+ * @param <I> Type of entity identifier (the primary key)
+ * @param <E> Type of entity
  */
-public abstract class AbstractEntity<T extends Serializable> implements Entity<T> {
+public abstract class AbstractEntity<I extends Serializable, E extends Entity<I, E>>
+		implements Entity<I, E> {
 
 	@Override
 	public int hashCode() {
@@ -39,5 +41,23 @@ public abstract class AbstractEntity<T extends Serializable> implements Entity<T
 		}
 		final AbstractEntity other = (AbstractEntity) obj;
 		return Objects.equals(this.getId(), other.getId());
+	}
+	
+	@Override
+	public int compareTo(final E other) {
+		if (other == null) {
+			return -1;
+		}
+		if (this.getId() == null) {
+			if (other.getId() == null) {
+				return 0;
+			} else {
+				return 1;
+			}
+		}
+		if (other.getId() == null) {
+			return -1;
+		}
+		return idCompareToId(other.getId());
 	}
 }
