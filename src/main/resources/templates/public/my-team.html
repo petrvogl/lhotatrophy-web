@@ -186,10 +186,9 @@
 					</div>
 
 					<!--/*
-					*	Kalkulačku zobrazím jen tehdy, když uživatel provedl
-					*	editaci týmu.
+					*	Kalkulačka nákladů na účast
 					*/-->
-					<div th:if="${team != null and team.hasMembers()}"
+					<div th:if="${team != null}"
 						 th:with="
 						 isWithinLimit=${team.id le appConfig.get('teamRegistrationLimit')},
 						 startPrice=${2000},
@@ -223,7 +222,7 @@
 							<th:block th:unless="${isWithinLimit}">
 								<p>
 									Celková částka: <strong>[[${totalPrice}]]&nbsp;Kč</strong><br />
-									(Jako náhradníci zatím neplaťte.)
+									<th:block th:unless="${zaplaceno}">(Jako náhradníci zatím neplaťte.)</th:block>
 								</p>
 							</th:block>
 							

@@ -27,22 +27,39 @@
 			<h2>Detail uživatele</h2>
 
 			<p>
-				<strong>Uživatel:</strong> <th:block th:text="${user != null} ? ${user.email + ' [ID=' + user.id + ']'} : _"> anonym </th:block><br />
-				<strong>Tým:</strong> <th:block th:text="${team != null} ? ${team.name + ' [ID=' + team.id + ']'} : _"> — </th:block><br />
+				<strong>Uživatel:</strong> <th:block th:text="${user != null} ? ${user.email + ' [ ID=' + user.id + ' ]'} : _"> anonym </th:block><br />
+				<strong>Tým:</strong> <th:block th:text="${team != null} ? ${team.name + ' [ ID=' + team.id + ' ]'} : _"> — </th:block><br />
 				<strong>Zaplaceno:</strong> <code th:text="${zaplaceno ? 'ANO' : 'NE'}" th:style="|background-color: ${zaplaceno ? 'lightgreen' : 'lightcoral'};|"> ANO/NE </code>
 			</p>
 
-			<th:block th:if="${team != null}">
+			<th:block th:if="${team != null}"
+					  th:with="
+					  FridayOfferEnum=${T(cz.lhotatrophy.persist.entity.FridayOfferEnum)},
+					  SaturdayOfferEnum=${T(cz.lhotatrophy.persist.entity.SaturdayOfferEnum)},
+					  TshirtOfferEnum=${T(cz.lhotatrophy.persist.entity.TshirtOfferEnum)}">
 				<h2>Členové týmu</h2>
 
 				<table class="simple-theme" style="min-width: 420px;">
 					<tr>
 						<th>Jméno člena</th>
-						<th>Atributy</th>
+						<!--/*  <th>Atributy</th>  */-->
+						
+						<th>Pátek</th>
+						<th>Sobota</th>
+						<th>Tričko</th>
 					</tr>
 					<tr th:each="member : ${team.getMembersOrdered()}"
-						th:with="properties=${member.properties}">
+						th:with="
+						properties=${member.properties},
+						friday=${properties.get('friday')},
+						friday=${friday != null ? FridayOfferEnum.valueOf(friday) : null},
+						saturday=${properties.get('saturday')},
+						saturday=${saturday != null ? SaturdayOfferEnum.valueOf(saturday) : null},
+						tshirtCode=${properties.get('tshirtCode')},
+						tshirtCode=${tshirtCode != null ? TshirtOfferEnum.valueOf(tshirtCode) : null}
+						">
 						<td> [[${member.name}]] </td>
+						<!--/*
 						<td>
 							<th:block th:if="${properties != null and !properties.isEmpty()}">
 								<th:block th:each="entry, stat : ${properties.entrySet()}">
@@ -53,6 +70,11 @@
 								</th:block>
 							</th:block>
 						</td>
+						*/-->
+						
+						<td><th:block th:if="${friday}"> [[${friday.description}]] ([[${friday.price}]] Kč) </th:block></td>
+						<td><th:block th:if="${saturday}">  [[${saturday.description}]] ([[${saturday.price}]] Kč) </th:block></td>
+						<td><th:block th:if="${tshirtCode}">  [[${tshirtCode.description}]] ([[${tshirtCode.price}]] Kč) </th:block></td>
 					</tr>
 				</table>
 			</th:block>
