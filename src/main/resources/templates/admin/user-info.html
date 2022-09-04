@@ -32,6 +32,79 @@
 				<strong>Zaplaceno:</strong> <code th:text="${zaplaceno ? 'ANO' : 'NE'}" th:style="|background-color: ${zaplaceno ? 'lightgreen' : 'lightcoral'};|"> ANO/NE </code>
 			</p>
 
+
+			<th:block th:if="${team != null}"
+					  th:with="
+					  contestProgress=${team.contestProgress}
+					  ">
+				<h2>Postup týmu v soutěži</h2>
+				
+				<h3>Základní údaje</h3>
+				<form action="/404" method="post">
+					<table class="invisible-theme">
+						<tr>
+							<td>Diskvalifikován</td>
+							<td>
+								<input th:checked="${contestProgress.disqualified} ? 'checked' : _"
+									   th:value="${team.id}"
+									   th:disabled="${team.active} ? _ : 'disabled'"
+									   name="disqualified" type="checkbox"
+									   style="margin-right: 10px;"/>
+								(<span th:id="disqualifiedText">[[${contestProgress.disqualified ? 'ANO' : 'NE'}]]</span>)
+							</td>
+						</tr>
+						<tr>
+							<td>Stav tachometru na startu</td>
+							<td>
+								<input type="text" name="mileageAtStart"
+									   th:value="${contestProgress.mileageAtStart}"/>
+								km
+							</td>
+						</tr>
+						<tr>
+							<td>Stav tachometru v cíli</td>
+							<td>
+								<input type="text" name="mileageAtFinish"
+									   th:value="${contestProgress.mileageAtFinish}"/>
+								km
+							</td>
+						</tr>
+						<tr>
+							<td>Penalizace od pořadatele</td>
+							<td>
+								<input type="text" name="extraMileagePenalty"
+									   th:value="${contestProgress.extraMileagePenalty}"/>
+								km
+							</td>
+						</tr>
+						<tr>
+							<td>Bonus od pořadatele</td>
+							<td>
+								<input type="text" name="extraMileageBonus"
+									   th:value="${contestProgress.extraMileageBonus}"/>
+								km
+							</td>
+						</tr>
+						<tr>
+							<td>Čas týmu v cíli</td>
+							<td>
+								<input type="text" name="timestampAtFinish"
+									   th:value="${contestProgress.timestampAtFinish}"/>
+								milis
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2" class="center">
+								<input type="submit" value="Uložit změny" />
+							</td>
+						</tr>
+					</table>
+				</form>
+				
+				<h3>Zadané kódy</h3>
+				
+			</th:block>
+
 			<th:block th:if="${team != null}"
 					  th:with="
 					  FridayOfferEnum=${T(cz.lhotatrophy.persist.entity.FridayOfferEnum)},
@@ -39,11 +112,11 @@
 					  TshirtOfferEnum=${T(cz.lhotatrophy.persist.entity.TshirtOfferEnum)}">
 				<h2>Členové týmu</h2>
 
-				<table class="simple-theme" style="min-width: 420px;">
+				<table class="width-100pct">
 					<tr>
 						<th>Jméno člena</th>
 						<!--/*  <th>Atributy</th>  */-->
-						
+
 						<th>Pátek</th>
 						<th>Sobota</th>
 						<th>Tričko</th>
@@ -71,7 +144,7 @@
 							</th:block>
 						</td>
 						*/-->
-						
+
 						<td><th:block th:if="${friday}"> [[${friday.description}]] ([[${friday.price}]] Kč) </th:block></td>
 						<td><th:block th:if="${saturday}">  [[${saturday.description}]] ([[${saturday.price}]] Kč) </th:block></td>
 						<td><th:block th:if="${tshirtCode}">  [[${tshirtCode.description}]] ([[${tshirtCode.price}]] Kč) </th:block></td>

@@ -54,3 +54,7 @@ alter table team_member
        references team (id);
 
 
+-- UPDATE TEAM TABLE
+
+alter table team add column contest_progress TEXT after owner_id;
+

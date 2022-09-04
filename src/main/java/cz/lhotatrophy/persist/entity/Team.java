@@ -2,6 +2,7 @@ package cz.lhotatrophy.persist.entity;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
+import cz.lhotatrophy.persist.ContestProgressToJsonStringConverter;
 import cz.lhotatrophy.persist.SchemaConstants;
 import cz.lhotatrophy.utils.EnumUtils;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -77,6 +79,11 @@ public class Team extends AbstractEntity<Long, Team> {
 	@ToString.Exclude
 	private Set<TeamMember> members;
 
+	@Column(name = "contestProgress", nullable = true, columnDefinition = "TEXT")
+	@Convert(converter = ContestProgressToJsonStringConverter.class)
+	@ToString.Exclude
+	private TeamContestProgress contestProgress;
+
 	@Transient
 	@ToString.Exclude
 	@Setter(AccessLevel.NONE)
@@ -88,6 +95,18 @@ public class Team extends AbstractEntity<Long, Team> {
 		if (CollectionUtils.isEmpty(members)) {
 			members = null;
 		}
+	}
+
+	@NonNull
+	public TeamContestProgress getContestProgress() {
+		if (contestProgress == null) {
+			synchronized (this) {
+				if (contestProgress == null) {
+					contestProgress = new TeamContestProgress();
+				}
+			}
+		}
+		return contestProgress;
 	}
 
 	private synchronized Set<TeamMember> getMembersSync(final boolean createIfNotSet) {
