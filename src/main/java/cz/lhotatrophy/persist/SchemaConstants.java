@@ -37,4 +37,12 @@ public final class SchemaConstants {
 			public static final String TABLE_NAME = "team_member";
 		}
 	}
+	
+	/**
+	 * Constants relative to contest tasks.
+	 */
+	public static final class Task {
+		public static final String TABLE_NAME = "task";
+		public static final String FK_NAME = TABLE_NAME + FOREIGN_KEY_POSTFIX;
+	}
 }
