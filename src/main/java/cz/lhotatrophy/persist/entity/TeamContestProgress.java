@@ -78,7 +78,8 @@ public class TeamContestProgress implements Serializable {
 	}
 
 	/**
-	 * It records that the code has been accepted.
+	 * It records that the code has been accepted and indicates that none of the
+	 * available hints were used.
 	 *
 	 * @param code Contest code
 	 * @param group Group the code belongs to
@@ -89,10 +90,31 @@ public class TeamContestProgress implements Serializable {
 			@NonNull final String group,
 			long timestamp
 	) {
-		if (timestamp <= 0l) {
-			throw new IllegalArgumentException("Time of code acceptance must be positive.");
+		addContestCode(code, group, false, false, false, timestamp);
+	}
+
+	/**
+	 * It records that some progress has been made in acquiring the code.
+	 *
+	 * @param code Contest code
+	 * @param group Group the code belongs to
+	 * @param hintRevealed Indicates that the solution hint was used
+	 * @param procedureRevealed Indicates that the solution procedure was used
+	 * @param solutionRevealed Indicates that the right solution was revealed
+	 * @param timestamp Time of acceptance
+	 */
+	public void addContestCode(
+			@NonNull final String code,
+			@NonNull final String group,
+			boolean hintRevealed,
+			boolean procedureRevealed,
+			boolean solutionRevealed,
+			long timestamp
+	) {
+		if (timestamp < 0l) {
+			throw new IllegalArgumentException("Time of code acceptance must not be negative.");
 		}
-		final TeamContestProgressCode c = new TeamContestProgressCode(code, group, timestamp);
+		final TeamContestProgressCode c = new TeamContestProgressCode(code, group, hintRevealed, procedureRevealed, solutionRevealed, timestamp);
 		contestCodes.put(code, c);
 	}
 }

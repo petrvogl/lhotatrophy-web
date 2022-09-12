@@ -29,6 +29,18 @@ public class TeamContestProgressCode implements Serializable {
 	 */
 	private String group;
 	/**
+	 * Indicates that the solution hint was used.
+	 */
+	private boolean hintRevealed;
+	/**
+	 * Indicates that the solution procedure was used.
+	 */
+	private boolean procedureRevealed;
+	/**
+	 * Indicates that the right solution was revealed.
+	 */
+	private boolean solutionRevealed;
+	/**
 	 * Time of acceptance.
 	 */
 	private long ts;
