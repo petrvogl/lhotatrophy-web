@@ -39,16 +39,8 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 	private transient TeamMemberDao teamMemberDao;
 	@Autowired
 	private transient UserService userService;
-
-	/**
-	 * Cache storage to temporarily store frequently used data to avoid
-	 * redundant/unnecessary accessing a database.
-	 */
-	private static final Cache<Long, Team> teamCache = CacheBuilder
-			.newBuilder()
-			.maximumSize(1000)
-			.expireAfterWrite(60, TimeUnit.MINUTES)
-			.build();
+	@Autowired
+	private transient EntityCacheService cacheService;
 
 	/**
 	 * Cache storage to temporarily store frequently used data lists to avoid
@@ -108,21 +100,7 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 
 	@Override
 	public Optional<Team> getTeamByIdFromCache(@NonNull final Long id) {
-		try {
-			final Team team = teamCache.get(id, () -> {
-				return getTeamById(id).get();
-			});
-			userService.getUserByIdFromCache(team.getOwner().getId())
-					.ifPresent(owner -> {
-						team.setOwner(owner);
-						owner.setTeam(team);
-					});
-			return Optional.of(team);
-		} catch (final Exception ex) {
-			final String err = String.format("Can't load team from cache by ID [%d].", id);
-			log.error(err, ex);
-			return Optional.empty();
-		}
+		return cacheService.getEntityById(id, Team.class);
 	}
 
 	@Override
@@ -188,7 +166,8 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 
 	@Override
 	public void removeTeamFromCache(@NonNull final Long id) {
-		teamCache.invalidate(id);
+		cacheService.invalidateCacheEntry(id, Team.class);
+		//
 		teamListingCache.invalidateAll();
 		teamListingCache.cleanUp();
 		teamOrdersCache.invalidateAll();

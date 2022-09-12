@@ -15,5 +15,7 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 
 	@Autowired
 	private transient TaskDao taskDao;
+	@Autowired
+	private transient EntityCacheService cacheService;
 
 }

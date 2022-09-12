@@ -29,7 +29,7 @@ import lombok.ToString;
 @Setter
 @ToString(callSuper = true)
 @NoArgsConstructor
-public class User extends AbstractEntityWithSimpleProperties<Long, User> {
+public class User extends AbstractEntityWithSimpleProperties<Long, User> implements EntityLongId<User> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

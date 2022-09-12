@@ -53,7 +53,13 @@ public class SessionHelperImpl implements SessionHelper {
 	 */
 	@Override
 	public void detach(@NonNull final Entity entity) {
-		getSession().evict(entity);
+		Optional.ofNullable(getSession().getTransaction())
+				.map(Transaction::isActive)
+				.filter(Boolean.TRUE::equals)
+				.ifPresent(isActive -> {
+					log.info("Detach entity ({}) from Hibernate session.", entity.getClass().getSimpleName());
+					getSession().evict(entity);
+				});
 	}
 
 	/**

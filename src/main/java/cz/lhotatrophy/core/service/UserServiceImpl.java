@@ -1,14 +1,11 @@
 package cz.lhotatrophy.core.service;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import cz.lhotatrophy.core.exceptions.UsernameOrEmailIsTakenException;
 import cz.lhotatrophy.core.exceptions.WeakPasswordException;
 import cz.lhotatrophy.persist.dao.UserDao;
 import cz.lhotatrophy.persist.entity.User;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 import javax.servlet.http.HttpServletRequest;
 import lombok.NonNull;
@@ -37,16 +34,8 @@ public class UserServiceImpl extends AbstractService implements UserService {
 	private transient PasswordEncoder passwordEncoder;
 	@Autowired
 	private transient UserDetailsService userDetailsService;
-
-	/**
-	 * Cache storage to temporarily store frequently used data to avoid
-	 * redundant/unnecessary accessing a database.
-	 */
-	private static final Cache<Long, User> userCache = CacheBuilder
-			.newBuilder()
-			.maximumSize(1000)
-			.expireAfterWrite(60, TimeUnit.MINUTES)
-			.build();
+	@Autowired
+	private transient EntityCacheService cacheService;
 
 	@NonNull
 	public User createUser(@NonNull final UnaryOperator<User> initializer) {
@@ -83,21 +72,12 @@ public class UserServiceImpl extends AbstractService implements UserService {
 
 	@Override
 	public Optional<User> getUserByIdFromCache(@NonNull final Long id) {
-		try {
-			return Optional.of(userCache.get(id, () -> {
-				final User user = getUserById(id).get();
-				return user;
-			}));
-		} catch (final Exception ex) {
-			final String err = String.format("Can't load user from cache by ID [%d].", id);
-			log.error(err, ex);
-			return Optional.empty();
-		}
+		return cacheService.getEntityById(id, User.class);
 	}
 
 	@Override
 	public void removeUserFromCache(@NonNull final Long id) {
-		userCache.invalidate(id);
+		cacheService.invalidateCacheEntry(id, User.class);
 	}
 
 	/**

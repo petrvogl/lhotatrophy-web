@@ -57,7 +57,7 @@ import org.apache.commons.math3.util.Pair;
 @Setter
 @ToString
 @NoArgsConstructor
-public class Team extends AbstractEntity<Long, Team> {
+public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Team> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
