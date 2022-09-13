@@ -58,3 +58,26 @@ alter table team_member
 
 alter table team add column contest_progress TEXT after owner_id;
 
+
+-- TASK TABLE
+
+create table task (
+       id bigint not null auto_increment,
+        active bit not null,
+        type varchar(32) not null,
+        code varchar(32) not null,
+        name varchar(255) not null,
+        solution_hint varchar(2048),
+        solution_procedure varchar(2048),
+        solutions varchar(1024) not null,
+        reveal_solution bit not null,
+        primary key (id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+alter table task 
+       add constraint UK_tkeh0tonhc8t13k0928epnjp2 unique (code);
+
+alter table task 
+       add constraint UK_lerptdo9d67pejjpbfau899tm unique (name);
+
+

@@ -18,6 +18,9 @@ public interface TaskDao extends JpaRepository<Task, Long> {
 	@Query("SELECT t FROM Task t WHERE t.code = ?1")
 	Optional<Task> findByCode(String code);
 	
+	@Query("SELECT t FROM Task t WHERE t.name = ?1")
+	Optional<Task> findByName(String name);
+	
 	@Query("SELECT t.id FROM Task t ORDER BY t.id ASC")
 	List<Long> findAllIds();
 }

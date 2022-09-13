@@ -32,7 +32,9 @@ import org.apache.commons.lang3.StringUtils;
 @Table(
 		name = SchemaConstants.Task.TABLE_NAME,
 		indexes = {
-			@Index(name = "code_idx", columnList = "code")}
+			@Index(name = "code_idx", columnList = "code"),
+			@Index(name = "name_idx", columnList = "name")
+		}
 )
 @Getter
 @Setter

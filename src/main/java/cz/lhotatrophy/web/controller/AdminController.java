@@ -2,14 +2,18 @@ package cz.lhotatrophy.web.controller;
 
 import cz.lhotatrophy.core.exceptions.UsernameOrEmailIsTakenException;
 import cz.lhotatrophy.core.exceptions.WeakPasswordException;
+import cz.lhotatrophy.core.service.TaskService;
 import cz.lhotatrophy.core.service.TeamListingQuery;
 import cz.lhotatrophy.core.service.TeamService;
 import cz.lhotatrophy.core.service.UserService;
 import cz.lhotatrophy.persist.entity.FridayOfferEnum;
 import cz.lhotatrophy.persist.entity.SaturdayOfferEnum;
+import cz.lhotatrophy.persist.entity.Task;
+import cz.lhotatrophy.persist.entity.TaskTypeEnum;
 import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.TshirtOfferEnum;
 import cz.lhotatrophy.persist.entity.User;
+import cz.lhotatrophy.web.form.TaskForm;
 import cz.lhotatrophy.web.form.UserRegistrationForm;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -37,6 +41,8 @@ public class AdminController {
 	private UserService userService;
 	@Autowired
 	private TeamService teamService;
+	@Autowired
+	private TaskService taskService;
 
 	/**
 	 * Admin homepage
@@ -63,7 +69,7 @@ public class AdminController {
 	}
 
 	/**
-	 * Registration
+	 * Detailed user information page
 	 */
 	@GetMapping("/user-info/{userId}")
 	public String userInfo(
@@ -83,6 +89,63 @@ public class AdminController {
 		model.addAttribute("team", optTeam.orElse(null));
 		// render template
 		return "admin/user-info";
+	}
+
+	/**
+	 * Contest tasks administration
+	 */
+	@GetMapping("/tasks")
+	public String getTasks(
+			final TaskForm taskForm
+	) {
+		log.info("TASKS");
+		
+		// render template
+		return "admin/tasks";
+	}
+
+	/**
+	 * New task registration
+	 */
+	@PostMapping("/tasks")
+	@SuppressWarnings("null")
+	public String postTask(
+			@Valid final TaskForm taskForm,
+			final BindingResult bindingResult,
+			final Model model
+	) {
+		log.info("NEW TASK");
+		// task type validation
+		final TaskTypeEnum type = TaskTypeEnum.valueOf(taskForm.getTypeMark());
+		if (type == null) {
+			bindingResult.rejectValue(
+					"type",
+					"Unknown",
+					"Tento typ není platný");
+		}
+		if (bindingResult.hasErrors()) {
+			return "admin/tasks";
+		}
+		// save new task
+		try {
+			taskService.registerNewTask(
+					type,
+					taskForm.getCode(),
+					taskForm.getName(),
+					taskForm.getSolutions(),
+					taskForm.getSolutionHint(),
+					taskForm.getSolutionProcedure(),
+					Boolean.TRUE.equals(taskForm.getRevealSolutionAllowed()));
+		} catch (final Exception ex) {
+			// something went wrong
+			log.error("Task registration failed.", ex);
+			bindingResult.reject(
+					"GlobalError",
+					ex.getMessage());
+			return "admin/tasks";
+		}
+		// list all tasks
+		return "redirect:/admin/tasks";
 	}
 
 	/**
