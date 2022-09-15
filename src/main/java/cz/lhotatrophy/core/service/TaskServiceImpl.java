@@ -43,7 +43,7 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 	}
 	
 	public void removeTaskFromCache(@NonNull final Long id) {
-		cacheService.invalidateCacheEntry(id, Task.class);
+		cacheService.removeFromCache(id, Task.class);
 	}
 	
 	@Override

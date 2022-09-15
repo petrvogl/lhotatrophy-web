@@ -77,7 +77,7 @@ public class UserServiceImpl extends AbstractService implements UserService {
 
 	@Override
 	public void removeUserFromCache(@NonNull final Long id) {
-		cacheService.invalidateCacheEntry(id, User.class);
+		cacheService.removeFromCache(id, User.class);
 	}
 
 	/**

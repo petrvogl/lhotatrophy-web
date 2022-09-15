@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,6 +35,15 @@ public abstract class AbstractService implements Service {
 	 */
 	protected void detach(@NonNull final Entity entity) {
 		sessionHelper.detach(entity);
+	}
+	
+	/**
+	 * Get current Hibernate session.
+	 *
+	 * @return session
+	 */
+	protected Session getSession() {
+		return sessionHelper.getSession();
 	}
 
 	/**

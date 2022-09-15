@@ -22,7 +22,7 @@ public interface TeamService extends Service {
 	
 	Optional<Team> getTeamByIdFromCache(@NonNull Long id);
 	
-	List<Team> getTeamListing(@NonNull TeamListingQuery query);
+	List<Team> getTeamListing(@NonNull TeamListingQuerySpi query);
 	
 	Frequency getTeamOrdersFrequency(@NonNull Class<? extends Enum> enumClass);
 	

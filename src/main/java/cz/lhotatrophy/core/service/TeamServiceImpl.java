@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import lombok.NonNull;
@@ -44,14 +45,11 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 
 	/**
 	 * Cache storage to temporarily store frequently used data lists to avoid
-	 * redundant/unnecessary accessing a database.
+	 * redundant/unnecessary accessing a database. private static final
+	 * Cache<TeamListingQuery, List<Team>> teamListingCache = CacheBuilder
+	 * .newBuilder() .maximumSize(10) .expireAfterWrite(2, TimeUnit.MINUTES)
+	 * .build();
 	 */
-	private static final Cache<TeamListingQuery, List<Team>> teamListingCache = CacheBuilder
-			.newBuilder()
-			.maximumSize(10)
-			.expireAfterWrite(2, TimeUnit.MINUTES)
-			.build();
-
 	/**
 	 * Cache storage to temporarily store histogram of teams orders.
 	 */
@@ -104,24 +102,25 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 	}
 
 	@Override
-	public List<Team> getTeamListing(@NonNull final TeamListingQuery query) {
-		try {
-			final List<Team> listing = teamListingCache.get(query, () -> {
-				final List<Long> allIds = teamDao.findAllIds();
-				return allIds.stream()
-						.map(id -> getTeamByIdFromCache(id))
-						.filter(Optional::isPresent)
-						.map(Optional::get)
-						// filter by query.active
-						.filter(t -> query.getActive() == null || Objects.equals(query.getActive(), t.getActive()))
-						.collect(Collectors.toList());
-			});
-			return listing;
-		} catch (final Exception ex) {
-			final String err = String.format("Can't load team listing from cache by query [%s].", query.toString());
-			log.error(err, ex);
-			return Collections.emptyList();
-		}
+	public List<Team> getTeamListing(@NonNull final TeamListingQuerySpi query) {
+		return cacheService.getEntityListing(query, getDefaultIdsLoader());
+//		try {
+//			final List<Team> listing = teamListingCache.get(query, () -> {
+//				final List<Long> allIds = teamDao.findAllIds();
+//				return allIds.stream()
+//						.map(id -> getTeamByIdFromCache(id))
+//						.filter(Optional::isPresent)
+//						.map(Optional::get)
+//						// filter by query.active
+//						.filter(t -> query.getActive() == null || Objects.equals(query.getActive(), t.getActive()))
+//						.collect(Collectors.toList());
+//			});
+//			return listing;
+//		} catch (final Exception ex) {
+//			final String err = String.format("Can't load team listing from cache by query [%s].", query.toString());
+//			log.error(err, ex);
+//			return Collections.emptyList();
+//		}
 	}
 
 	@Override
@@ -166,10 +165,8 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 
 	@Override
 	public void removeTeamFromCache(@NonNull final Long id) {
-		cacheService.invalidateCacheEntry(id, Team.class);
+		cacheService.removeFromCache(id, Team.class);
 		//
-		teamListingCache.invalidateAll();
-		teamListingCache.cleanUp();
 		teamOrdersCache.invalidateAll();
 		teamOrdersCache.cleanUp();
 	}
@@ -202,5 +199,17 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 	public void updateTeam(@NonNull final Team team) {
 		final Team t = teamDao.save(team);
 		removeTeamFromCache(t.getId());
+	}
+
+	/**
+	 * Retuns default loader of IDs.
+	 *
+	 * @return IDs loader
+	 */
+	private Function<TeamListingQuerySpi, List<Long>> getDefaultIdsLoader() {
+		return (listingQuery) -> {
+			// The base listing query targets all saved teams; no filtration is needed
+			return teamDao.findAllIds();
+		};
 	}
 }
