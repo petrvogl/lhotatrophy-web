@@ -2,8 +2,10 @@ package cz.lhotatrophy.web.controller;
 
 import cz.lhotatrophy.core.exceptions.UsernameOrEmailIsTakenException;
 import cz.lhotatrophy.core.exceptions.WeakPasswordException;
+import cz.lhotatrophy.core.service.EntityCacheService;
+import cz.lhotatrophy.core.service.TaskListingQuerySpi;
 import cz.lhotatrophy.core.service.TaskService;
-import cz.lhotatrophy.core.service.TeamListingQuery;
+import cz.lhotatrophy.core.service.TeamListingQuerySpi;
 import cz.lhotatrophy.core.service.TeamService;
 import cz.lhotatrophy.core.service.UserService;
 import cz.lhotatrophy.persist.entity.FridayOfferEnum;
@@ -15,6 +17,7 @@ import cz.lhotatrophy.persist.entity.TshirtOfferEnum;
 import cz.lhotatrophy.persist.entity.User;
 import cz.lhotatrophy.web.form.TaskForm;
 import cz.lhotatrophy.web.form.UserRegistrationForm;
+import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
 import lombok.extern.log4j.Log4j2;
@@ -38,11 +41,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AdminController {
 
 	@Autowired
-	private UserService userService;
+	private transient EntityCacheService cacheService;
 	@Autowired
-	private TeamService teamService;
+	private transient UserService userService;
 	@Autowired
-	private TaskService taskService;
+	private transient TeamService teamService;
+	@Autowired
+	private transient TaskService taskService;
 
 	/**
 	 * Admin homepage
@@ -50,7 +55,7 @@ public class AdminController {
 	@GetMapping()
 	public String index(final Model model) {
 		log.info("ADMIN");
-		model.addAttribute("teamListing", teamService.getTeamListing(new TeamListingQuery()));
+		model.addAttribute("teamListing", teamService.getTeamListing(TeamListingQuerySpi.create()));
 		model.addAttribute("fridayTotal", new MutableInt(0));
 		model.addAttribute("saturdayTotal", new MutableInt(0));
 		return "admin/index";
@@ -96,10 +101,14 @@ public class AdminController {
 	 */
 	@GetMapping("/tasks")
 	public String getTasks(
-			final TaskForm taskForm
+			final TaskForm taskForm,
+			final Model model
 	) {
 		log.info("TASKS");
-		
+
+		final List<Task> taskListing = taskService.getTaskListing(TaskListingQuerySpi.create().setSorting(Task.orderByCode()));
+		model.addAttribute("taskListing", taskListing);
+
 		// render template
 		return "admin/tasks";
 	}
@@ -144,6 +153,8 @@ public class AdminController {
 					ex.getMessage());
 			return "admin/tasks";
 		}
+		// FIXME - clean only tasks listings
+		cacheService.cleanEntityListingCache();
 		// list all tasks
 		return "redirect:/admin/tasks";
 	}

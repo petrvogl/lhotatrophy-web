@@ -3,7 +3,10 @@ package cz.lhotatrophy.core.service;
 import cz.lhotatrophy.persist.dao.TaskDao;
 import cz.lhotatrophy.persist.entity.Task;
 import cz.lhotatrophy.persist.entity.TaskTypeEnum;
+import cz.lhotatrophy.persist.entity.Team;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
@@ -41,11 +44,29 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 	public Optional<Task> getTaskByIdFromCache(@NonNull final Long id) {
 		return cacheService.getEntityById(id, Task.class);
 	}
-	
+
+	/**
+	 * Retuns default loader of IDs.
+	 *
+	 * @return IDs loader
+	 */
+	private Function<TaskListingQuerySpi, List<Long>> getDefaultIdsLoader() {
+		return (listingQuery) -> {
+			// The base listing query always targets all saved tasks;
+			// no filtration is needed
+			return taskDao.findAllIds();
+		};
+	}
+
+	@Override
+	public List<Task> getTaskListing(@NonNull final TaskListingQuerySpi query) {
+		return cacheService.getEntityListing(query, getDefaultIdsLoader());
+	}
+
 	public void removeTaskFromCache(@NonNull final Long id) {
 		cacheService.removeFromCache(id, Task.class);
 	}
-	
+
 	@Override
 	public Task registerNewTask(
 			@NonNull final TaskTypeEnum type,

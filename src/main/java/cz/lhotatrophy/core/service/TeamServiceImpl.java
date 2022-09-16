@@ -11,20 +11,16 @@ import cz.lhotatrophy.persist.entity.TeamMember;
 import cz.lhotatrophy.persist.entity.TshirtOfferEnum;
 import cz.lhotatrophy.persist.entity.User;
 import cz.lhotatrophy.utils.EnumUtils;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.math3.stat.Frequency;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.data.domain.Sort;
 
 /**
  *
@@ -43,13 +39,6 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 	@Autowired
 	private transient EntityCacheService cacheService;
 
-	/**
-	 * Cache storage to temporarily store frequently used data lists to avoid
-	 * redundant/unnecessary accessing a database. private static final
-	 * Cache<TeamListingQuery, List<Team>> teamListingCache = CacheBuilder
-	 * .newBuilder() .maximumSize(10) .expireAfterWrite(2, TimeUnit.MINUTES)
-	 * .build();
-	 */
 	/**
 	 * Cache storage to temporarily store histogram of teams orders.
 	 */
@@ -89,38 +78,65 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 		return teamDao.findByName(name);
 	}
 
-	@NonNull
-	@Override
-	public List<Team> getAllTeams() {
-		final List<Team> all = teamDao.findAll(Sort.by(Sort.Direction.ASC, "id"));
-		return all == null ? Collections.emptyList() : all;
-	}
-
 	@Override
 	public Optional<Team> getTeamByIdFromCache(@NonNull final Long id) {
 		return cacheService.getEntityById(id, Team.class);
 	}
 
+	/**
+	 * Retuns default loader of IDs.
+	 *
+	 * @return IDs loader
+	 */
+	private Function<TeamListingQuerySpi, List<Long>> getDefaultIdsLoader() {
+		return (listingQuery) -> {
+			// The base listing query always targets all saved teams;
+			// no filtration is needed
+			return teamDao.findAllIds();
+		};
+	}
+
 	@Override
 	public List<Team> getTeamListing(@NonNull final TeamListingQuerySpi query) {
 		return cacheService.getEntityListing(query, getDefaultIdsLoader());
-//		try {
-//			final List<Team> listing = teamListingCache.get(query, () -> {
-//				final List<Long> allIds = teamDao.findAllIds();
-//				return allIds.stream()
-//						.map(id -> getTeamByIdFromCache(id))
-//						.filter(Optional::isPresent)
-//						.map(Optional::get)
-//						// filter by query.active
-//						.filter(t -> query.getActive() == null || Objects.equals(query.getActive(), t.getActive()))
-//						.collect(Collectors.toList());
-//			});
-//			return listing;
-//		} catch (final Exception ex) {
-//			final String err = String.format("Can't load team listing from cache by query [%s].", query.toString());
-//			log.error(err, ex);
-//			return Collections.emptyList();
-//		}
+	}
+
+	@Override
+	public void removeTeamFromCache(@NonNull final Long id) {
+		cacheService.removeFromCache(id, Team.class);
+		//
+		//teamOrdersCache.invalidateAll();
+		//teamOrdersCache.cleanUp();
+	}
+
+	@Override
+	public Team registerNewTeam(@NonNull final String name, @NonNull final User owner) {
+		if (getTeamByName(name).isPresent()) {
+			throw new RuntimeException("Tým s tímto názvem už existuje.");
+		}
+		if (owner.getTeam() != null) {
+			throw new RuntimeException("Tento uživatel už má svůj tým.");
+		}
+		return runInTransaction(() -> {
+			final Team team = createTeam(t -> {
+				t.setName(name);
+				t.setOwner(owner);
+				return t;
+			});
+			// just for consistency
+			owner.setTeam(team);
+			userService.removeUserFromCache(owner.getId());
+			// logging
+			log.info("New team has been registered: [ {} / {} ]", team.getId(), team.getName());
+			log.info("\nLhotaTrophy:\n    CREATED {}", team.toString());
+			return team;
+		});
+	}
+
+	@Override
+	public void updateTeam(@NonNull final Team team) {
+		final Team t = teamDao.save(team);
+		removeTeamFromCache(t.getId());
 	}
 
 	@Override
@@ -161,55 +177,5 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 			log.error(err, ex);
 			return null;
 		}
-	}
-
-	@Override
-	public void removeTeamFromCache(@NonNull final Long id) {
-		cacheService.removeFromCache(id, Team.class);
-		//
-		teamOrdersCache.invalidateAll();
-		teamOrdersCache.cleanUp();
-	}
-
-	@Override
-	public Team registerNewTeam(@NonNull final String name, @NonNull final User owner) {
-		if (getTeamByName(name).isPresent()) {
-			throw new RuntimeException("Tým s tímto názvem už existuje.");
-		}
-		if (owner.getTeam() != null) {
-			throw new RuntimeException("Tento uživatel už má svůj tým.");
-		}
-		return runInTransaction(() -> {
-			final Team team = createTeam(t -> {
-				t.setName(name);
-				t.setOwner(owner);
-				return t;
-			});
-			// just for consistency
-			owner.setTeam(team);
-			userService.removeUserFromCache(owner.getId());
-			// logging
-			log.info("New team has been registered: [ {} / {} ]", team.getId(), team.getName());
-			log.info("\nLhotaTrophy:\n    CREATED {}", team.toString());
-			return team;
-		});
-	}
-
-	@Override
-	public void updateTeam(@NonNull final Team team) {
-		final Team t = teamDao.save(team);
-		removeTeamFromCache(t.getId());
-	}
-
-	/**
-	 * Retuns default loader of IDs.
-	 *
-	 * @return IDs loader
-	 */
-	private Function<TeamListingQuerySpi, List<Long>> getDefaultIdsLoader() {
-		return (listingQuery) -> {
-			// The base listing query targets all saved teams; no filtration is needed
-			return teamDao.findAllIds();
-		};
 	}
 }

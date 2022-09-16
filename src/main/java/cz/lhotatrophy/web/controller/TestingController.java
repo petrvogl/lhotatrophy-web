@@ -216,19 +216,6 @@ public class TestingController {
 		return "public-v2/my-team";
 	}
 
-	/**
-	 * Team listing
-	 */
-	@GetMapping("/prihlasene-tymy")
-	public String teamList(final Model model) {
-		log.info("TEAM LISTING");
-
-		model.addAttribute("allTeamsList", teamService.getAllTeams());
-		
-		initModel(model);
-		return "public-v2/team-list";
-	}
-
 	private void initModel(final Model model) {
 
 		// FIXME - udelat lepe

@@ -17,9 +17,6 @@ public interface TeamService extends Service {
 	
 	Optional<Team> getTeamByName(@NonNull String name);
 	
-	@NonNull
-	List<Team> getAllTeams();
-	
 	Optional<Team> getTeamByIdFromCache(@NonNull Long id);
 	
 	List<Team> getTeamListing(@NonNull TeamListingQuerySpi query);

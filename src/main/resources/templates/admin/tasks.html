@@ -31,37 +31,21 @@
 					<th>Nápověda</th>
 					<th>Postup</th>
 					<th>Řešení</th>
-					<th>Odhalení<br />řešení</th>
+					<th class="center">Odhalení<br />řešení</th>
 				</tr>
-				<tr>
-					<td><a href="#" title="Upravit řádek">1</a></td>
-					<td><input name="active" type="checkbox" checked=""/></td>
-					<td>A1</td>
-					<td>Hudební</td>
-					<td>Kdyby tak ty falešný tóny slyšel Julius, hned by je opravil!</td>
-					<td></td>
-					<td>ZAJIC</td>
-					<td>Ano</td>
-				</tr>
-				<tr>
-					<td><a href="#" title="Upravit řádek">10</a></td>
-					<td><input name="active" type="checkbox" checked=""/></td>
-					<td>B1</td>
-					<td>Telegraf</td>
-					<td></td>
-					<td></td>
-					<td>DOPLN</td>
-					<td>Ne</td>
-				</tr>
-				<tr>
-					<td><a href="#" title="Upravit řádek">19</a></td>
-					<td><input name="active" type="checkbox" checked=""/></td>
-					<td>C1</td>
-					<td>Dolarovka</td>
-					<td></td>
-					<td></td>
-					<td>LEV</td>
-					<td>Ne</td>
+				
+				<tr th:each="task : ${taskListing}">
+					<td><a href="#" title="Upravit řádek"> [[${task.id}]] </a></td>
+					<td>
+						<input name="active" type="checkbox" disabled="disabled"
+							   th:checked="${task.active = true} ? 'checked' : _"/>
+					</td>
+					<td> [[${task.code}]] </td>
+					<td> [[${task.name}]] </td>
+					<td> [[${task.solutionHint}]] </td>
+					<td> [[${task.solutionProcedure}]] </td>
+					<td> [[${task.solutionsString}]] </td>
+					<td class="center"> [[${task.revealSolutionAllowed ? 'Ano' : 'Ne'}]] </td>
 				</tr>
 			</table>
 

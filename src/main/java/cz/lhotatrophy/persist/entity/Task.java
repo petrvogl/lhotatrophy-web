@@ -1,8 +1,10 @@
 package cz.lhotatrophy.persist.entity;
 
 import cz.lhotatrophy.persist.SchemaConstants;
+import cz.lhotatrophy.utils.CzechComparator;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -47,6 +49,26 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	 * the task.
 	 */
 	private static final String SOLUTIONS_SEPARATOR_REGEXP = "\\s*;\\s*";
+
+	/**
+	 * Lexicographically compares tasks by {@code code} property
+	 */
+	private static final Comparator<Task> comparatorByCode = Comparator
+			.comparing(Task::getCode, Comparator.nullsLast(CzechComparator.instance()));
+
+	/**
+	 * Returns a comparator that compares {@link Task} objects by {@code code}
+	 * property in natural order.
+	 *
+	 * The returned comparator is serializable and throws {@link
+	 * NullPointerException} when comparing {@code null}.
+	 *
+	 * @return a comparator that imposes the <i>natural ordering</i> on
+	 * {@code Task} objects.
+	 */
+	public static Comparator<Task> orderByCode() {
+		return comparatorByCode;
+	}
 
 	/**
 	 * The persisted entity ID.
@@ -125,17 +147,17 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	 * @return All valid solutions
 	 */
 	@Nonnull
-	@SuppressWarnings("DoubleCheckedLocking")
 	public Set<String> getSolutions() {
-		if (solutions == null) {
-			synchronized (this) {
-				if (solutions == null) {
-					solutions = StringUtils.isEmpty(solutionsString)
-							? Collections.emptySet()
-							: Arrays.stream(solutionsString.split(SOLUTIONS_SEPARATOR_REGEXP))
-									.filter(StringUtils::isNotEmpty)
-									.collect(Collectors.toUnmodifiableSet());
-				}
+		if (solutions != null) {
+			return solutions;
+		}
+		synchronized (this) {
+			if (solutions == null) {
+				solutions = StringUtils.isEmpty(solutionsString)
+						? Collections.emptySet()
+						: Arrays.stream(solutionsString.split(SOLUTIONS_SEPARATOR_REGEXP))
+								.filter(StringUtils::isNotEmpty)
+								.collect(Collectors.toUnmodifiableSet());
 			}
 		}
 		return solutions;

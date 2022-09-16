@@ -5,6 +5,7 @@ import java.util.Objects;
 import lombok.NonNull;
 
 /**
+ * The implementation of the Listing Query API for {@link Team} entities.
  *
  * @author Petr Vogl
  */
@@ -75,22 +76,11 @@ public final class TeamListingQuery
 		return true;
 	}
 
-	/**
-	 * Returns {@code true} if the listed teams must be active. Returns
-	 * {@code false} if the listed teams must be inactive. Returns {@code null}
-	 * if the listed teams can be active or inactive.
-	 */
 	@Override
 	public Boolean getActive() {
 		return active;
 	}
 
-	/**
-	 * Sets the criterion for an active team entity.
-	 *
-	 * @param active criterion value
-	 * @return Listing query
-	 */
 	@Override
 	public TeamListingQuerySpi setActive(final Boolean active) {
 		this.active = active;
