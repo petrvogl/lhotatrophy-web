@@ -3,6 +3,7 @@ package cz.lhotatrophy.core.service;
 import cz.lhotatrophy.persist.entity.Task;
 import cz.lhotatrophy.persist.entity.TaskTypeEnum;
 import java.util.List;
+import java.util.Optional;
 import lombok.NonNull;
 
 /**
@@ -34,12 +35,47 @@ public interface TaskService extends Service {
 	);
 
 	/**
-	 * Rerurns a list of tasks from the cache according to the listing query.
+	 * Saves updated state of contest task.
+	 *
+	 * @param task Update {@code Task} entity
+	 */
+	void updateTask(@NonNull final Task task);
+
+	/**
+	 * Retrieves an entity by its ID from a persistent context.
+	 *
+	 * @param id Persisted {@code Task} entity ID
+	 * @return {@code Task} object with the given ID or {@link  Optional#empty()}
+	 * if none found
+	 */
+	Optional<Task> getTaskById(@NonNull Long id);
+
+	/**
+	 * Returns the {@link Task} object associated with {@code id} in the cache.
 	 * This method provides a simple substitute for the conventional "if cached,
 	 * return; otherwise create, cache and return" pattern.
 	 *
+	 * @param id Persisted {@code Task} entity ID
+	 * @return Cached {@code Task} object with the given ID or
+	 * {@link Optional#empty()} if none found
+	 */
+	public Optional<Task> getTaskByIdFromCache(@NonNull Long id);
+
+	/**
+	 * Rerurns a list of {@link Task} objects from the cache according to the
+	 * listing query. This method provides a simple substitute for the
+	 * conventional "if cached, return; otherwise create, cache and return"
+	 * pattern.
+	 *
 	 * @param query Listing query
-	 * @return List of tasks
+	 * @return Cached list of {@code Task} objects
 	 */
 	List<Task> getTaskListing(@NonNull TaskListingQuerySpi query);
+
+	/**
+	 * Discards the cached {@link Task} object if it is present in the cache.
+	 *
+	 * @param id Persisted {@code Task} entity ID
+	 */
+	void removeTaskFromCache(@NonNull Long id);
 }

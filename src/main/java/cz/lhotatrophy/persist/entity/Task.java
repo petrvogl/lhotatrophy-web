@@ -5,6 +5,7 @@ import cz.lhotatrophy.utils.CzechComparator;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -164,16 +165,77 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	}
 
 	/**
+	 * Solution hint.
+	 */
+	public void setSolutionHint(final String solutionHint) {
+		this.solutionHint = StringUtils.trimToNull(solutionHint);
+	}
+
+	/**
+	 * Solution procedure.
+	 */
+	public void setSolutionProcedure(final String solutionProcedure) {
+		this.solutionProcedure = StringUtils.trimToNull(solutionProcedure);
+	}
+
+	/**
 	 * Indicates whether the solution hint is available for this task.
 	 */
 	public boolean hasSolutionHint() {
-		return StringUtils.isNotEmpty(solutionHint);
+		return solutionHint != null;
 	}
 
 	/**
 	 * Indicates whether the solution procedure is available for this task.
 	 */
 	public boolean hasSolutionProcedure() {
-		return StringUtils.isNotEmpty(solutionProcedure);
+		return solutionProcedure != null;
+	}
+
+	/**
+	 * Indicates whether some other object is "equal to" this one comparing all
+	 * non-transient properties.
+	 *
+	 * @param obj the reference object with which to compare
+	 * @return {@code true} if this object is the same as the obj argument;
+	 * {@code false} otherwise.
+	 */
+	public boolean equalsAllProperties(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		// handles Hibernate proxies
+		if (!getClass().isInstance(obj)) {
+			return false;
+		}
+		final Task other = (Task) obj;
+		if (!Objects.equals(this.code, other.code)) {
+			return false;
+		}
+		if (!Objects.equals(this.name, other.name)) {
+			return false;
+		}
+		if (!Objects.equals(this.solutionHint, other.solutionHint)) {
+			return false;
+		}
+		if (!Objects.equals(this.solutionProcedure, other.solutionProcedure)) {
+			return false;
+		}
+		if (!Objects.equals(this.solutionsString, other.solutionsString)) {
+			return false;
+		}
+		if (!Objects.equals(this.id, other.id)) {
+			return false;
+		}
+		if (!Objects.equals(this.active, other.active)) {
+			return false;
+		}
+		if (this.type != other.type) {
+			return false;
+		}
+		return Objects.equals(this.revealSolutionAllowed, other.revealSolutionAllowed);
 	}
 }

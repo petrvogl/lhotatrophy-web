@@ -1,8 +1,13 @@
 package cz.lhotatrophy.web.form;
 
+import cz.lhotatrophy.persist.entity.Task;
+import cz.lhotatrophy.persist.entity.TaskTypeEnum;
+import java.util.Optional;
+import javax.annotation.Nonnull;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import lombok.Data;
+import lombok.NonNull;
 
 /**
  *
@@ -35,12 +40,40 @@ public class TaskForm {
 	private Boolean active;
 
 	private Boolean revealSolutionAllowed;
-	
+
 	public char getTypeMark() {
 		if (type == null || type.length() != 1) {
 			// invalid type mark
 			return '\0';
 		}
 		return type.charAt(0);
+	}
+
+	public void setFrom(@NonNull final Task task) {
+		type = Optional.ofNullable(task.getType())
+				.map(TaskTypeEnum::getMark)
+				.map(String::valueOf)
+				.orElse(null);
+		code = task.getCode();
+		name = task.getName();
+		solutions = task.getSolutionsString();
+		solutionHint = task.getSolutionHint();
+		solutionProcedure = task.getSolutionProcedure();
+		active = task.getActive();
+		revealSolutionAllowed = task.getRevealSolutionAllowed();
+	}
+
+	@Nonnull
+	public Task toTask() {
+		final Task task = new Task();
+		task.setType(TaskTypeEnum.valueOf(getTypeMark()));
+		task.setActive(active);
+		task.setCode(code);
+		task.setName(name);
+		task.setSolutionHint(solutionHint);
+		task.setSolutionProcedure(solutionProcedure);
+		task.setSolutionsString(solutions);
+		task.setRevealSolutionAllowed(revealSolutionAllowed);
+		return task;
 	}
 }

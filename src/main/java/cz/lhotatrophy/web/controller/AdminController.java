@@ -97,7 +97,7 @@ public class AdminController {
 	}
 
 	/**
-	 * Contest tasks administration
+	 * Contest tasks listing
 	 */
 	@GetMapping("/tasks")
 	public String getTasks(
@@ -105,20 +105,42 @@ public class AdminController {
 			final Model model
 	) {
 		log.info("TASKS");
-
 		final List<Task> taskListing = taskService.getTaskListing(TaskListingQuerySpi.create().setSorting(Task.orderByCode()));
 		model.addAttribute("taskListing", taskListing);
-
 		// render template
 		return "admin/tasks";
 	}
 
 	/**
-	 * New task registration
+	 * Contest tasks editor
+	 */
+	@GetMapping("/tasks/task-{taskId}")
+	public String getTask(
+			@PathVariable Long taskId,
+			final TaskForm taskForm,
+			final Model model
+	) {
+		log.info("TASK [{}]", taskId);
+		// verification of the task existence
+		final Optional<Task> optTask = taskService.getTaskByIdFromCache(taskId);
+		if (optTask.isEmpty()) {
+			// task not found
+			return "redirect:/admin/tasks";
+		}
+		// set model
+		final Task task = optTask.get();
+		taskForm.setFrom(task);
+		model.addAttribute("task", task);
+		// render template
+		return "admin/task";
+	}
+
+	/**
+	 * New contest task registration
 	 */
 	@PostMapping("/tasks")
 	@SuppressWarnings("null")
-	public String postTask(
+	public String postNewTask(
 			@Valid final TaskForm taskForm,
 			final BindingResult bindingResult,
 			final Model model
@@ -148,9 +170,7 @@ public class AdminController {
 		} catch (final Exception ex) {
 			// something went wrong
 			log.error("Task registration failed.", ex);
-			bindingResult.reject(
-					"GlobalError",
-					ex.getMessage());
+			bindingResult.reject("GlobalError", ex.getMessage());
 			return "admin/tasks";
 		}
 		// FIXME - clean only tasks listings
@@ -160,7 +180,47 @@ public class AdminController {
 	}
 
 	/**
-	 * Registration
+	 * Update contest task
+	 */
+	@PostMapping("/tasks/task-{taskId}")
+	public String postEditedTask(
+			@PathVariable Long taskId,
+			@Valid final TaskForm taskForm,
+			final BindingResult bindingResult,
+			final Model model
+	) {
+		log.info("EDIT TASK [{}]", taskId);
+		// verification of the task existence
+		final Optional<Task> optTask = taskService.getTaskByIdFromCache(taskId);
+		if (optTask.isEmpty()) {
+			// task not found
+			return "redirect:/admin/tasks";
+		}
+		// task type validation
+		final TaskTypeEnum type = TaskTypeEnum.valueOf(taskForm.getTypeMark());
+		if (type == null) {
+			bindingResult.rejectValue("type", "Unknown", "Tento typ není platný");
+		}
+		if (bindingResult.hasErrors()) {
+			return "admin/tasks";
+		}
+		// update task
+		try {
+			final Task task = taskForm.toTask();
+			task.setId(taskId);
+			taskService.updateTask(task);
+		} catch (final Exception ex) {
+			// something went wrong
+			log.error("Task update failed.", ex);
+			bindingResult.reject("GlobalError", ex.getMessage());
+			model.addAttribute("task", optTask.get());
+			return "admin/task";
+		}
+		return "redirect:/admin/tasks";
+	}
+
+	/**
+	 * Admin user registration page
 	 */
 	@GetMapping("/register")
 	public String getRegistration(
@@ -171,7 +231,7 @@ public class AdminController {
 	}
 
 	/**
-	 * Registration
+	 * Admin user registration
 	 */
 	@PostMapping("/register")
 	public String postRegistration(

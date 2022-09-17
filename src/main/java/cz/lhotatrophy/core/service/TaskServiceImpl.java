@@ -3,14 +3,13 @@ package cz.lhotatrophy.core.service;
 import cz.lhotatrophy.persist.dao.TaskDao;
 import cz.lhotatrophy.persist.entity.Task;
 import cz.lhotatrophy.persist.entity.TaskTypeEnum;
-import cz.lhotatrophy.persist.entity.Team;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,10 +36,12 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 		});
 	}
 
+	@Override
 	public Optional<Task> getTaskById(@NonNull final Long id) {
 		return taskDao.findById(id);
 	}
 
+	@Override
 	public Optional<Task> getTaskByIdFromCache(@NonNull final Long id) {
 		return cacheService.getEntityById(id, Task.class);
 	}
@@ -63,6 +64,7 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 		return cacheService.getEntityListing(query, getDefaultIdsLoader());
 	}
 
+	@Override
 	public void removeTaskFromCache(@NonNull final Long id) {
 		cacheService.removeFromCache(id, Task.class);
 	}
@@ -90,8 +92,8 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 				t.setCode(code);
 				t.setName(name);
 				t.setSolutionsString(solutions);
-				t.setSolutionHint(StringUtils.trimToNull(solutionHint));
-				t.setSolutionProcedure(StringUtils.trimToNull(solutionProcedure));
+				t.setSolutionHint(solutionHint);
+				t.setSolutionProcedure(solutionProcedure);
 				t.setRevealSolutionAllowed(revealSolutionAllowed);
 				return t;
 			});
@@ -101,8 +103,49 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 		});
 	}
 
+	@Override
 	public void updateTask(@NonNull final Task task) {
-		final Task t = taskDao.save(task);
-		removeTaskFromCache(t.getId());
+		final Long taskId = task.getId();
+		Objects.requireNonNull(taskId, "Úkol nelze aktualizovat (v databazi neexistuje).");
+		Objects.requireNonNull(task.getCode());
+		Objects.requireNonNull(task.getName());
+		// save updates
+		final Task t = runInTransaction(() -> {
+			final Task originalTask = taskDao.findById(taskId).orElse(null);
+			if (originalTask == null) {
+				throw new RuntimeException("Úkol nelze aktualizovat (v databazi neexistuje).");
+			}
+			if (originalTask.equalsAllProperties(task)) {
+				// no changes to the task
+				return task;
+			}
+			final String newCode = task.getCode();
+			if (!newCode.equals(originalTask.getCode())) {
+				// code has changed
+				if (taskDao.findByCode(newCode).isPresent()) {
+					throw new RuntimeException("Úkol s tímto kódem už existuje.");
+				}
+				originalTask.setCode(newCode);
+			}
+			final String newName = task.getName();
+			if (!newName.equals(originalTask.getName())) {
+				// name has changed
+				if (taskDao.findByName(newName).isPresent()) {
+					throw new RuntimeException("Úkol s tímto názvem už existuje.");
+				}
+				originalTask.setName(newName);
+			}
+			originalTask.setActive(task.getActive());
+			originalTask.setType(task.getType());
+			originalTask.setSolutionHint(task.getSolutionHint());
+			originalTask.setSolutionProcedure(task.getSolutionProcedure());
+			originalTask.setSolutionsString(task.getSolutionsString());
+			originalTask.setRevealSolutionAllowed(task.getRevealSolutionAllowed());
+			return taskDao.save(originalTask);
+		});
+		if (t != task) {
+			// changes have been made
+			removeTaskFromCache(t.getId());
+		}
 	}
 }

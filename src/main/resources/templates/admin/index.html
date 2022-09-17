@@ -71,7 +71,7 @@
 
 			const paidCheckboxes = document.querySelectorAll("input[type=checkbox][name=paidCheckbox]");
 			paidCheckboxes.forEach(checkbox => {
-				checkbox.addEventListener("change", even => {
+				checkbox.addEventListener("change", event => {
 					const target = event.target;
 					const paid = target.checked === true;
 					const userId = target.value;
@@ -107,7 +107,7 @@
 						data: JSON.stringify({zaplaceno: paid}),
 						onComplete: onCompleteFn,
 						onError: LT.function.noop,
-						onTimeout: LT.function.noop,
+						onTimeout: LT.function.noop
 					};
 					LT.ajax.send(requestParams, "paidCheckbox-" + userId);
 				});

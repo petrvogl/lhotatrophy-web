@@ -20,43 +20,23 @@
 		*/-->
 		<main class="page-content">
 
-			<h2>Soutěžní úkoly</h2>
+			<h2>Editace úkolu</h2>
 
-			<table class="width-100pct">
-				<tr>
-					<th class="center">#</th>
-					<th class="center">Aktivní</th>
-					<th>Kód</th>
-					<th>Název</th>
-					<th>Nápověda</th>
-					<th>Postup</th>
-					<th>Řešení</th>
-					<th class="center">Odhalení<br />řešení</th>
-				</tr>
-				
-				<tr th:each="task : ${taskListing}">
-					<td>
-						<a th:href="@{~__|/admin/tasks/task-${task.id}|__}"
-						   title="Upravit řádek"> [[${task.id}]] </a>
-					</td>
-					<td class="center">
-						<input name="active" type="checkbox" disabled="disabled"
-							   th:checked="${task.active}"/>
-					</td>
-					<td> [[${task.code}]] </td>
-					<td> [[${task.name}]] </td>
-					<td> [[${task.solutionHint}]] </td>
-					<td> [[${task.solutionProcedure}]] </td>
-					<td> [[${task.solutionsString}]] </td>
-					<td class="center"> [[${task.revealSolutionAllowed ? 'Ano' : 'Ne'}]] </td>
-				</tr>
-			</table>
-
-			<h3>Přidat nový úkol</h3>
-			<form th:action="@{~/admin/tasks}"
+			<form th:action="@{~__|/admin/tasks/task-${task.id}|__}"
 				  th:object="${taskForm}"
 				  method="post">
 				<table class="invisible-theme">
+					<tr>
+						<td>Aktivní</td>
+						<td>
+							<input th:field="*{active}"
+								   type="checkbox"
+								   name="active"/>
+							(
+							<span th:id="activeText">[[${taskForm.active ? 'ano' : 'ne'}]]</span>
+							)
+						</td>
+					</tr>
 					<tr>
 						<td>Typ <sup>*</sup></td>
 						<td>
@@ -69,7 +49,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td>Kódové označení <span class="emphasized">(A1, B1,...)</span> <sup>*</sup></td>
+						<td>Kódové označení <sup>*</sup></td>
 						<td>
 							<input th:field="*{code}" type="text" name="code"/>
 							<div th:if="${#fields.hasErrors('code')}" th:errors="*{code}" style="color: red;"> [ error ] </div>
@@ -109,7 +89,12 @@
 					<tr>
 						<td>Povolit odhalení řešení</td>
 						<td>
-							<input th:field="*{revealSolutionAllowed}" name="revealSolutionAllowed" type="checkbox"/>
+							<input th:field="*{revealSolutionAllowed}"
+								   name="revealSolutionAllowed"
+								   type="checkbox"/>
+							(
+							<span th:id="allowedText">[[${taskForm.revealSolutionAllowed ? 'ano' : 'ne'}]]</span>
+							)
 						</td>
 					</tr>
 					<tr th:if="${#fields.hasGlobalErrors()}">
@@ -118,7 +103,7 @@
 					<tr>
 						<td colspan="2" class="center">
 							<br />
-							<input type="submit" value="Přidat úkol" />
+							<input type="submit" value=" Uložit změny "/>
 							&nbsp;
 							<button type="button" onclick="location.href = location.origin + '/admin/tasks'"> Zrušit </button>
 						</td>
@@ -127,9 +112,47 @@
 				<p class="emphasized strong"><sup>*</sup> Povinné položky</p>
 			</form>
 
+			<script type="text/javascript">
+				/* <![CDATA[ */
+				const activeCheckboxes = document.querySelectorAll("input[type=checkbox][name=active]");
+				activeCheckboxes.forEach(checkbox => {
+					checkbox.addEventListener("change", event => {
+						const target = event.target;
+						const active = target.checked === true;
+						LT.log.debug("active checkbox:" + active);
+						const confirmed = window.confirm(
+								"Opravdu mám ukol " + (active ? "de" : "") + "aktivovat?\n\n" +
+								"Neaktivní úkoly jsou vyřazeny ze hry a nelze je tak splnit. " +
+								"Na zadávací stránce souvysejícího stanovište nebudou řešení " +
+								"neaktivních úkolů přijímána.");
+						if (!confirmed) {
+							target.checked = !active;
+							return;
+						}
+						const activeTextElement = document.getElementById("activeText");
+						activeTextElement.innerText = active ? "ano" : "ne";
+					});
+				});
 
+				const allowCheckboxes = document.querySelectorAll("input[type=checkbox][name=revealSolutionAllowed]");
+				allowCheckboxes.forEach(checkbox => {
+					checkbox.addEventListener("change", event => {
+						const target = event.target;
+						const allowed = target.checked === true;
+						LT.log.debug("allow checkbox:" + allowed);
 
-
+						const confirmed = window.confirm(
+								"Opravdu mám " + (allowed ? "zakázat" : "povolit") + " zobrazení správného řešení?");
+						if (!confirmed) {
+							target.checked = !allowed;
+							return;
+						}
+						const allowedTextElement = document.getElementById("allowedText");
+						allowedTextElement.innerText = allowed ? "ano" : "ne";
+					});
+				});
+				/* ]]> */
+			</script>
 
 		</main>
 
