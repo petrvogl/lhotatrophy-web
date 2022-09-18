@@ -3,18 +3,22 @@ package cz.lhotatrophy.web.controller;
 import cz.lhotatrophy.core.exceptions.UsernameOrEmailIsTakenException;
 import cz.lhotatrophy.core.exceptions.WeakPasswordException;
 import cz.lhotatrophy.core.service.EntityCacheService;
+import cz.lhotatrophy.core.service.LocationListingQuerySpi;
+import cz.lhotatrophy.core.service.LocationService;
 import cz.lhotatrophy.core.service.TaskListingQuerySpi;
 import cz.lhotatrophy.core.service.TaskService;
 import cz.lhotatrophy.core.service.TeamListingQuerySpi;
 import cz.lhotatrophy.core.service.TeamService;
 import cz.lhotatrophy.core.service.UserService;
 import cz.lhotatrophy.persist.entity.FridayOfferEnum;
+import cz.lhotatrophy.persist.entity.Location;
 import cz.lhotatrophy.persist.entity.SaturdayOfferEnum;
 import cz.lhotatrophy.persist.entity.Task;
 import cz.lhotatrophy.persist.entity.TaskTypeEnum;
 import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.TshirtOfferEnum;
 import cz.lhotatrophy.persist.entity.User;
+import cz.lhotatrophy.web.form.LocationForm;
 import cz.lhotatrophy.web.form.TaskForm;
 import cz.lhotatrophy.web.form.UserRegistrationForm;
 import java.util.List;
@@ -48,6 +52,8 @@ public class AdminController {
 	private transient TeamService teamService;
 	@Autowired
 	private transient TaskService taskService;
+	@Autowired
+	private transient LocationService locationService;
 
 	/**
 	 * Admin homepage
@@ -183,7 +189,7 @@ public class AdminController {
 	 * Update contest task
 	 */
 	@PostMapping("/tasks/task-{taskId}")
-	public String postEditedTask(
+	public String postUpdatedTask(
 			@PathVariable Long taskId,
 			@Valid final TaskForm taskForm,
 			final BindingResult bindingResult,
@@ -217,6 +223,113 @@ public class AdminController {
 			return "admin/task";
 		}
 		return "redirect:/admin/tasks";
+	}
+
+	/**
+	 * Contest location listing
+	 */
+	@GetMapping("/locations")
+	public String getLocations(
+			final LocationForm locationForm,
+			final Model model
+	) {
+		log.info("LOCATIONS");
+		final LocationListingQuerySpi query = LocationListingQuerySpi.create()
+				.setSorting(Location.orderByCode());
+		final List<Location> locationListing = locationService.getLocationListing(query);
+		model.addAttribute("locationListing", locationListing);
+		// render template
+		return "admin/locations";
+	}
+
+	/**
+	 * Contest locations editor
+	 */
+	@GetMapping("/locations/location-{locationId}")
+	public String getLocation(
+			@PathVariable Long locationId,
+			final LocationForm locationForm,
+			final Model model
+	) {
+		log.info("LOCATION [{}]", locationId);
+		// verification of the location existence
+		final Optional<Location> optLocation = locationService.getLocationByIdFromCache(locationId);
+		if (optLocation.isEmpty()) {
+			// location not found
+			return "redirect:/admin/locations";
+		}
+		// set model
+		final Location location = optLocation.get();
+		locationForm.setFrom(location);
+		model.addAttribute("location", location);
+		// render template
+		return "admin/location";
+	}
+
+	/**
+	 * New contest location registration
+	 */
+	@PostMapping("/locations")
+	public String postNewLocation(
+			@Valid final LocationForm locationForm,
+			final BindingResult bindingResult,
+			final Model model
+	) {
+		log.info("NEW LOCATION");
+		if (bindingResult.hasErrors()) {
+			return "admin/locations";
+		}
+		// save new location
+		try {
+			locationService.registerNewLocation(
+					locationForm.getCode(),
+					locationForm.getName(),
+					locationForm.getDescription());
+		} catch (final Exception ex) {
+			// something went wrong
+			log.error("Location registration failed.", ex);
+			bindingResult.reject("GlobalError", ex.getMessage());
+			return "admin/locations";
+		}
+		// FIXME - clean only locations listings
+		cacheService.cleanEntityListingCache();
+		// list all locations
+		return "redirect:/admin/locations";
+	}
+
+	/**
+	 * Update contest location
+	 */
+	@PostMapping("/locations/location-{locationId}")
+	public String postUpdatedLocation(
+			@PathVariable Long locationId,
+			@Valid final LocationForm locationForm,
+			final BindingResult bindingResult,
+			final Model model
+	) {
+		log.info("EDIT LOCATION [{}]", locationId);
+		// verification of the location existence
+		final Optional<Location> optLocation = locationService.getLocationByIdFromCache(locationId);
+		if (optLocation.isEmpty()) {
+			// location not found
+			return "redirect:/admin/locations";
+		}
+		if (bindingResult.hasErrors()) {
+			return "admin/locations";
+		}
+		// update location
+		try {
+			final Location location = locationForm.toLocation();
+			location.setId(locationId);
+			locationService.updateLocation(location);
+		} catch (final Exception ex) {
+			// something went wrong
+			log.error("Location update failed.", ex);
+			bindingResult.reject("GlobalError", ex.getMessage());
+			model.addAttribute("location", optLocation.get());
+			return "admin/location";
+		}
+		return "redirect:/admin/locations";
 	}
 
 	/**

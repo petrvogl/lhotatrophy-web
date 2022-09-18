@@ -37,7 +37,8 @@
 				<tr th:each="task : ${taskListing}">
 					<td>
 						<a th:href="@{~__|/admin/tasks/task-${task.id}|__}"
-						   title="Upravit řádek"> [[${task.id}]] </a>
+						   title="Upravit řádek"
+						   class="edit">[[${task.id}]]</a>
 					</td>
 					<td class="center">
 						<input name="active" type="checkbox" disabled="disabled"
@@ -69,16 +70,17 @@
 						</td>
 					</tr>
 					<tr>
-						<td>Kódové označení <span class="emphasized">(A1, B1,...)</span> <sup>*</sup></td>
+						<td>Kódové označení <sup>*</sup></td>
 						<td>
 							<input th:field="*{code}" type="text" name="code"/>
+							<span class="emphasized">(např. A1, B1, C1...)</span>
 							<div th:if="${#fields.hasErrors('code')}" th:errors="*{code}" style="color: red;"> [ error ] </div>
 						</td>
 					</tr>
 					<tr>
 						<td>Unikátní název <sup>*</sup></td>
 						<td>
-							<input th:field="*{name}" type="text" name="name"/>
+							<input th:field="*{name}" type="text" name="name" size="50"/>
 							<div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: red;"> [ error ] </div>
 						</td>
 					</tr>

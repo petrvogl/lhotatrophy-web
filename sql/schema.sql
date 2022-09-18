@@ -81,3 +81,19 @@ alter table task
        add constraint UK_lerptdo9d67pejjpbfau899tm unique (name);
 
 
+-- LOCATION TABLE
+
+create table location (
+       id bigint not null auto_increment,
+        active bit not null,
+        code varchar(32) not null,
+        name varchar(255) not null,
+        description varchar(512),
+        primary key (id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+alter table location 
+       add constraint UK_egl5of52aldewjtfss34en0yi unique (code);
+
+alter table location 
+       add constraint UK_sahixf1v7f7xns19cbg12d946 unique (name);

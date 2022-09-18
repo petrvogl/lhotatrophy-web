@@ -26,7 +26,7 @@
 
 			<h2>Seznam týmů a platby</h2>
 
-			<table class="simple-theme" style="min-width: 420px;">
+			<table class="disabled-borders enabled-rows-hover width-100pct">
 				<tr>
 					<th class="center">ID</th>
 					<th class="center">Název týmu</th>
@@ -46,7 +46,7 @@
 					th:class="${team.active} ? _ : 'disabled removed'">
 					<td class="center"> [[${team.id}]] </td>
 					<td>
-						<a th:href="@{~__${'/admin/user-info/' + owner.id}__}">
+						<a th:href="@{~__${'/admin/user-info/' + owner.id}__}" class="edit">
 							[[${team.name}]]
 						</a>
 					</td>
@@ -55,7 +55,9 @@
 					<td> [[${saturday}]] / [[${saturdayTotal.value}]] </td>
 					<td class="right"> [[${team.expenses}]] Kč</td>
 					<td class="right" th:classappend="${!team.active or zaplaceno} ? _ : 'highlight'">
-						<span th:id="|paidText-${owner.id}|">[[${zaplaceno ? 'ANO' : 'NE'}]]</span>
+						<span th:id="|paidText-${owner.id}|"
+							  th:classappend="${!team.active or zaplaceno} ? _ : 'warning red'"
+							  >[[${zaplaceno ? 'ANO' : 'NE'}]]</span>
 						<input th:checked="${zaplaceno} ? 'checked' : _"
 							   th:value="${owner.id}"
 							   th:disabled="${team.active} ? _ : 'disabled'"
@@ -89,9 +91,11 @@
 							const paidTextElement = document.getElementById("paidText-" + userId);
 							if (paid) {
 								LT.dom.removeClass(target.parentElement, "highlight");
+								LT.dom.removeClass(paidTextElement, "warning", "red");
 								paidTextElement.innerText = "ANO";
 							} else {
 								LT.dom.addClass(target.parentElement, "highlight");
+								LT.dom.addClass(paidTextElement, "warning", "red");
 								paidTextElement.innerText = "NE";
 							}
 						} else {

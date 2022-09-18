@@ -58,7 +58,7 @@
 					<tr>
 						<td>Unikátní název <sup>*</sup></td>
 						<td>
-							<input th:field="*{name}" type="text" name="name"/>
+							<input th:field="*{name}" type="text" name="name" size="50"/>
 							<div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: red;"> [ error ] </div>
 						</td>
 					</tr>

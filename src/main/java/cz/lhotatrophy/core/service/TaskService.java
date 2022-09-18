@@ -37,7 +37,7 @@ public interface TaskService extends Service {
 	/**
 	 * Saves updated state of contest task.
 	 *
-	 * @param task Update {@code Task} entity
+	 * @param task Updated {@code Task} entity
 	 */
 	void updateTask(@NonNull final Task task);
 

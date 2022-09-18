@@ -7,7 +7,7 @@ import java.util.Optional;
  * 
  * @author Petr Vogl
  */
-public class EnumUtils {
+public final class EnumUtils {
 
 	/**
 	 * Provide enum constant of the stecified enum type and constant name.

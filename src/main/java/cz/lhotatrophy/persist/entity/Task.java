@@ -182,14 +182,14 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	 * Indicates whether the solution hint is available for this task.
 	 */
 	public boolean hasSolutionHint() {
-		return solutionHint != null;
+		return StringUtils.isNotEmpty(solutionHint);
 	}
 
 	/**
 	 * Indicates whether the solution procedure is available for this task.
 	 */
 	public boolean hasSolutionProcedure() {
-		return solutionProcedure != null;
+		return StringUtils.isNotEmpty(solutionProcedure);
 	}
 
 	/**
@@ -197,8 +197,8 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	 * non-transient properties.
 	 *
 	 * @param obj the reference object with which to compare
-	 * @return {@code true} if this object is the same as the obj argument;
-	 * {@code false} otherwise.
+	 * @return {@code true} if this object is the same as the {@code obj}
+	 * argument; {@code false} otherwise.
 	 */
 	public boolean equalsAllProperties(final Object obj) {
 		if (this == obj) {

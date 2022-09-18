@@ -3,11 +3,13 @@ package cz.lhotatrophy.core.service;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import cz.lhotatrophy.persist.SchemaConstants;
+import cz.lhotatrophy.persist.dao.LocationDao;
 import cz.lhotatrophy.persist.dao.TaskDao;
 import cz.lhotatrophy.persist.dao.TeamDao;
 import cz.lhotatrophy.persist.dao.UserDao;
 import cz.lhotatrophy.persist.entity.Entity;
 import cz.lhotatrophy.persist.entity.EntityLongId;
+import cz.lhotatrophy.persist.entity.Location;
 import cz.lhotatrophy.persist.entity.Task;
 import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.TeamMember;
@@ -58,6 +60,8 @@ public class EntityCacheServiceImpl extends AbstractService implements EntityCac
 	private transient TeamDao teamDao;
 	@Autowired
 	private transient TaskDao taskDao;
+	@Autowired
+	private transient LocationDao locationDao;
 
 	/**
 	 * Maximum listing size.
@@ -124,6 +128,7 @@ public class EntityCacheServiceImpl extends AbstractService implements EntityCac
 			loadFunctions.put(User.class, id -> userDao.findById(id));
 			loadFunctions.put(Team.class, id -> teamDao.findById(id));
 			loadFunctions.put(Task.class, id -> taskDao.findById(id));
+			loadFunctions.put(Location.class, id -> locationDao.findById(id));
 		}
 		return loadFunctions.get(cls);
 	}

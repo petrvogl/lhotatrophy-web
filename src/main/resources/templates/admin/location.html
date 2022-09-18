@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	  lang="cs">
+	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHeadAdmin">
+		<!--/* PROTOTYPE */-->
+		<title>Administrace — 24th Lhota Trophy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	</head>
+	<body class="docu-theme">
+		<!--/* Page header */-->
+		<header th:replace="public/fragments/PageHeader.html :: PageHeaderAdmin"> [ Page Header ] </header>
+		<!--/* Page navigation */-->
+		<nav th:replace="public/fragments/PageNavigation.html :: PageNavigationAdmin"> [ Navigation ] </nav>
+
+		<!--/*
+		*	Page Content
+		*/-->
+		<main class="page-content">
+
+			<h2>Editace stanoviště</h2>
+
+			<form th:action="@{~__|/admin/locations/location-${location.id}|__}"
+				  th:object="${locationForm}"
+				  method="post">
+				<table class="invisible-theme">
+					<tr>
+						<td>Aktivní</td>
+						<td>
+							<input th:field="*{active}"
+								   type="checkbox"
+								   name="active"/>
+							(
+							<span th:id="activeText">[[${locationForm.active ? 'ano' : 'ne'}]]</span>
+							)
+						</td>
+					</tr>
+					<tr>
+						<td>Kódové označení <sup>*</sup></td>
+						<td>
+							<input th:field="*{code}" type="text" name="code"/>
+							<div th:if="${#fields.hasErrors('code')}" th:errors="*{code}" style="color: red;"> [ error ] </div>
+						</td>
+					</tr>
+					<tr>
+						<td>Unikátní název <sup>*</sup></td>
+						<td>
+							<input th:field="*{name}" type="text" name="name" size="50"/>
+							<div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: red;"> [ error ] </div>
+						</td>
+					</tr>
+					<tr>
+						<td>Popis přesné polohy<br />a doplňující informace</td>
+						<td>
+							<textarea th:field="*{description}" name="description" rows="4" cols="50"></textarea>
+							<div th:if="${#fields.hasErrors('description')}" th:errors="*{description}" style="color: red;"> [ error ] </div>
+						</td>
+					</tr>
+					<tr th:if="${#fields.hasGlobalErrors()}">
+						<td></td><td><p th:each="err : ${#fields.globalErrors()}" th:text="${err}" style="color: red;"> [ global error ] </p></td>
+					</tr>
+					<tr>
+						<td colspan="2" class="center">
+							<br />
+							<input type="submit" value=" Uložit změny "/>
+							&nbsp;
+							<button type="button" onclick="location.href = location.origin + '/admin/locations'"> Zrušit </button>
+						</td>
+					</tr>
+				</table>
+				<p class="emphasized strong"><sup>*</sup> Povinné položky</p>
+			</form>
+
+			<script type="text/javascript">
+				/* <![CDATA[ */
+				const activeCheckboxes = document.querySelectorAll("input[type=checkbox][name=active]");
+				activeCheckboxes.forEach(checkbox => {
+					checkbox.addEventListener("change", event => {
+						const target = event.target;
+						const active = target.checked === true;
+						LT.log.debug("active checkbox:" + active);
+						const confirmed = window.confirm(
+								"Opravdu mám stanoviště " + (active ? "de" : "") + "aktivovat?\n\n" +
+								"Neaktivní stanoviště jsou vyřazena ze hry a nelze k nim zadávat žádné soutěžní kódy.");
+						if (!confirmed) {
+							target.checked = !active;
+							return;
+						}
+						const activeTextElement = document.getElementById("activeText");
+						activeTextElement.innerText = active ? "ano" : "ne";
+					});
+				});
+				/* ]]> */
+			</script>
+
+		</main>
+
+		<!--/* Page footer */-->
+		<footer th:replace="public/fragments/PageFooter.html :: PageFooterAdmin"> [ Copyright ] </footer>
+	</body>
+</html>
