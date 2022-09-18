@@ -52,7 +52,7 @@ public class LocationServiceImpl extends AbstractService implements LocationServ
 	 */
 	private Function<LocationListingQuerySpi, List<Long>> getDefaultIdsLoader() {
 		return (listingQuery) -> {
-			// The base listing query always targets all saved tasks;
+			// The base listing query always targets all saved locations;
 			// no filtration is needed
 			return locationDao.findAllIds();
 		};

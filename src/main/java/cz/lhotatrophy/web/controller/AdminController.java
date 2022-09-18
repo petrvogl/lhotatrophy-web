@@ -2,6 +2,8 @@ package cz.lhotatrophy.web.controller;
 
 import cz.lhotatrophy.core.exceptions.UsernameOrEmailIsTakenException;
 import cz.lhotatrophy.core.exceptions.WeakPasswordException;
+import cz.lhotatrophy.core.service.ClueListingQuerySpi;
+import cz.lhotatrophy.core.service.ClueService;
 import cz.lhotatrophy.core.service.EntityCacheService;
 import cz.lhotatrophy.core.service.LocationListingQuerySpi;
 import cz.lhotatrophy.core.service.LocationService;
@@ -10,6 +12,7 @@ import cz.lhotatrophy.core.service.TaskService;
 import cz.lhotatrophy.core.service.TeamListingQuerySpi;
 import cz.lhotatrophy.core.service.TeamService;
 import cz.lhotatrophy.core.service.UserService;
+import cz.lhotatrophy.persist.entity.Clue;
 import cz.lhotatrophy.persist.entity.FridayOfferEnum;
 import cz.lhotatrophy.persist.entity.Location;
 import cz.lhotatrophy.persist.entity.SaturdayOfferEnum;
@@ -18,6 +21,7 @@ import cz.lhotatrophy.persist.entity.TaskTypeEnum;
 import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.TshirtOfferEnum;
 import cz.lhotatrophy.persist.entity.User;
+import cz.lhotatrophy.web.form.ClueForm;
 import cz.lhotatrophy.web.form.LocationForm;
 import cz.lhotatrophy.web.form.TaskForm;
 import cz.lhotatrophy.web.form.UserRegistrationForm;
@@ -54,6 +58,8 @@ public class AdminController {
 	private transient TaskService taskService;
 	@Autowired
 	private transient LocationService locationService;
+	@Autowired
+	private transient ClueService clueService;
 
 	/**
 	 * Admin homepage
@@ -111,7 +117,8 @@ public class AdminController {
 			final Model model
 	) {
 		log.info("TASKS");
-		final List<Task> taskListing = taskService.getTaskListing(TaskListingQuerySpi.create().setSorting(Task.orderByCode()));
+		final TaskListingQuerySpi query = TaskListingQuerySpi.create().setSorting(Task.orderByCode());
+		final List<Task> taskListing = taskService.getTaskListing(query);
 		model.addAttribute("taskListing", taskListing);
 		// render template
 		return "admin/tasks";
@@ -161,6 +168,9 @@ public class AdminController {
 					"Tento typ není platný");
 		}
 		if (bindingResult.hasErrors()) {
+			final TaskListingQuerySpi query = TaskListingQuerySpi.create().setSorting(Task.orderByCode());
+			final List<Task> taskListing = taskService.getTaskListing(query);
+			model.addAttribute("taskListing", taskListing);
 			return "admin/tasks";
 		}
 		// save new task
@@ -177,6 +187,9 @@ public class AdminController {
 			// something went wrong
 			log.error("Task registration failed.", ex);
 			bindingResult.reject("GlobalError", ex.getMessage());
+			final TaskListingQuerySpi query = TaskListingQuerySpi.create().setSorting(Task.orderByCode());
+			final List<Task> taskListing = taskService.getTaskListing(query);
+			model.addAttribute("taskListing", taskListing);
 			return "admin/tasks";
 		}
 		// FIXME - clean only tasks listings
@@ -208,7 +221,7 @@ public class AdminController {
 			bindingResult.rejectValue("type", "Unknown", "Tento typ není platný");
 		}
 		if (bindingResult.hasErrors()) {
-			return "admin/tasks";
+			return "admin/task";
 		}
 		// update task
 		try {
@@ -234,8 +247,7 @@ public class AdminController {
 			final Model model
 	) {
 		log.info("LOCATIONS");
-		final LocationListingQuerySpi query = LocationListingQuerySpi.create()
-				.setSorting(Location.orderByCode());
+		final LocationListingQuerySpi query = LocationListingQuerySpi.create().setSorting(Location.orderByCode());
 		final List<Location> locationListing = locationService.getLocationListing(query);
 		model.addAttribute("locationListing", locationListing);
 		// render template
@@ -277,6 +289,9 @@ public class AdminController {
 	) {
 		log.info("NEW LOCATION");
 		if (bindingResult.hasErrors()) {
+			final LocationListingQuerySpi query = LocationListingQuerySpi.create().setSorting(Location.orderByCode());
+			final List<Location> locationListing = locationService.getLocationListing(query);
+			model.addAttribute("locationListing", locationListing);
 			return "admin/locations";
 		}
 		// save new location
@@ -289,6 +304,9 @@ public class AdminController {
 			// something went wrong
 			log.error("Location registration failed.", ex);
 			bindingResult.reject("GlobalError", ex.getMessage());
+			final LocationListingQuerySpi query = LocationListingQuerySpi.create().setSorting(Location.orderByCode());
+			final List<Location> locationListing = locationService.getLocationListing(query);
+			model.addAttribute("locationListing", locationListing);
 			return "admin/locations";
 		}
 		// FIXME - clean only locations listings
@@ -315,7 +333,7 @@ public class AdminController {
 			return "redirect:/admin/locations";
 		}
 		if (bindingResult.hasErrors()) {
-			return "admin/locations";
+			return "admin/location";
 		}
 		// update location
 		try {
@@ -330,6 +348,117 @@ public class AdminController {
 			return "admin/location";
 		}
 		return "redirect:/admin/locations";
+	}
+
+	/**
+	 * Clue listing
+	 */
+	@GetMapping("/clues")
+	public String getClues(
+			final ClueForm clueForm,
+			final Model model
+	) {
+		log.info("CLUES");
+		final ClueListingQuerySpi query = ClueListingQuerySpi.create().setSorting(Clue.orderByCode());
+		final List<Clue> clueListing = clueService.getClueListing(query);
+		model.addAttribute("clueListing", clueListing);
+		// render template
+		return "admin/clues";
+	}
+
+	/**
+	 * Clues editor
+	 */
+	@GetMapping("/clues/clue-{clueId}")
+	public String getClue(
+			@PathVariable Long clueId,
+			final ClueForm clueForm,
+			final Model model
+	) {
+		log.info("CLUE [{}]", clueId);
+		// verification of the clue existence
+		final Optional<Clue> optClue = clueService.getClueByIdFromCache(clueId);
+		if (optClue.isEmpty()) {
+			// clue not found
+			return "redirect:/admin/clues";
+		}
+		// set model
+		final Clue clue = optClue.get();
+		clueForm.setFrom(clue);
+		model.addAttribute("clue", clue);
+		// render template
+		return "admin/clue";
+	}
+
+	/**
+	 * New clue registration
+	 */
+	@PostMapping("/clues")
+	public String postNewClue(
+			@Valid final ClueForm clueForm,
+			final BindingResult bindingResult,
+			final Model model
+	) {
+		log.info("NEW CLUE");
+		if (bindingResult.hasErrors()) {
+			final ClueListingQuerySpi query = ClueListingQuerySpi.create().setSorting(Clue.orderByCode());
+			final List<Clue> clueListing = clueService.getClueListing(query);
+			model.addAttribute("clueListing", clueListing);
+			return "admin/clues";
+		}
+		// save new clue
+		try {
+			clueService.registerNewClue(
+					clueForm.getCode(),
+					clueForm.getDescription());
+		} catch (final Exception ex) {
+			// something went wrong
+			log.error("Clue registration failed.", ex);
+			bindingResult.reject("GlobalError", ex.getMessage());
+			final ClueListingQuerySpi query = ClueListingQuerySpi.create().setSorting(Clue.orderByCode());
+			final List<Clue> clueListing = clueService.getClueListing(query);
+			model.addAttribute("clueListing", clueListing);
+			return "admin/clues";
+		}
+		// FIXME - clean only clues listings
+		cacheService.cleanEntityListingCache();
+		// list all clues
+		return "redirect:/admin/clues";
+	}
+
+	/**
+	 * Update contest clue
+	 */
+	@PostMapping("/clues/clue-{clueId}")
+	public String postUpdatedClue(
+			@PathVariable Long clueId,
+			@Valid final ClueForm clueForm,
+			final BindingResult bindingResult,
+			final Model model
+	) {
+		log.info("EDIT CLUE [{}]", clueId);
+		// verification of the clue existence
+		final Optional<Clue> optClue = clueService.getClueByIdFromCache(clueId);
+		if (optClue.isEmpty()) {
+			// clue not found
+			return "redirect:/admin/clues";
+		}
+		if (bindingResult.hasErrors()) {
+			return "admin/clue";
+		}
+		// update clue
+		try {
+			final Clue clue = clueForm.toClue();
+			clue.setId(clueId);
+			clueService.updateClue(clue);
+		} catch (final Exception ex) {
+			// something went wrong
+			log.error("Clue update failed.", ex);
+			bindingResult.reject("GlobalError", ex.getMessage());
+			model.addAttribute("clue", optClue.get());
+			return "admin/clue";
+		}
+		return "redirect:/admin/clues";
 	}
 
 	/**

@@ -20,39 +20,46 @@
 		*/-->
 		<main class="page-content">
 
-			<h2>Editace stanoviště</h2>
+			<h2>Indicie</h2>
 
-			<form th:action="@{~__|/admin/locations/location-${location.id}|__}"
-				  th:object="${locationForm}"
+			<table class="width-100pct">
+				<tr>
+					<th class="center">#</th>
+					<th class="center">Aktivní</th>
+					<th>Kód</th>
+					<th>Úplné znění indicie</th>
+				</tr>
+
+				<tr th:each="clue : ${clueListing}">
+					<td>
+						<a th:href="@{~__|/admin/clues/clue-${clue.id}|__}"
+						   title="Upravit řádek"
+						   class="edit">[[${clue.id}]]</a>
+					</td>
+					<td class="center">
+						<input name="active" type="checkbox" disabled="disabled"
+							   th:checked="${clue.active}"/>
+					</td>
+					<td> [[${clue.code}]] </td>
+					<td> [[${clue.description}]] </td>
+				</tr>
+			</table>
+
+			<h3>Přidat novou indicii</h3>
+			<form th:action="@{~/admin/clues}"
+				  th:object="${clueForm}"
 				  method="post">
 				<table class="invisible-theme">
-					<tr>
-						<td>Aktivní</td>
-						<td>
-							<input th:field="*{active}"
-								   type="checkbox"
-								   name="active"/>
-							(
-							<span th:id="activeText">[[${locationForm.active ? 'ano' : 'ne'}]]</span>
-							)
-						</td>
-					</tr>
 					<tr>
 						<td>Kódové označení <sup>*</sup></td>
 						<td>
 							<input th:field="*{code}" type="text" name="code"/>
+							<span class="emphasized">(např. I1, I2,...)</span>
 							<div th:if="${#fields.hasErrors('code')}" th:errors="*{code}" style="color: red;"> [ error ] </div>
 						</td>
 					</tr>
 					<tr>
-						<td>Unikátní název <sup>*</sup></td>
-						<td>
-							<input th:field="*{name}" type="text" name="name" size="50"/>
-							<div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: red;"> [ error ] </div>
-						</td>
-					</tr>
-					<tr>
-						<td>Popis přesné polohy<br />a doplňující informace</td>
+						<td>Úplné znění indicie</td>
 						<td>
 							<textarea th:field="*{description}" name="description" rows="4" cols="50"></textarea>
 							<div th:if="${#fields.hasErrors('description')}" th:errors="*{description}" style="color: red;"> [ error ] </div>
@@ -64,36 +71,18 @@
 					<tr>
 						<td colspan="2" class="center">
 							<br />
-							<input type="submit" value=" Uložit změny "/>
+							<input type="submit" value="Přidat indicii" />
 							&nbsp;
-							<button type="button" onclick="location.href = location.origin + '/admin/locations'"> Zrušit </button>
+							<input type="reset" value="Zrušit" />
 						</td>
 					</tr>
 				</table>
 				<p class="emphasized strong"><sup>*</sup> Povinné položky</p>
 			</form>
 
-			<script type="text/javascript">
-				/* <![CDATA[ */
-				const activeCheckboxes = document.querySelectorAll("input[type=checkbox][name=active]");
-				activeCheckboxes.forEach(checkbox => {
-					checkbox.addEventListener("change", event => {
-						const target = event.target;
-						const active = target.checked === true;
-						LT.log.debug("active checkbox:" + active);
-						const confirmed = window.confirm(
-								"Opravdu mám stanoviště " + (active ? "" : "de") + "aktivovat?\n\n" +
-								"Neaktivní stanoviště jsou vyřazena ze hry a nelze k nim zadávat žádné soutěžní kódy.");
-						if (!confirmed) {
-							target.checked = !active;
-							return;
-						}
-						const activeTextElement = document.getElementById("activeText");
-						activeTextElement.innerText = active ? "ano" : "ne";
-					});
-				});
-				/* ]]> */
-			</script>
+
+
+
 
 		</main>
 

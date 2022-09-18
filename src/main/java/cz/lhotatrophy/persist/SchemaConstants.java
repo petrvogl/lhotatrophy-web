@@ -58,4 +58,13 @@ public final class SchemaConstants {
 		public static final String TABLE_NAME = "location";
 		public static final String FK_NAME = TABLE_NAME + FOREIGN_KEY_POSTFIX;
 	}
+
+	/**
+	 * Constants relative to clues.
+	 */
+	public static final class Clue {
+
+		public static final String TABLE_NAME = "clue";
+		public static final String FK_NAME = TABLE_NAME + FOREIGN_KEY_POSTFIX;
+	}
 }

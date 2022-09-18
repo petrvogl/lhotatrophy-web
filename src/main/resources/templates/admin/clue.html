@@ -20,10 +20,10 @@
 		*/-->
 		<main class="page-content">
 
-			<h2>Editace stanoviště</h2>
+			<h2>Editace indicie</h2>
 
-			<form th:action="@{~__|/admin/locations/location-${location.id}|__}"
-				  th:object="${locationForm}"
+			<form th:action="@{~__|/admin/clues/clue-${clue.id}|__}"
+				  th:object="${clueForm}"
 				  method="post">
 				<table class="invisible-theme">
 					<tr>
@@ -33,7 +33,7 @@
 								   type="checkbox"
 								   name="active"/>
 							(
-							<span th:id="activeText">[[${locationForm.active ? 'ano' : 'ne'}]]</span>
+							<span th:id="activeText">[[${clueForm.active ? 'ano' : 'ne'}]]</span>
 							)
 						</td>
 					</tr>
@@ -45,14 +45,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td>Unikátní název <sup>*</sup></td>
-						<td>
-							<input th:field="*{name}" type="text" name="name" size="50"/>
-							<div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: red;"> [ error ] </div>
-						</td>
-					</tr>
-					<tr>
-						<td>Popis přesné polohy<br />a doplňující informace</td>
+						<td>Úplné znění indicie</td>
 						<td>
 							<textarea th:field="*{description}" name="description" rows="4" cols="50"></textarea>
 							<div th:if="${#fields.hasErrors('description')}" th:errors="*{description}" style="color: red;"> [ error ] </div>
@@ -66,7 +59,7 @@
 							<br />
 							<input type="submit" value=" Uložit změny "/>
 							&nbsp;
-							<button type="button" onclick="location.href = location.origin + '/admin/locations'"> Zrušit </button>
+							<button type="button" onclick="clue.href = clue.origin + '/admin/clues'"> Zrušit </button>
 						</td>
 					</tr>
 				</table>
@@ -82,8 +75,8 @@
 						const active = target.checked === true;
 						LT.log.debug("active checkbox:" + active);
 						const confirmed = window.confirm(
-								"Opravdu mám stanoviště " + (active ? "" : "de") + "aktivovat?\n\n" +
-								"Neaktivní stanoviště jsou vyřazena ze hry a nelze k nim zadávat žádné soutěžní kódy.");
+								"Opravdu mám indicii " + (active ? "" : "de") + "aktivovat?\n\n" +
+								"Neaktivní indicie jsou vyřazeny ze hry a nelze je nijak získat.");
 						if (!confirmed) {
 							target.checked = !active;
 							return;

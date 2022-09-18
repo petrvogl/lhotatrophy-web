@@ -121,7 +121,7 @@
 						const active = target.checked === true;
 						LT.log.debug("active checkbox:" + active);
 						const confirmed = window.confirm(
-								"Opravdu mám ukol " + (active ? "de" : "") + "aktivovat?\n\n" +
+								"Opravdu mám ukol " + (active ? "" : "de") + "aktivovat?\n\n" +
 								"Neaktivní úkoly jsou vyřazeny ze hry a nelze je tak splnit. " +
 								"Na zadávací stránce souvysejícího stanovište nebudou řešení " +
 								"neaktivních úkolů přijímána.");
@@ -138,17 +138,17 @@
 				allowCheckboxes.forEach(checkbox => {
 					checkbox.addEventListener("change", event => {
 						const target = event.target;
-						const allowed = target.checked === true;
-						LT.log.debug("allow checkbox:" + allowed);
+						const allow = target.checked === true;
+						LT.log.debug("allow checkbox:" + allow);
 
 						const confirmed = window.confirm(
-								"Opravdu mám " + (allowed ? "zakázat" : "povolit") + " zobrazení správného řešení?");
+								"Opravdu mám " + (allow ? "povolit" : "zakázat") + " zobrazení správného řešení?");
 						if (!confirmed) {
-							target.checked = !allowed;
+							target.checked = !allow;
 							return;
 						}
 						const allowedTextElement = document.getElementById("allowedText");
-						allowedTextElement.innerText = allowed ? "ano" : "ne";
+						allowedTextElement.innerText = allow ? "ano" : "ne";
 					});
 				});
 				/* ]]> */
