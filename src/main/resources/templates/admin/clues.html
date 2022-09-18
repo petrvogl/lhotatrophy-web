@@ -55,18 +55,18 @@
 						<td>
 							<input th:field="*{code}" type="text" name="code"/>
 							<span class="emphasized">(např. I1, I2,...)</span>
-							<div th:if="${#fields.hasErrors('code')}" th:errors="*{code}" style="color: red;"> [ error ] </div>
+							<div th:if="${#fields.hasErrors('code')}" th:errors="*{code}" class="error"> [ error ] </div>
 						</td>
 					</tr>
 					<tr>
 						<td>Úplné znění indicie</td>
 						<td>
 							<textarea th:field="*{description}" name="description" rows="4" cols="50"></textarea>
-							<div th:if="${#fields.hasErrors('description')}" th:errors="*{description}" style="color: red;"> [ error ] </div>
+							<div th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="error"> [ error ] </div>
 						</td>
 					</tr>
 					<tr th:if="${#fields.hasGlobalErrors()}">
-						<td></td><td><p th:each="err : ${#fields.globalErrors()}" th:text="${err}" style="color: red;"> [ global error ] </p></td>
+						<td></td><td><p th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </p></td>
 					</tr>
 					<tr>
 						<td colspan="2" class="center">

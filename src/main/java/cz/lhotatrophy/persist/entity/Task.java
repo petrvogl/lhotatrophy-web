@@ -46,10 +46,10 @@ import org.apache.commons.lang3.StringUtils;
 public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Task> {
 
 	/**
-	 * Defines a separator regular expression that separates valid solutions of
-	 * the task.
+	 * Defines a separator regular expression that separates individual values
+	 * of multi-value properties.
 	 */
-	private static final String SOLUTIONS_SEPARATOR_REGEXP = "\\s*;\\s*";
+	private static final String MULTIPLE_VALUES_SEPARATOR_REGEXP = "\\s*;\\s*";
 
 	/**
 	 * Lexicographically compares tasks by {@code code} property
@@ -119,6 +119,19 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	 */
 	@Column(name = "reveal_solution", unique = false, nullable = false)
 	private Boolean revealSolutionAllowed = false;
+	/**
+	 * Identification code of the main associated location. This property
+	 * provides a weak relation to the relationship entity.
+	 */
+	@Column(name = "location_code", unique = false, nullable = true)
+	private String locationCode;
+	/**
+	 * Identification codes of objects intended to be rewards for completing
+	 * this task. This property provides a weak relationship to multiple entity
+	 * types and instances.
+	 */
+	@Column(name = "reward_codes", unique = false, nullable = true)
+	private String rewardCodesString;
 
 	/**
 	 * All valid solutions of this task. Transient calculated value.
@@ -127,6 +140,15 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	@ToString.Exclude
 	@Setter(AccessLevel.NONE)
 	private Set<String> solutions;
+
+	/**
+	 * Identification codes of objects intended to be rewards for completing
+	 * this task. Transient calculated value.
+	 */
+	@Transient
+	@ToString.Exclude
+	@Setter(AccessLevel.NONE)
+	private Set<String> rewardCodes;
 
 	/**
 	 * Sets the all valid solutions to this task. Solutions must be separated by
@@ -143,7 +165,7 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	}
 
 	/**
-	 * Gets all valid solutions to this task.
+	 * Returns all valid solutions to this task.
 	 *
 	 * @return All valid solutions
 	 */
@@ -156,7 +178,7 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 			if (solutions == null) {
 				solutions = StringUtils.isEmpty(solutionsString)
 						? Collections.emptySet()
-						: Arrays.stream(solutionsString.split(SOLUTIONS_SEPARATOR_REGEXP))
+						: Arrays.stream(solutionsString.split(MULTIPLE_VALUES_SEPARATOR_REGEXP))
 								.filter(StringUtils::isNotEmpty)
 								.collect(Collectors.toUnmodifiableSet());
 			}
@@ -193,6 +215,53 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	}
 
 	/**
+	 * Sets the identification code of the main associated location.
+	 *
+	 * @param locationCode Main location code
+	 */
+	public void setLocationCode(final String locationCode) {
+		this.locationCode = StringUtils.trimToNull(locationCode);
+	}
+
+	/**
+	 * Sets the identification codes of objects intended to be rewards for
+	 * completing this task. Codes must be separated by semicolon character
+	 * {@code ';'}.
+	 *
+	 * @param rewardCodesString Identification codes of rewards
+	 */
+	public void setRewardCodesString(final String rewardCodesString) {
+		synchronized (this) {
+			this.rewardCodesString = StringUtils.trimToNull(rewardCodesString);
+			// reset calculated value
+			this.rewardCodes = null;
+		}
+	}
+
+	/**
+	 * Returns all identification codes of objects intended to be rewards for
+	 * completing this task.
+	 *
+	 * @return identification codes of rewards
+	 */
+	@Nonnull
+	public Set<String> getRewardCodes() {
+		if (rewardCodes != null) {
+			return rewardCodes;
+		}
+		synchronized (this) {
+			if (rewardCodes == null) {
+				rewardCodes = StringUtils.isEmpty(solutionsString)
+						? Collections.emptySet()
+						: Arrays.stream(solutionsString.split(MULTIPLE_VALUES_SEPARATOR_REGEXP))
+								.filter(StringUtils::isNotEmpty)
+								.collect(Collectors.toUnmodifiableSet());
+			}
+		}
+		return rewardCodes;
+	}
+
+	/**
 	 * Indicates whether some other object is "equal to" this one comparing all
 	 * non-transient properties.
 	 *
@@ -212,6 +281,15 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 			return false;
 		}
 		final Task other = (Task) obj;
+		if (!Objects.equals(this.id, other.id)) {
+			return false;
+		}
+		if (!Objects.equals(this.active, other.active)) {
+			return false;
+		}
+		if (this.type != other.type) {
+			return false;
+		}
 		if (!Objects.equals(this.code, other.code)) {
 			return false;
 		}
@@ -227,15 +305,12 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 		if (!Objects.equals(this.solutionsString, other.solutionsString)) {
 			return false;
 		}
-		if (!Objects.equals(this.id, other.id)) {
+		if (!Objects.equals(this.revealSolutionAllowed, other.revealSolutionAllowed)) {
 			return false;
 		}
-		if (!Objects.equals(this.active, other.active)) {
+		if (!Objects.equals(this.locationCode, other.locationCode)) {
 			return false;
 		}
-		if (this.type != other.type) {
-			return false;
-		}
-		return Objects.equals(this.revealSolutionAllowed, other.revealSolutionAllowed);
+		return Objects.equals(this.rewardCodesString, other.rewardCodesString);
 	}
 }

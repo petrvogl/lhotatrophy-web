@@ -37,6 +37,12 @@ public class TaskForm {
 	@Size(max = 2048, message = "Maximální délka textu je 2000 znaků")
 	private String solutionProcedure;
 
+	@Size(max = 255, message = "Maximální počet znaků je 255")
+	private String locationCode;
+
+	@Size(max = 255, message = "Maximální počet znaků je 255")
+	private String rewardCodes;
+
 	private Boolean active;
 
 	private Boolean revealSolutionAllowed;
@@ -59,6 +65,8 @@ public class TaskForm {
 		solutions = task.getSolutionsString();
 		solutionHint = task.getSolutionHint();
 		solutionProcedure = task.getSolutionProcedure();
+		locationCode = task.getLocationCode();
+		rewardCodes = task.getRewardCodesString();
 		active = task.getActive();
 		revealSolutionAllowed = task.getRevealSolutionAllowed();
 	}
@@ -74,6 +82,8 @@ public class TaskForm {
 		task.setSolutionProcedure(solutionProcedure);
 		task.setSolutionsString(solutions);
 		task.setRevealSolutionAllowed(revealSolutionAllowed);
+		task.setLocationCode(locationCode);
+		task.setRewardCodesString(rewardCodes);
 		return task;
 	}
 }

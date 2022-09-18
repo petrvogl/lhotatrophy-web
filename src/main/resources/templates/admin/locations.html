@@ -57,25 +57,25 @@
 						<td>
 							<input th:field="*{code}" type="text" name="code"/>
 							<span class="emphasized">(např. S1, S2,...)</span>
-							<div th:if="${#fields.hasErrors('code')}" th:errors="*{code}" style="color: red;"> [ error ] </div>
+							<div th:if="${#fields.hasErrors('code')}" th:errors="*{code}" class="error"> [ error ] </div>
 						</td>
 					</tr>
 					<tr>
 						<td>Unikátní název <sup>*</sup></td>
 						<td>
 							<input th:field="*{name}" type="text" name="name" size="50"/>
-							<div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: red;"> [ error ] </div>
+							<div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error"> [ error ] </div>
 						</td>
 					</tr>
 					<tr>
 						<td>Popis přesné polohy<br />a doplňující informace</td>
 						<td>
 							<textarea th:field="*{description}" name="description" rows="4" cols="50"></textarea>
-							<div th:if="${#fields.hasErrors('description')}" th:errors="*{description}" style="color: red;"> [ error ] </div>
+							<div th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="error"> [ error ] </div>
 						</td>
 					</tr>
 					<tr th:if="${#fields.hasGlobalErrors()}">
-						<td></td><td><p th:each="err : ${#fields.globalErrors()}" th:text="${err}" style="color: red;"> [ global error ] </p></td>
+						<td></td><td><p th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </p></td>
 					</tr>
 					<tr>
 						<td colspan="2" class="center">

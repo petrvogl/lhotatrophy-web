@@ -45,35 +45,57 @@
 								<option value="B" th:selected="${'B' == taskForm.type}">B-kód</option>
 								<option value="C" th:selected="${'C' == taskForm.type}">C-kód</option>
 							</select>
-							<div th:if="${#fields.hasErrors('type')}" th:errors="*{type}" style="color: red;"> [ error ] </div>
+							<div th:if="${#fields.hasErrors('type')}" th:errors="*{type}" class="error"> [ error ] </div>
 						</td>
 					</tr>
 					<tr>
 						<td>Kódové označení <sup>*</sup></td>
 						<td>
 							<input th:field="*{code}" type="text" name="code"/>
-							<div th:if="${#fields.hasErrors('code')}" th:errors="*{code}" style="color: red;"> [ error ] </div>
+							<div th:if="${#fields.hasErrors('code')}" th:errors="*{code}" class="error"> [ error ] </div>
 						</td>
 					</tr>
 					<tr>
 						<td>Unikátní název <sup>*</sup></td>
 						<td>
 							<input th:field="*{name}" type="text" name="name" size="50"/>
-							<div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color: red;"> [ error ] </div>
+							<div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error"> [ error ] </div>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Kód souvisejícího stanoviště,<br />
+							u kterého soutěžící zadají řešení
+						</td>
+						<td>
+							<input th:field="*{locationCode}" type="text" name="locationCode"/>
+							<span class="emphasized">(např. S1)</span>
+							<div th:if="${#fields.hasErrors('locationCode')}" th:errors="*{locationCode}" class="error"> [ error ] </div>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Kódy entit, odkrytých po vyřešení<br />
+							<span class="emphasized">(oddělené středníkem <code>;</code>)</span>
+						</td>
+						<td>
+							<input th:field="*{rewardCodes}" type="text" name="rewardCodes"/>
+							<span class="emphasized">(např. „S1; S2; I1“)</span>
+							<div th:if="${#fields.hasErrors('rewardCodes')}" th:errors="*{rewardCodes}" class="error"> [ error ] </div>
 						</td>
 					</tr>
 					<tr>
 						<td>Znění nápovědy řešení</td>
 						<td>
 							<textarea th:field="*{solutionHint}" name="solutionHint" rows="4" cols="50"></textarea>
-							<div th:if="${#fields.hasErrors('solutionHint')}" th:errors="*{solutionHint}" style="color: red;"> [ error ] </div>
+							<div th:if="${#fields.hasErrors('solutionHint')}" th:errors="*{solutionHint}" class="error"> [ error ] </div>
 						</td>
 					</tr>
 					<tr>
 						<td>Znění postupu řešení</td>
 						<td>
 							<textarea th:field="*{solutionProcedure}" name="solutionProcedure" rows="4" cols="50"></textarea>
-							<div th:if="${#fields.hasErrors('solutionProcedure')}" th:errors="*{solutionProcedure}" style="color: red;"> [ error ] </div>
+							<div th:if="${#fields.hasErrors('solutionProcedure')}" th:errors="*{solutionProcedure}" class="error"> [ error ] </div>
 						</td>
 					</tr>
 					<tr>
@@ -83,7 +105,7 @@
 						</td>
 						<td>
 							<textarea th:field="*{solutions}" name="solutions" rows="4" cols="50"></textarea>
-							<div th:if="${#fields.hasErrors('solutions')}" th:errors="*{solutions}" style="color: red;"> [ error ] </div>
+							<div th:if="${#fields.hasErrors('solutions')}" th:errors="*{solutions}" class="error"> [ error ] </div>
 						</td>
 					</tr>
 					<tr>
@@ -98,7 +120,7 @@
 						</td>
 					</tr>
 					<tr th:if="${#fields.hasGlobalErrors()}">
-						<td></td><td><p th:each="err : ${#fields.globalErrors()}" th:text="${err}" style="color: red;"> [ global error ] </p></td>
+						<td></td><td><p th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </p></td>
 					</tr>
 					<tr>
 						<td colspan="2" class="center">

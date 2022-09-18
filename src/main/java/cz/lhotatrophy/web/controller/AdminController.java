@@ -215,6 +215,7 @@ public class AdminController {
 			// task not found
 			return "redirect:/admin/tasks";
 		}
+		model.addAttribute("task", optTask.get());
 		// task type validation
 		final TaskTypeEnum type = TaskTypeEnum.valueOf(taskForm.getTypeMark());
 		if (type == null) {
@@ -232,7 +233,6 @@ public class AdminController {
 			// something went wrong
 			log.error("Task update failed.", ex);
 			bindingResult.reject("GlobalError", ex.getMessage());
-			model.addAttribute("task", optTask.get());
 			return "admin/task";
 		}
 		return "redirect:/admin/tasks";
@@ -332,6 +332,7 @@ public class AdminController {
 			// location not found
 			return "redirect:/admin/locations";
 		}
+		model.addAttribute("location", optLocation.get());
 		if (bindingResult.hasErrors()) {
 			return "admin/location";
 		}
@@ -344,7 +345,6 @@ public class AdminController {
 			// something went wrong
 			log.error("Location update failed.", ex);
 			bindingResult.reject("GlobalError", ex.getMessage());
-			model.addAttribute("location", optLocation.get());
 			return "admin/location";
 		}
 		return "redirect:/admin/locations";
@@ -443,6 +443,7 @@ public class AdminController {
 			// clue not found
 			return "redirect:/admin/clues";
 		}
+		model.addAttribute("clue", optClue.get());
 		if (bindingResult.hasErrors()) {
 			return "admin/clue";
 		}
@@ -455,7 +456,6 @@ public class AdminController {
 			// something went wrong
 			log.error("Clue update failed.", ex);
 			bindingResult.reject("GlobalError", ex.getMessage());
-			model.addAttribute("clue", optClue.get());
 			return "admin/clue";
 		}
 		return "redirect:/admin/clues";

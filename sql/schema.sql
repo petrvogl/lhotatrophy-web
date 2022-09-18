@@ -71,6 +71,8 @@ create table task (
         solution_procedure varchar(2048),
         solutions varchar(1024) not null,
         reveal_solution bit not null,
+        location_code varchar(255),
+        reward_codes varchar(255),
         primary key (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 

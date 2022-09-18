@@ -141,6 +141,8 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 			originalTask.setSolutionProcedure(task.getSolutionProcedure());
 			originalTask.setSolutionsString(task.getSolutionsString());
 			originalTask.setRevealSolutionAllowed(task.getRevealSolutionAllowed());
+			originalTask.setLocationCode(task.getLocationCode());
+			originalTask.setRewardCodesString(task.getRewardCodesString());
 			return taskDao.save(originalTask);
 		});
 		if (t != task) {
