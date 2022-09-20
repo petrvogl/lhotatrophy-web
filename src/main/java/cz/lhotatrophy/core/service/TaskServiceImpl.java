@@ -10,6 +10,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -79,13 +80,14 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 			final String solutionProcedure,
 			final boolean revealSolutionAllowed
 	) {
-		if (taskDao.findByCode(code).isPresent()) {
-			throw new RuntimeException("Úkol s tímto kódem už existuje.");
+		// globally unique code check relies on up-to-date register
+		if (cacheService.getEntityByCode(code).isPresent()) {
+			throw new RuntimeException("Entita s tímto kódem už existuje.");
 		}
 		if (taskDao.findByName(name).isPresent()) {
 			throw new RuntimeException("Úkol s tímto názvem už existuje.");
 		}
-		return runInTransaction(() -> {
+		final Task newTask = runInTransaction(() -> {
 			final Task task = createTask(t -> {
 				t.setActive(true);
 				t.setType(type);
@@ -101,6 +103,9 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 			log.info("New task has been registered: [ {} / {} ]", task.getCode(), task.getName());
 			return task;
 		});
+		// keep GlobalCodeRegister up-to-date
+		cacheService.resetGlobalCodeRegister();
+		return newTask;
 	}
 
 	@Override
@@ -110,6 +115,7 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 		Objects.requireNonNull(task.getCode());
 		Objects.requireNonNull(task.getName());
 		// save updates
+		final MutableBoolean codeHasChanged = new MutableBoolean(false);
 		final Task t = runInTransaction(() -> {
 			final Task originalTask = taskDao.findById(taskId).orElse(null);
 			if (originalTask == null) {
@@ -121,10 +127,12 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 			}
 			final String newCode = task.getCode();
 			if (!newCode.equals(originalTask.getCode())) {
-				// code has changed
-				if (taskDao.findByCode(newCode).isPresent()) {
-					throw new RuntimeException("Úkol s tímto kódem už existuje.");
+				// globally unique code check relies on up-to-date register
+				if (cacheService.getEntityByCode(newCode).isPresent()) {
+					throw new RuntimeException("Entita s tímto kódem už existuje.");
 				}
+				// code has changed
+				codeHasChanged.setTrue();
 				originalTask.setCode(newCode);
 			}
 			final String newName = task.getName();
@@ -148,6 +156,10 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 		if (t != task) {
 			// changes have been made
 			removeTaskFromCache(t.getId());
+			// keep GlobalCodeRegister up-to-date
+			if (codeHasChanged.isTrue()) {
+				cacheService.resetGlobalCodeRegister();
+			}
 		}
 	}
 }

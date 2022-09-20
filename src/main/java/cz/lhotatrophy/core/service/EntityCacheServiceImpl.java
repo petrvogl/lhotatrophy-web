@@ -9,7 +9,6 @@ import cz.lhotatrophy.persist.dao.TaskDao;
 import cz.lhotatrophy.persist.dao.TeamDao;
 import cz.lhotatrophy.persist.dao.UserDao;
 import cz.lhotatrophy.persist.entity.Clue;
-import cz.lhotatrophy.persist.entity.Entity;
 import cz.lhotatrophy.persist.entity.EntityLongId;
 import cz.lhotatrophy.persist.entity.Location;
 import cz.lhotatrophy.persist.entity.Task;
@@ -34,15 +33,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.commons.math3.util.Pair;
-import org.hibernate.proxy.HibernateProxy;
-import org.hibernate.proxy.LazyInitializer;
-import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -71,6 +69,10 @@ public class EntityCacheServiceImpl extends AbstractService implements EntityCac
 	 * Maximum listing size.
 	 */
 	private static final int MAXIMUM_LISTING_SIZE = Integer.MAX_VALUE;
+	/**
+	 * Capacity of a register of global code mappings to an entity ids.
+	 */
+	private static final int GLOBAL_CODE_REGISTER_CAPACITY = 100;
 
 	/**
 	 * Cache storage to temporarily store frequently used entities to avoid
@@ -93,6 +95,12 @@ public class EntityCacheServiceImpl extends AbstractService implements EntityCac
 			//.expireAfterWrite(2, TimeUnit.MINUTES)
 			.expireAfterWrite(1, TimeUnit.MINUTES)
 			.build();
+
+	/**
+	 * Reference to the register of entities identified by a globally unique
+	 * code.
+	 */
+	private static final MutableObject<Map<String, Pair<Long, Class>>> entityCodeToIdMapRef = new MutableObject();
 
 	/**
 	 * Entity instance (constant) to indicate "no entry found" in the cache or
@@ -190,6 +198,55 @@ public class EntityCacheServiceImpl extends AbstractService implements EntityCac
 	public void cleanEntityListingCache() {
 		idsListingCache.invalidateAll();
 		idsListingCache.cleanUp();
+	}
+
+	@Override
+	public void resetGlobalCodeRegister() {
+		synchronized (entityCodeToIdMapRef) {
+			entityCodeToIdMapRef.setValue(null);
+		}
+	}
+
+	private Pair<Long, Class> getEntityIdByCode(@NonNull final String code) {
+		synchronized (entityCodeToIdMapRef) {
+			final Map<String, Pair<Long, Class>> register = entityCodeToIdMapRef.getValue();
+			if (register != null) {
+				return register.get(code);
+			}
+			// register must be constructed
+			final Map<String, Pair<Long, Class>> newRegister = new HashMap<>(GLOBAL_CODE_REGISTER_CAPACITY);
+			runInTransaction(() -> {
+				final String errMessage = "Globally unique entity code constraint violation: Duplicate code '{}'";
+				getEntitiesFromDatabase(Task.class)
+						.forEach(t -> {
+							if (newRegister.put(t.getCode(), Pair.create(t.getId(), Task.class)) != null) {
+								log.warn(errMessage, t.getCode());
+							}
+						});
+				getEntitiesFromDatabase(Location.class)
+						.forEach(l -> {
+							if (newRegister.put(l.getCode(), Pair.create(l.getId(), Location.class)) != null) {
+								log.warn(errMessage, l.getCode());
+							}
+						});
+				getEntitiesFromDatabase(Clue.class)
+						.forEach(c -> {
+							if (newRegister.put(c.getCode(), Pair.create(c.getId(), Clue.class)) != null) {
+								log.warn(errMessage, c.getCode());
+							}
+						});
+				// set register reference
+				entityCodeToIdMapRef.setValue(newRegister);
+			});
+			return entityCodeToIdMapRef.getValue().get(code);
+		}
+	}
+
+	@Nonnull
+	@Override
+	public <T extends EntityLongId> Optional<T> getEntityByCode(@NonNull final String code) {
+		return Optional.ofNullable(getEntityIdByCode(code))
+				.flatMap(entry -> getEntityById(entry.getFirst(), (Class<T>) entry.getSecond()));
 	}
 
 	@Nonnull
@@ -424,17 +481,55 @@ public class EntityCacheServiceImpl extends AbstractService implements EntityCac
 				: getEntitiesFromDatabase(listingQuery.getObjectClass(), ids);
 	}
 
+	/**
+	 * Retrieves all the rows of the table associated with the entity class
+	 * {@code cls} from the database.
+	 *
+	 * <pre>SELECT * FROM cls</pre>
+	 *
+	 * @param <T> Entity type
+	 * @param cls Entity class
+	 * @return List of entities
+	 */
+	@Nonnull
+	private <T extends EntityLongId> List<T> getEntitiesFromDatabase(final Class<T> cls) {
+		return runInTransaction(() -> {
+			final CriteriaBuilder builder = getCriteriaBuilder();
+			final CriteriaQuery<T> criteria = builder.createQuery(cls);
+			final Root<T> root = criteria.from(cls);
+			// SELECT * FROM cls
+			criteria.select(root);
+			// get results
+			final TypedQuery<T> createQuery = createQuery(criteria);
+			final List<T> result = createQuery.getResultList();
+			return (result == null || result.isEmpty())
+					? Collections.emptyList()
+					: result;
+		});
+	}
+
+	/**
+	 * Retrieves the rows of the table associated with the entity class
+	 * {@code cls} and with specified ids from the database.
+	 *
+	 * <pre>SELECT * FROM cls WHRE id IN (ids)</pre>
+	 *
+	 * @param <T> Entity type
+	 * @param cls Entity class
+	 * @param ids List of entity ids
+	 * @return List of entities
+	 */
 	@Nonnull
 	private <T extends EntityLongId> List<T> getEntitiesFromDatabase(final Class<T> cls, final List<Long> ids) {
 		return runInTransaction(() -> {
-			final CriteriaBuilder builder = getSession().getCriteriaBuilder();
+			final CriteriaBuilder builder = getCriteriaBuilder();
 			final CriteriaQuery<T> criteria = builder.createQuery(cls);
 			final Root<T> root = criteria.from(cls);
 			// SELECT * FROM cls WHRE id IN (ids)
 			criteria.select(root).where(root.get(SchemaConstants.PRIMARY_KEY).in(ids));
 			// get results
-			final Query<T> query = getSession().createQuery(criteria);
-			final List<T> result = query.list();
+			final TypedQuery<T> createQuery = createQuery(criteria);
+			final List<T> result = createQuery.getResultList();
 			return (result == null || result.isEmpty())
 					? Collections.emptyList()
 					: result;
@@ -458,47 +553,13 @@ public class EntityCacheServiceImpl extends AbstractService implements EntityCac
 		public EntityLongId call() throws Exception {
 			return getLoadFunction(cls)
 					.apply(id)
-					.map(e -> detachEntity(e))
-					.map(e -> unproxyEntity(e))
+					.map(e -> detach(e))
+					.map(e -> unproxy(e))
 					.map(e -> initializeEntity(e))
 					.map(EntityLongId.class::cast)
 					// this will save the "not found" information in the cache
 					.orElse(NULL_ENTITY);
 		}
-	}
-
-	/**
-	 * Detach entity.
-	 *
-	 * @param <T> Entity type
-	 * @param entity Entity
-	 * @return Entity
-	 */
-	private <T extends Entity> T detachEntity(final T entity) {
-		detach(entity);
-		return entity;
-	}
-
-	/**
-	 * Unproxy entity.
-	 *
-	 * @param <T> Entity type
-	 * @param entity Entity
-	 * @return Entity
-	 */
-	private <T extends Entity> T unproxyEntity(final T entity) {
-		if (entity instanceof HibernateProxy) {
-			final LazyInitializer lazyInitializer = ((HibernateProxy) entity).getHibernateLazyInitializer();
-			if (lazyInitializer != null) {
-				final T _entity = (T) lazyInitializer.getImplementation();
-
-				log.info("Unproxy entity: \"{}\" >> \"{}\"", entity.getClass().getSimpleName(), _entity.getClass().getSimpleName());
-				return _entity;
-			}
-		}
-
-		log.info("Unproxy entity: \"{}\" is not HibernateProxy", entity.getClass().getSimpleName());
-		return entity;
 	}
 
 	/**
@@ -523,7 +584,7 @@ public class EntityCacheServiceImpl extends AbstractService implements EntityCac
 			if (members != null && !members.isEmpty()) {
 				final Set<TeamMember> detachedMembers = new LinkedHashSet<>();
 				members.forEach(member -> {
-					final TeamMember m = unproxyEntity(detachEntity(member));
+					final TeamMember m = unproxy(detach(member));
 					m.setTeam(team);
 					detachedMembers.add(m);
 				});

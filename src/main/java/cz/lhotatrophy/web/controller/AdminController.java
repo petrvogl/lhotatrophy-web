@@ -159,13 +159,15 @@ public class AdminController {
 			final Model model
 	) {
 		log.info("NEW TASK");
-		// task type validation
 		final TaskTypeEnum type = TaskTypeEnum.valueOf(taskForm.getTypeMark());
+		final String code = taskForm.getCode();
+		// task type validation
 		if (type == null) {
-			bindingResult.rejectValue(
-					"type",
-					"Unknown",
-					"Tento typ není platný");
+			bindingResult.rejectValue("type", "Unknown", "Tento typ není platný");
+		}
+		// code uniqueness validation
+		if (cacheService.getEntityByCode(code).isPresent()) {
+			bindingResult.rejectValue("code", "Duplicate", "Entita s tímto kódem už existuje.");
 		}
 		if (bindingResult.hasErrors()) {
 			final TaskListingQuerySpi query = TaskListingQuerySpi.create().setSorting(Task.orderByCode());
@@ -177,7 +179,7 @@ public class AdminController {
 		try {
 			taskService.registerNewTask(
 					type,
-					taskForm.getCode(),
+					code,
 					taskForm.getName(),
 					taskForm.getSolutions(),
 					taskForm.getSolutionHint(),
@@ -216,10 +218,15 @@ public class AdminController {
 			return "redirect:/admin/tasks";
 		}
 		model.addAttribute("task", optTask.get());
-		// task type validation
 		final TaskTypeEnum type = TaskTypeEnum.valueOf(taskForm.getTypeMark());
+		final String code = taskForm.getCode();
+		// task type validation
 		if (type == null) {
 			bindingResult.rejectValue("type", "Unknown", "Tento typ není platný");
+		}
+		// code uniqueness validation
+		if (cacheService.getEntityByCode(code).filter(t -> !t.equals(optTask.get())).isPresent()) {
+			bindingResult.rejectValue("code", "Duplicate", "Entita s tímto kódem už existuje.");
 		}
 		if (bindingResult.hasErrors()) {
 			return "admin/task";
@@ -288,6 +295,11 @@ public class AdminController {
 			final Model model
 	) {
 		log.info("NEW LOCATION");
+		final String code = locationForm.getCode();
+		// code uniqueness validation
+		if (cacheService.getEntityByCode(code).isPresent()) {
+			bindingResult.rejectValue("code", "Duplicate", "Entita s tímto kódem už existuje.");
+		}
 		if (bindingResult.hasErrors()) {
 			final LocationListingQuerySpi query = LocationListingQuerySpi.create().setSorting(Location.orderByCode());
 			final List<Location> locationListing = locationService.getLocationListing(query);
@@ -297,7 +309,7 @@ public class AdminController {
 		// save new location
 		try {
 			locationService.registerNewLocation(
-					locationForm.getCode(),
+					code,
 					locationForm.getName(),
 					locationForm.getDescription());
 		} catch (final Exception ex) {
@@ -333,6 +345,11 @@ public class AdminController {
 			return "redirect:/admin/locations";
 		}
 		model.addAttribute("location", optLocation.get());
+		final String code = locationForm.getCode();
+		// code uniqueness validation
+		if (cacheService.getEntityByCode(code).filter(l -> !l.equals(optLocation.get())).isPresent()) {
+			bindingResult.rejectValue("code", "Duplicate", "Entita s tímto kódem už existuje.");
+		}
 		if (bindingResult.hasErrors()) {
 			return "admin/location";
 		}
@@ -400,6 +417,11 @@ public class AdminController {
 			final Model model
 	) {
 		log.info("NEW CLUE");
+		final String code = clueForm.getCode();
+		// code uniqueness validation
+		if (cacheService.getEntityByCode(code).isPresent()) {
+			bindingResult.rejectValue("code", "Duplicate", "Entita s tímto kódem už existuje.");
+		}
 		if (bindingResult.hasErrors()) {
 			final ClueListingQuerySpi query = ClueListingQuerySpi.create().setSorting(Clue.orderByCode());
 			final List<Clue> clueListing = clueService.getClueListing(query);
@@ -409,7 +431,7 @@ public class AdminController {
 		// save new clue
 		try {
 			clueService.registerNewClue(
-					clueForm.getCode(),
+					code,
 					clueForm.getDescription());
 		} catch (final Exception ex) {
 			// something went wrong
@@ -444,6 +466,11 @@ public class AdminController {
 			return "redirect:/admin/clues";
 		}
 		model.addAttribute("clue", optClue.get());
+		final String code = clueForm.getCode();
+		// code uniqueness validation
+		if (cacheService.getEntityByCode(code).filter(c -> !c.equals(optClue.get())).isPresent()) {
+			bindingResult.rejectValue("code", "Duplicate", "Entita s tímto kódem už existuje.");
+		}
 		if (bindingResult.hasErrors()) {
 			return "admin/clue";
 		}

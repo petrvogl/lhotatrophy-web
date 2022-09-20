@@ -2,8 +2,10 @@ package cz.lhotatrophy.persist;
 
 import cz.lhotatrophy.persist.entity.Entity;
 import java.util.concurrent.Callable;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import lombok.NonNull;
-import org.hibernate.Session;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -14,11 +16,22 @@ import org.springframework.transaction.annotation.Transactional;
 public interface SessionHelper {
 
 	/**
-	 * Get current Hibernate session.
+	 * Create an instance of {@link TypedQuery} for executing a criteria query.
 	 *
-	 * @return session
+	 * @param <T> a criteria query type
+	 * @param criteriaQuery a criteria query object
+	 * @return the new query instance
 	 */
-	Session getSession();
+	<T extends Entity> TypedQuery<T> createQuery(@NonNull CriteriaQuery<T> query);
+
+	/**
+	 * Return an instance of {@link CriteriaBuilder} for the creation of
+	 * {@link CriteriaQuery} objects.
+	 *
+	 * @return CriteriaBuilder instance
+	 * @throws IllegalStateException if the entity manager has been closed
+	 */
+	CriteriaBuilder getCriteriaBuilder();
 
 	/**
 	 * Flush current Hibernate session.

@@ -10,15 +10,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  *
@@ -27,7 +22,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Getter
 @Log4j2
 @Configuration
-@EnableTransactionManagement
 @PropertySources({
 	@PropertySource("classpath:application.properties"),
 	@PropertySource("file:${WEB_LOCAL_CONFIG}")})
@@ -146,14 +140,6 @@ public class ApplicationConfig {
 				procedureRevealedPenalty,
 				solutionRevealedPenalty
 		);
-	}
-
-	@Bean
-	@Autowired
-	public JpaTransactionManager transactionManager(final SessionFactory sessionFactory) {
-		final JpaTransactionManager txManager = new JpaTransactionManager();
-		txManager.setEntityManagerFactory(sessionFactory);
-		return txManager;
 	}
 
 	/**

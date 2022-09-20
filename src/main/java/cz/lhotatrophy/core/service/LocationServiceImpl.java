@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -74,13 +75,14 @@ public class LocationServiceImpl extends AbstractService implements LocationServ
 			@NonNull final String name,
 			final String description
 	) {
-		if (locationDao.findByCode(code).isPresent()) {
-			throw new RuntimeException("Stanoviště s tímto kódem už existuje.");
+		// globally unique code check relies on up-to-date register
+		if (cacheService.getEntityByCode(code).isPresent()) {
+			throw new RuntimeException("Entita s tímto kódem už existuje.");
 		}
 		if (locationDao.findByName(name).isPresent()) {
 			throw new RuntimeException("Stanoviště s tímto názvem už existuje.");
 		}
-		return runInTransaction(() -> {
+		final Location newLocation = runInTransaction(() -> {
 			final Location location = createLocation(l -> {
 				l.setActive(true);
 				l.setCode(code);
@@ -92,6 +94,9 @@ public class LocationServiceImpl extends AbstractService implements LocationServ
 			log.info("New Location has been registered: [ {} / {} ]", location.getCode(), location.getName());
 			return location;
 		});
+		// keep GlobalCodeRegister up-to-date
+		cacheService.resetGlobalCodeRegister();
+		return newLocation;
 	}
 
 	@Override
@@ -101,6 +106,7 @@ public class LocationServiceImpl extends AbstractService implements LocationServ
 		Objects.requireNonNull(location.getCode());
 		Objects.requireNonNull(location.getName());
 		// save updates
+		final MutableBoolean codeHasChanged = new MutableBoolean(false);
 		final Location l = runInTransaction(() -> {
 			final Location originalLocation = locationDao.findById(locationId).orElse(null);
 			if (originalLocation == null) {
@@ -112,10 +118,12 @@ public class LocationServiceImpl extends AbstractService implements LocationServ
 			}
 			final String newCode = location.getCode();
 			if (!newCode.equals(originalLocation.getCode())) {
-				// code has changed
-				if (locationDao.findByCode(newCode).isPresent()) {
-					throw new RuntimeException("Stanoviště s tímto kódem už existuje.");
+				// globally unique code check relies on up-to-date register
+				if (cacheService.getEntityByCode(newCode).isPresent()) {
+					throw new RuntimeException("Entita s tímto kódem už existuje.");
 				}
+				// code has changed
+				codeHasChanged.setTrue();
 				originalLocation.setCode(newCode);
 			}
 			final String newName = location.getName();
@@ -133,6 +141,10 @@ public class LocationServiceImpl extends AbstractService implements LocationServ
 		if (l != location) {
 			// changes have been made
 			removeLocationFromCache(l.getId());
+			// keep GlobalCodeRegister up-to-date
+			if (codeHasChanged.isTrue()) {
+				cacheService.resetGlobalCodeRegister();
+			}
 		}
 	}
 }

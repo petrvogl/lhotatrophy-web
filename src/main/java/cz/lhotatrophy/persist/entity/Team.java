@@ -79,7 +79,7 @@ public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Tea
 	@ToString.Exclude
 	private Set<TeamMember> members;
 
-	@Column(name = "contestProgress", nullable = true, columnDefinition = "TEXT")
+	@Column(name = "contest_progress", nullable = true, columnDefinition = "TEXT")
 	@Convert(converter = ContestProgressToJsonStringConverter.class)
 	@ToString.Exclude
 	private TeamContestProgress contestProgress;

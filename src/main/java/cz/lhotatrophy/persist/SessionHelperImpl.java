@@ -1,14 +1,13 @@
 package cz.lhotatrophy.persist;
 
 import cz.lhotatrophy.persist.entity.Entity;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.Callable;
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,26 +17,28 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * @author Petr Vogl
  */
-@Component
 @Log4j2
+@Component
 public class SessionHelperImpl implements SessionHelper {
 
 	@Autowired
-	private transient SessionFactory sessionFactory;
+	private transient EntityManager entityManager;
 
 	/**
-	 * Get current Hibernate session.
-	 *
-	 * @return session
+	 * Create an instance of {@link TypedQuery} for executing a criteria query.
 	 */
 	@Override
-	public Session getSession() {
-		final Session currentSession = Objects.requireNonNull(sessionFactory, "sessionFactory must not be null").getCurrentSession();
-		if (log.isTraceEnabled()) {
-			final Transaction transaction = currentSession.getTransaction();
-			log.trace("TRANSACTION >>> session={}/{} transaction={}/{}", currentSession.isOpen(), currentSession.hashCode(), transaction.isActive(), transaction.hashCode());
-		}
-		return currentSession;
+	public <T extends Entity> TypedQuery<T> createQuery(@NonNull final CriteriaQuery<T> query) {
+		return entityManager.createQuery(query);
+	}
+
+	/**
+	 * Return an instance of {@link CriteriaBuilder} for the creation of
+	 * {@link CriteriaQuery} objects.
+	 */
+	@Override
+	public CriteriaBuilder getCriteriaBuilder() {
+		return entityManager.getCriteriaBuilder();
 	}
 
 	/**
@@ -45,7 +46,7 @@ public class SessionHelperImpl implements SessionHelper {
 	 */
 	@Override
 	public void flush() {
-		getSession().flush();
+		entityManager.flush();
 	}
 
 	/**
@@ -53,13 +54,9 @@ public class SessionHelperImpl implements SessionHelper {
 	 */
 	@Override
 	public void detach(@NonNull final Entity entity) {
-		Optional.ofNullable(getSession().getTransaction())
-				.map(Transaction::isActive)
-				.filter(Boolean.TRUE::equals)
-				.ifPresent(isActive -> {
-					log.info("Detach entity ({}) from Hibernate session.", entity.getClass().getSimpleName());
-					getSession().evict(entity);
-				});
+		if (entityManager.contains(entity)) {
+			entityManager.detach(entity);
+		}
 	}
 
 	/**
@@ -71,13 +68,8 @@ public class SessionHelperImpl implements SessionHelper {
 		try {
 			return command.call();
 		} catch (final Exception e) {
+			//entityManager.clear();
 			log.error("runInTransaction:\n", e);
-			Optional.ofNullable(getSession().getTransaction())
-					.map(Transaction::isActive)
-					.filter(Boolean.TRUE::equals)
-					.ifPresent(isActive -> {
-						getSession().clear();
-					});
 			if (e instanceof RuntimeException) {
 				throw (RuntimeException) e;
 			}
@@ -94,13 +86,8 @@ public class SessionHelperImpl implements SessionHelper {
 		try {
 			command.run();
 		} catch (final Exception e) {
+			//entityManager.clear();
 			log.error("runInTransaction:\n", e);
-			Optional.ofNullable(getSession().getTransaction())
-					.map(Transaction::isActive)
-					.filter(Boolean.TRUE::equals)
-					.ifPresent(isActive -> {
-						getSession().clear();
-					});
 			if (e instanceof RuntimeException) {
 				throw (RuntimeException) e;
 			}
@@ -114,6 +101,6 @@ public class SessionHelperImpl implements SessionHelper {
 	@Override
 	@Transactional
 	public void transactionRollback() {
-		getSession().getTransaction().rollback();
+		entityManager.getTransaction().rollback();
 	}
 }

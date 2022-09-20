@@ -50,6 +50,22 @@ public interface EntityCacheService extends Service {
 	void cleanEntityListingCache();
 
 	/**
+	 * Resets the register of entities identified by a globally unique code.
+	 */
+	void resetGlobalCodeRegister();
+
+	/**
+	 * Returns the entity from the register of entities identified by a globally
+	 * unique code.
+	 *
+	 * @param <T> Entity type
+	 * @param code Entity code
+	 * @return The entity associated with {@code code}
+	 */
+	@Nonnull
+	<T extends EntityLongId> Optional<T> getEntityByCode(@NonNull String code);
+
+	/**
 	 * Returns the entity associated with {@code id} in the cache, obtaining
 	 * that entity from EntityLoader if necessary. This method provides a simple
 	 * substitute for the conventional "if cached, return; otherwise create,

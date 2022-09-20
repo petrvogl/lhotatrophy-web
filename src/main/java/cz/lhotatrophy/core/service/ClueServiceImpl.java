@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -73,10 +74,11 @@ public class ClueServiceImpl extends AbstractService implements ClueService {
 			@NonNull final String code,
 			final String description
 	) {
-		if (clueDao.findByCode(code).isPresent()) {
-			throw new RuntimeException("Indicie s tímto kódem už existuje.");
+		// globally unique code check relies on up-to-date register
+		if (cacheService.getEntityByCode(code).isPresent()) {
+			throw new RuntimeException("Entita s tímto kódem už existuje.");
 		}
-		return runInTransaction(() -> {
+		final Clue newClue = runInTransaction(() -> {
 			final Clue clue = createClue(c -> {
 				c.setActive(true);
 				c.setCode(code);
@@ -87,6 +89,9 @@ public class ClueServiceImpl extends AbstractService implements ClueService {
 			log.info("New Clue has been registered: [ {} ]", clue.getCode());
 			return clue;
 		});
+		// keep GlobalCodeRegister up-to-date
+		cacheService.resetGlobalCodeRegister();
+		return newClue;
 	}
 
 	@Override
@@ -95,6 +100,7 @@ public class ClueServiceImpl extends AbstractService implements ClueService {
 		Objects.requireNonNull(clueId, "Indicie nelze aktualizovat (v databazi neexistuje).");
 		Objects.requireNonNull(clue.getCode());
 		// save updates
+		final MutableBoolean codeHasChanged = new MutableBoolean(false);
 		final Clue c = runInTransaction(() -> {
 			final Clue originalClue = clueDao.findById(clueId).orElse(null);
 			if (originalClue == null) {
@@ -106,10 +112,12 @@ public class ClueServiceImpl extends AbstractService implements ClueService {
 			}
 			final String newCode = clue.getCode();
 			if (!newCode.equals(originalClue.getCode())) {
-				// code has changed
-				if (clueDao.findByCode(newCode).isPresent()) {
-					throw new RuntimeException("Indicie s tímto kódem už existuje.");
+				// globally unique code check relies on up-to-date register
+				if (cacheService.getEntityByCode(newCode).isPresent()) {
+					throw new RuntimeException("Entita s tímto kódem už existuje.");
 				}
+				// code has changed
+				codeHasChanged.setTrue();
 				originalClue.setCode(newCode);
 			}
 			originalClue.setActive(clue.getActive());
@@ -119,6 +127,10 @@ public class ClueServiceImpl extends AbstractService implements ClueService {
 		if (c != clue) {
 			// changes have been made
 			removeClueFromCache(c.getId());
+			// keep GlobalCodeRegister up-to-date
+			if (codeHasChanged.isTrue()) {
+				cacheService.resetGlobalCodeRegister();
+			}
 		}
 	}
 }
