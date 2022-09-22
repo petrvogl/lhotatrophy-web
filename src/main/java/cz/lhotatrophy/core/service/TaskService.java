@@ -1,9 +1,13 @@
 package cz.lhotatrophy.core.service;
 
+import cz.lhotatrophy.persist.entity.EntityLongId;
+import cz.lhotatrophy.persist.entity.Location;
 import cz.lhotatrophy.persist.entity.Task;
 import cz.lhotatrophy.persist.entity.TaskTypeEnum;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import lombok.NonNull;
 
 /**
@@ -78,4 +82,21 @@ public interface TaskService extends Service {
 	 * @param id Persisted {@code Task} entity ID
 	 */
 	void removeTaskFromCache(@NonNull Long id);
+
+	/**
+	 * Invalidates the in-memory registry of task relationships.
+	 */
+	void invalidateTaskRelationshipsCache();
+
+	@Nonnull
+	Optional<Location> getLocationRelatedToTask(@NonNull Task task);
+
+	@Nonnull
+	Optional<Task> getTaskRelatedToLocation(@NonNull Location location, @NonNull TaskTypeEnum type);
+
+	@Nonnull
+	Stream<Task> getTasksRelatedToLocationStream(@NonNull Location location, TaskTypeEnum type);
+
+	@Nonnull
+	Stream<EntityLongId> getTaskRewardsStream(@NonNull Task task);
 }

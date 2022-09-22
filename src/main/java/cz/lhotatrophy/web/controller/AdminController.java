@@ -19,9 +19,11 @@ import cz.lhotatrophy.persist.entity.SaturdayOfferEnum;
 import cz.lhotatrophy.persist.entity.Task;
 import cz.lhotatrophy.persist.entity.TaskTypeEnum;
 import cz.lhotatrophy.persist.entity.Team;
+import cz.lhotatrophy.persist.entity.TeamContestProgress;
 import cz.lhotatrophy.persist.entity.TshirtOfferEnum;
 import cz.lhotatrophy.persist.entity.User;
 import cz.lhotatrophy.web.form.ClueForm;
+import cz.lhotatrophy.web.form.ContestProgressForm;
 import cz.lhotatrophy.web.form.LocationForm;
 import cz.lhotatrophy.web.form.TaskForm;
 import cz.lhotatrophy.web.form.UserRegistrationForm;
@@ -89,21 +91,73 @@ public class AdminController {
 	 * Detailed user information page
 	 */
 	@GetMapping("/user-info/{userId}")
-	public String userInfo(
+	public String getUserInfo(
 			@PathVariable Long userId,
+			final ContestProgressForm contestProgressForm,
 			final Model model
 	) {
 		log.info("USER INFO [" + userId + "]");
+		// verification of user existence
+		final Optional<User> optUser = userService.getUserByIdFromCache(userId);
+		if (optUser.isEmpty()) {
+			// user not found
+			return "redirect:/admin/index";
+		}
+		final User user = optUser.get();
+		// set model
+		model.addAttribute("user", user);
+		Optional.ofNullable(user.getTeam())
+				.map(Team::getId)
+				.flatMap(teamId -> teamService.getTeamByIdFromCache(teamId))
+				.ifPresent(team -> {
+					contestProgressForm.setFrom(team.getContestProgress());
+					model.addAttribute("team", team);
+				});
+		// render template
+		return "admin/user-info";
+	}
 
-		// logged in user and team
+	/**
+	 * Update user
+	 */
+	@PostMapping("/user-info/progress-{userId}")
+	public String postUserInfo(
+			@PathVariable Long userId,
+			final ContestProgressForm contestProgressForm,
+			final BindingResult bindingResult,
+			final Model model
+	) {
+		log.info("EDIT USER INFO [" + userId + "]");
+		// verification of user existence
 		final Optional<User> optUser = userService.getUserByIdFromCache(userId);
 		final Optional<Team> optTeam = optUser
 				.map(User::getTeam)
 				.map(Team::getId)
 				.flatMap(teamId -> teamService.getTeamByIdFromCache(teamId));
-		// set data
-		model.addAttribute("user", optUser.orElse(null));
-		model.addAttribute("team", optTeam.orElse(null));
+		if (optUser.isEmpty() || optTeam.isEmpty()) {
+			// user or team not found
+			return "redirect:/admin/index";
+		}
+		final User user = optUser.get();
+		final Team team = optTeam.get();
+		// set model
+		model.addAttribute("user", user);
+		model.addAttribute("team", team);
+		// validation results
+		if (bindingResult.hasErrors()) {
+			return "admin/user-info";
+		}
+		// update contest progress
+		try {
+			final TeamContestProgress contestProgress = contestProgressForm.toContestProgress();
+
+			// TODO - update team
+		} catch (final Exception ex) {
+			// something went wrong
+			log.error("Contest progress update failed.", ex);
+			bindingResult.reject("GlobalError", ex.getMessage());
+			return "admin/user-info";
+		}
 		// render template
 		return "admin/user-info";
 	}

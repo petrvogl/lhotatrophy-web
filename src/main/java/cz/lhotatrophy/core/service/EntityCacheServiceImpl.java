@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,7 +40,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.commons.math3.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -100,7 +100,7 @@ public class EntityCacheServiceImpl extends AbstractService implements EntityCac
 	 * Reference to the register of entities identified by a globally unique
 	 * code.
 	 */
-	private static final MutableObject<Map<String, Pair<Long, Class>>> entityCodeToIdMapRef = new MutableObject();
+	private static final AtomicReference<Map<String, Pair<Long, Class>>> entityCodeToIdMapRef = new AtomicReference();
 
 	/**
 	 * Entity instance (constant) to indicate "no entry found" in the cache or
@@ -202,18 +202,27 @@ public class EntityCacheServiceImpl extends AbstractService implements EntityCac
 
 	@Override
 	public void resetGlobalCodeRegister() {
-		synchronized (entityCodeToIdMapRef) {
-			entityCodeToIdMapRef.setValue(null);
-		}
+		// volatile access synchronization
+		entityCodeToIdMapRef.set(null);
 	}
 
 	private Pair<Long, Class> getEntityIdByCode(@NonNull final String code) {
-		synchronized (entityCodeToIdMapRef) {
-			final Map<String, Pair<Long, Class>> register = entityCodeToIdMapRef.getValue();
+		{
+			// volatile access synchronization
+			final Map<String, Pair<Long, Class>> register = entityCodeToIdMapRef.get();
 			if (register != null) {
 				return register.get(code);
 			}
-			// register must be constructed
+		}
+		// Register construction is synchronized on register reference.
+		// It prevents threads blocking on #resetGlobalCodeRegister().
+		synchronized (entityCodeToIdMapRef) {
+			// double check
+			final Map<String, Pair<Long, Class>> register = entityCodeToIdMapRef.get();
+			if (register != null) {
+				return register.get(code);
+			}
+			// load the current state from the database
 			final Map<String, Pair<Long, Class>> newRegister = new HashMap<>(GLOBAL_CODE_REGISTER_CAPACITY);
 			runInTransaction(() -> {
 				final String errMessage = "Globally unique entity code constraint violation: Duplicate code '{}'";
@@ -235,10 +244,10 @@ public class EntityCacheServiceImpl extends AbstractService implements EntityCac
 								log.warn(errMessage, c.getCode());
 							}
 						});
-				// set register reference
-				entityCodeToIdMapRef.setValue(newRegister);
 			});
-			return entityCodeToIdMapRef.getValue().get(code);
+			// volatile access synchronization
+			entityCodeToIdMapRef.set(newRegister);
+			return newRegister.get(code);
 		}
 	}
 

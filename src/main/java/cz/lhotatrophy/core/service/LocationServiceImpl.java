@@ -24,6 +24,8 @@ public class LocationServiceImpl extends AbstractService implements LocationServ
 	@Autowired
 	private transient LocationDao locationDao;
 	@Autowired
+	private transient TaskService taskService;
+	@Autowired
 	private transient EntityCacheService cacheService;
 
 	@NonNull
@@ -96,6 +98,8 @@ public class LocationServiceImpl extends AbstractService implements LocationServ
 		});
 		// keep GlobalCodeRegister up-to-date
 		cacheService.resetGlobalCodeRegister();
+		// discard all cached relationships
+		taskService.invalidateTaskRelationshipsCache();
 		return newLocation;
 	}
 
@@ -145,6 +149,8 @@ public class LocationServiceImpl extends AbstractService implements LocationServ
 			if (codeHasChanged.isTrue()) {
 				cacheService.resetGlobalCodeRegister();
 			}
+			// discard all cached relationships
+			taskService.invalidateTaskRelationshipsCache();
 		}
 	}
 }

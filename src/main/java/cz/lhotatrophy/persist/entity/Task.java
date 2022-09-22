@@ -5,6 +5,7 @@ import cz.lhotatrophy.utils.CzechComparator;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -251,11 +252,12 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 		}
 		synchronized (this) {
 			if (rewardCodes == null) {
-				rewardCodes = StringUtils.isEmpty(solutionsString)
+				rewardCodes = StringUtils.isEmpty(rewardCodesString)
 						? Collections.emptySet()
-						: Arrays.stream(solutionsString.split(MULTIPLE_VALUES_SEPARATOR_REGEXP))
+						: Arrays.stream(rewardCodesString.split(MULTIPLE_VALUES_SEPARATOR_REGEXP))
 								.filter(StringUtils::isNotEmpty)
-								.collect(Collectors.toUnmodifiableSet());
+								.collect(Collectors.toCollection(LinkedHashSet::new));
+				rewardCodes = Collections.unmodifiableSet(rewardCodes);
 			}
 		}
 		return rewardCodes;
