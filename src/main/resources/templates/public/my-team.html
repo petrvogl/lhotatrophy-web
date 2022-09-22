@@ -52,7 +52,7 @@
 					<!--/*
 					*	Upozoznění pro týmy pod čarou
 					*/-->
-					<div th:if="${team != null and team.id gt appConfig.get('teamRegistrationLimit')}"
+					<div th:if="${team != null and team.id gt appConfig.teamRegistrationLimit}"
 						 class="block golden-ratio">
 						<div class="block-inner visible white bg-lt-color-2">
 							<p>Z&nbsp;kapacitních důvodů patří váš tým zatím mezi náhradníky.
@@ -190,7 +190,7 @@
 					*/-->
 					<div th:if="${team != null}"
 						 th:with="
-						 isWithinLimit=${team.id le appConfig.get('teamRegistrationLimit')},
+						 isWithinLimit=${team.id le appConfig.teamRegistrationLimit},
 						 startPrice=${2000},
 						 totalPrice=${team.expenses}"
 						 class="block golden-ratio">

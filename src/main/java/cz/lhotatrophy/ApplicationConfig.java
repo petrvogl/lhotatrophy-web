@@ -36,6 +36,12 @@ public class ApplicationConfig {
 	 */
 	public static final TimeZone DEFAULT_TIME_ZONE = TimeZone.getTimeZone(DEFAULT_ZONE_ID);
 	/**
+	 * Maximum number of teams.
+	 */
+	@Nonnull
+	@Value("${contest.teamRegistrationLimit:50}")
+	private transient Integer teamRegistrationLimit;
+	/**
 	 * Total length of ideal route from the start to the finish in kilometers.
 	 */
 	@Nonnull

@@ -1,5 +1,6 @@
 package cz.lhotatrophy.web.controller;
 
+import cz.lhotatrophy.ApplicationConfig;
 import cz.lhotatrophy.core.exceptions.UsernameOrEmailIsTakenException;
 import cz.lhotatrophy.core.exceptions.WeakPasswordException;
 import cz.lhotatrophy.core.service.ClueListingQuerySpi;
@@ -51,6 +52,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AdminController {
 
 	@Autowired
+	private transient ApplicationConfig appConfig;
+	@Autowired
 	private transient EntityCacheService cacheService;
 	@Autowired
 	private transient UserService userService;
@@ -85,6 +88,16 @@ public class AdminController {
 		model.addAttribute("saturdayOrders", teamService.getTeamOrdersFrequency(SaturdayOfferEnum.class));
 		model.addAttribute("tshirtOrders", teamService.getTeamOrdersFrequency(TshirtOfferEnum.class));
 		return "admin/orders";
+	}
+
+	/**
+	 * Configuration
+	 */
+	@GetMapping("/configuration")
+	public String config(final Model model) {
+		log.info("CONFIGURATION");
+		model.addAttribute("appConfig", appConfig);
+		return "admin/configuration";
 	}
 
 	/**

@@ -1,5 +1,6 @@
 package cz.lhotatrophy.web.controller;
 
+import cz.lhotatrophy.ApplicationConfig;
 import cz.lhotatrophy.core.exceptions.UsernameOrEmailIsTakenException;
 import cz.lhotatrophy.core.exceptions.WeakPasswordException;
 import cz.lhotatrophy.core.service.TeamListingQuerySpi;
@@ -13,9 +14,7 @@ import cz.lhotatrophy.web.form.TeamSettingsForm;
 import cz.lhotatrophy.web.form.UserPasswordRecoveryForm;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +38,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Log4j2
 public class MainController {
 
+	@Autowired
+	private transient ApplicationConfig appConfig;
 	@Autowired
 	private transient UserService userService;
 	@Autowired
@@ -301,14 +302,8 @@ public class MainController {
 	 * @param model
 	 */
 	private void initModel(final Model model) {
-		// FIXME - udelat lepe
-		final Map<String, Object> appConfig;
-		{
-			appConfig = new HashMap<>();
-			// TOTO - system property
-			appConfig.put("teamRegistrationLimit", 50L);
-			model.addAttribute("appConfig", appConfig);
-		}
+		// global configuration
+		model.addAttribute("appConfig", appConfig);
 		// logged in user and team
 		final Optional<User> optUser = userService.getLoggedInUser();
 		final Optional<Team> optTeam = optUser.map(User::getTeam);
