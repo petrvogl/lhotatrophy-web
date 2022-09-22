@@ -104,15 +104,13 @@ public class AdminController {
 			return "redirect:/admin/index";
 		}
 		final User user = optUser.get();
+		final Team team = user.getTeam();
 		// set model
 		model.addAttribute("user", user);
-		Optional.ofNullable(user.getTeam())
-				.map(Team::getId)
-				.flatMap(teamId -> teamService.getTeamByIdFromCache(teamId))
-				.ifPresent(team -> {
-					contestProgressForm.setFrom(team.getContestProgress());
-					model.addAttribute("team", team);
-				});
+		model.addAttribute("team", team);
+		if (team != null) {
+			contestProgressForm.setFrom(team.getContestProgress());
+		}
 		// render template
 		return "admin/user-info";
 	}
@@ -120,7 +118,7 @@ public class AdminController {
 	/**
 	 * Update user
 	 */
-	@PostMapping("/user-info/progress-{userId}")
+	@PostMapping("/user-info/{userId}")
 	public String postUserInfo(
 			@PathVariable Long userId,
 			final ContestProgressForm contestProgressForm,
@@ -130,10 +128,7 @@ public class AdminController {
 		log.info("EDIT USER INFO [" + userId + "]");
 		// verification of user existence
 		final Optional<User> optUser = userService.getUserByIdFromCache(userId);
-		final Optional<Team> optTeam = optUser
-				.map(User::getTeam)
-				.map(Team::getId)
-				.flatMap(teamId -> teamService.getTeamByIdFromCache(teamId));
+		final Optional<Team> optTeam = optUser.map(User::getTeam);
 		if (optUser.isEmpty() || optTeam.isEmpty()) {
 			// user or team not found
 			return "redirect:/admin/index";

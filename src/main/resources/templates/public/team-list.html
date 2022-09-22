@@ -51,9 +51,9 @@
 								<!--/*
 								*	Listing data
 								*/-->
-								<th:block th:each="teamData, stat : ${allTeamsList}"
+								<th:block th:each="teamData, stat : ${teamListing}"
 										  th:with="
-										  owner=${getOwner.apply(teamData)},
+										  owner=${teamData.owner},
 										  zaplaceno=${owner != null ? owner.getProperty('zaplaceno').orElse(false) : false}">
 									<div th:class="${stat.odd ? 'odd-line' : 'even-line'}"
 										 th:classappend="${teamData.active != true} ? 'inactive' : _">

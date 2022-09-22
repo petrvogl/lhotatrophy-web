@@ -41,7 +41,7 @@
 
 				<h3>Základní údaje</h3>
 				
-				<form th:action="@{~__|/user-info/progress-${user.id}|__}"
+				<form th:action="@{~__|/admin/user-info/${user.id}|__}"
 					  th:object="${contestProgressForm}"
 					  method="post">
 					<table class="invisible-theme">
@@ -98,7 +98,12 @@
 						</tr>
 						<tr>
 							<td colspan="2" class="center">
+								<br />
 								<input type="submit" value="Uložit změny" />
+								&nbsp;
+								<button type="button"
+										th:with="onClick=|location.href = location.origin + '/admin/user-info/${user.id}'|"
+										th:attr="onClick=${onClick}"> Zrušit </button>
 							</td>
 						</tr>
 					</table>

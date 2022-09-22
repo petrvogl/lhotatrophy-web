@@ -3,6 +3,7 @@ package cz.lhotatrophy.persist.entity;
 import cz.lhotatrophy.persist.SchemaConstants;
 import cz.lhotatrophy.utils.DateTimeUtils;
 import java.time.LocalDateTime;
+import java.util.function.BiFunction;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,7 +31,7 @@ import lombok.ToString;
 @Setter
 @ToString(callSuper = true)
 @NoArgsConstructor
-public class User extends AbstractEntityWithSimpleProperties<Long, User> implements EntityLongId<User> {
+public class User extends AbstractEntityWithSimpleProperties<Long, User> implements EntityLongId<User>, EntityWithCacheAccess {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,6 +64,11 @@ public class User extends AbstractEntityWithSimpleProperties<Long, User> impleme
 	@Transient
 	private transient LocalDateTime createdDateTime;
 
+	@Transient
+	@ToString.Exclude
+	@Getter(AccessLevel.NONE)
+	private transient BiFunction<Long, Class<? extends EntityLongId>, ? extends EntityLongId> cachedEntityGetter;
+
 	public boolean isActive() {
 		return Boolean.TRUE.equals(getActive());
 	}
@@ -87,5 +94,13 @@ public class User extends AbstractEntityWithSimpleProperties<Long, User> impleme
 			setCreated(DateTimeUtils.toEpochMilli(createdDateTime));
 			this.createdDateTime = createdDateTime;
 		}
+	}
+
+	public Team getTeam() {
+		if (cachedEntityGetter == null || team == null) {
+			return team;
+		}
+		// if cache access is available, then is used
+		return (Team) cachedEntityGetter.apply(team.getId(), Team.class);
 	}
 }

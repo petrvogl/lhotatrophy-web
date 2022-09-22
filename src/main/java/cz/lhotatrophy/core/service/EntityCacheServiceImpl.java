@@ -10,6 +10,7 @@ import cz.lhotatrophy.persist.dao.TeamDao;
 import cz.lhotatrophy.persist.dao.UserDao;
 import cz.lhotatrophy.persist.entity.Clue;
 import cz.lhotatrophy.persist.entity.EntityLongId;
+import cz.lhotatrophy.persist.entity.EntityWithCacheAccess;
 import cz.lhotatrophy.persist.entity.Location;
 import cz.lhotatrophy.persist.entity.Task;
 import cz.lhotatrophy.persist.entity.Team;
@@ -579,15 +580,15 @@ public class EntityCacheServiceImpl extends AbstractService implements EntityCac
 	 * @return Entity
 	 */
 	private <T extends EntityLongId> T initializeEntity(final T entity) {
+		// set cache access
+		if (entity instanceof EntityWithCacheAccess) {
+			final EntityWithCacheAccess e = (EntityWithCacheAccess) entity;
+			e.setCachedEntityGetter((id, cls) -> {
+				return getEntityById(id, cls).orElse(null);
+			});
+		}
 		if (entity instanceof Team) {
 			final Team team = (Team) entity;
-			// FIXME - remove this code
-			// init team owner eagerly
-			final Long userId = team.getOwner().getId();
-			getEntityById(userId, User.class).ifPresent(user -> {
-				team.setOwner(user);
-				user.setTeam(team);
-			});
 			// detach, unproxy and initialize set of team members
 			final Set<TeamMember> members = team.getMembers();
 			if (members != null && !members.isEmpty()) {

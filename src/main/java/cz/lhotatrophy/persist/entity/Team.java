@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
@@ -57,7 +58,7 @@ import org.apache.commons.math3.util.Pair;
 @Setter
 @ToString
 @NoArgsConstructor
-public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Team> {
+public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Team>, EntityWithCacheAccess {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -87,7 +88,12 @@ public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Tea
 	@Transient
 	@ToString.Exclude
 	@Setter(AccessLevel.NONE)
-	private Supplier<Map<String, Frequency>> frequencyCacheSupplier;
+	private transient Supplier<Map<String, Frequency>> frequencyCacheSupplier;
+
+	@Transient
+	@ToString.Exclude
+	@Getter(AccessLevel.NONE)
+	private transient BiFunction<Long, Class<? extends EntityLongId>, ? extends EntityLongId> cachedEntityGetter;
 
 	@PrePersist
 	@PreUpdate
@@ -95,6 +101,14 @@ public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Tea
 		if (CollectionUtils.isEmpty(members)) {
 			members = null;
 		}
+	}
+
+	public User getOwner() {
+		if (cachedEntityGetter == null || owner == null) {
+			return owner;
+		}
+		// if cache access is available, then is used
+		return (User) cachedEntityGetter.apply(owner.getId(), User.class);
 	}
 
 	@NonNull

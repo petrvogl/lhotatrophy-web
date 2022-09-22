@@ -45,7 +45,6 @@ public class AdminRestController {
 						log.info("user.addProperty(\"{}\", {})", entry.getKey(), entry.getValue());
 					});
 					userService.updateUser(user);
-					teamService.removeTeamFromCache(user.getTeam().getId());
 					return user;
 				})
 				.orElse(null);

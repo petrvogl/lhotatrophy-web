@@ -126,7 +126,7 @@ public abstract class AbstractService implements Service {
 	 * @return User information
 	 */
 	@NonNull
-	public Optional<UserDetails> getUserDetails() {
+	protected Optional<UserDetails> getUserDetails() {
 		return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
 				.map(Authentication::getPrincipal)
 				.filter(UserDetails.class::isInstance)
@@ -139,7 +139,7 @@ public abstract class AbstractService implements Service {
 	 * @return User entity
 	 */
 	@NonNull
-	public Optional<User> getLoggedInUser() {
+	protected Optional<User> getLoggedInUser() {
 		return getUserDetails().map(UserDetails::getLoggedInUser);
 	}
 
@@ -148,7 +148,7 @@ public abstract class AbstractService implements Service {
 	 *
 	 * @return User entity
 	 */
-	public boolean isLoggedInUserSuperadmin() {
+	protected boolean isLoggedInUserSuperadmin() {
 		return getUserDetails()
 				.map(d -> d.hasAuthority(UserDetails.SUPERADMIN_ROLE))
 				.orElse(Boolean.FALSE);

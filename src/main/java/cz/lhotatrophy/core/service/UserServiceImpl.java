@@ -151,4 +151,20 @@ public class UserServiceImpl extends AbstractService implements UserService {
 		}
 		SecurityContextHolder.getContext().setAuthentication(null);
 	}
+
+	@Override
+	public Optional<cz.lhotatrophy.core.security.UserDetails> getUserDetails() {
+		return super.getUserDetails();
+	}
+
+	@Override
+	public Optional<User> getLoggedInUser() {
+		// get the entity from cache
+		return super.getLoggedInUser().flatMap(user -> cacheService.getEntityById(user.getId(), User.class));
+	}
+
+	@Override
+	public boolean isLoggedInUserSuperadmin() {
+		return super.isLoggedInUserSuperadmin();
+	}
 }
