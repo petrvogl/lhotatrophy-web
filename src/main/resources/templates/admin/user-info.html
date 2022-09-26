@@ -96,6 +96,9 @@
 								<div th:if="${#fields.hasErrors('timestampAtFinish')}" th:errors="*{timestampAtFinish}" class="error"> [ error ] </div>
 							</td>
 						</tr>
+						<tr th:if="${#fields.hasGlobalErrors()}">
+							<td></td><td><p th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </p></td>
+						</tr>
 						<tr>
 							<td colspan="2" class="center">
 								<br />

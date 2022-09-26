@@ -4,7 +4,7 @@ import cz.lhotatrophy.persist.entity.Location;
 
 /**
  * Listing Query API for defining a query to list {@link Location} entities.
- * 
+ *
  * @author Petr Vogl
  */
 public interface LocationListingQuerySpi extends EntityListingQuerySpi<Location, LocationListingQuerySpi> {
@@ -18,7 +18,7 @@ public interface LocationListingQuerySpi extends EntityListingQuerySpi<Location,
 	static LocationListingQuerySpi create() {
 		return new LocationListingQuery();
 	}
-	
+
 	/**
 	 * Returns the criterion value for the activity status. If it returns
 	 * {@code null}, the criterion is not set.
@@ -32,4 +32,18 @@ public interface LocationListingQuerySpi extends EntityListingQuerySpi<Location,
 	 * @return Listing query
 	 */
 	LocationListingQuerySpi setActive(Boolean active);
+
+	/**
+	 * Returns the criterion value for the location type. If it returns
+	 * {@code null}, the criterion is not set.
+	 */
+	Boolean getDestination();
+
+	/**
+	 * Sets the criterion for the location type.
+	 *
+	 * @param destination criterion value
+	 * @return Listing query
+	 */
+	LocationListingQuerySpi setDestination(Boolean destination);
 }

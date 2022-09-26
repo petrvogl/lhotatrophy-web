@@ -2,6 +2,7 @@ package cz.lhotatrophy.core.service;
 
 import cz.lhotatrophy.core.exceptions.UsernameOrEmailIsTakenException;
 import cz.lhotatrophy.core.exceptions.WeakPasswordException;
+import cz.lhotatrophy.core.security.UserDetails;
 import cz.lhotatrophy.persist.dao.UserDao;
 import cz.lhotatrophy.persist.entity.User;
 import java.util.Map;
@@ -14,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -138,7 +138,8 @@ public class UserServiceImpl extends AbstractService implements UserService {
 
 	@Override
 	public void autologin(@NonNull final User user) {
-		final UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+		final org.springframework.security.core.userdetails.UserDetails userDetails;
+		userDetails = userDetailsService.loadUserByUsername(user.getEmail());
 		final Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 		SecurityContextHolder.getContext().setAuthentication(auth);
 	}
@@ -153,14 +154,24 @@ public class UserServiceImpl extends AbstractService implements UserService {
 	}
 
 	@Override
-	public Optional<cz.lhotatrophy.core.security.UserDetails> getUserDetails() {
+	public Optional<UserDetails> getUserDetails() {
 		return super.getUserDetails();
 	}
 
 	@Override
 	public Optional<User> getLoggedInUser() {
 		// get the entity from cache
-		return super.getLoggedInUser().flatMap(user -> cacheService.getEntityById(user.getId(), User.class));
+		return getUserDetails()
+				.map(UserDetails::getLoggedInUser)
+				.flatMap(user -> cacheService.getEntityById(user.getId(), User.class));
+	}
+
+	@Override
+	public Optional<User> getEffectiveUser() {
+		// get the entity from cache
+		return getUserDetails()
+				.map(UserDetails::getEffectiveUser)
+				.flatMap(user -> cacheService.getEntityById(user.getId(), User.class));
 	}
 
 	@Override

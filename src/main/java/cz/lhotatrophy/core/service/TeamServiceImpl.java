@@ -110,6 +110,12 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 	}
 
 	@Override
+	public Optional<Team> getEffectiveTeam() {
+		return userService.getEffectiveUser()
+				.map(User::getTeam);
+	}
+
+	@Override
 	public Team registerNewTeam(@NonNull final String name, @NonNull final User owner) {
 		if (getTeamByName(name).isPresent()) {
 			throw new RuntimeException("Tým s tímto názvem už existuje.");
@@ -135,8 +141,20 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 
 	@Override
 	public void updateTeam(@NonNull final Team team) {
-		final Team t = teamDao.save(team);
-		removeTeamFromCache(t.getId());
+		if (team.getId() == null || isManagedInPersistenceContext(team)) {
+			// team instance is not persisted yet or it is managed in persistence context
+			final Team t = teamDao.save(team);
+			removeTeamFromCache(t.getId());
+			return;
+		}
+		// team instance is plain data transfer object
+		runInTransaction(() -> {
+			final Long teamId = team.getId();
+			final Team _team = teamDao.findById(teamId).get();
+			_team.merge(team);
+			teamDao.save(_team);
+			removeTeamFromCache(teamId);
+		});
 	}
 
 	@Override

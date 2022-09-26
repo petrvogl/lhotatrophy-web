@@ -47,6 +47,15 @@ public interface SessionHelper {
 	void detach(@NonNull Entity entity);
 
 	/**
+	 * Check if the instance is a managed entity instance belonging to the
+	 * current persistence context.
+	 *
+	 * @param entity Entity instance
+	 * @return {@code true} if entity is in persistence context
+	 */
+	boolean isManagedInPersistenceContext(@NonNull Entity entity);
+
+	/**
 	 * Run command in transaction.
 	 */
 	@Transactional

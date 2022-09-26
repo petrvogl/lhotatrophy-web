@@ -10,7 +10,7 @@ import lombok.ToString;
 /**
  * The record of contest code acceptance. It reports on the completion of the
  * task.
- * 
+ *
  * @author Petr Vogl
  */
 @Getter
@@ -29,6 +29,10 @@ public class TeamContestProgressCode implements Serializable {
 	 */
 	private String group;
 	/**
+	 * Accepted solution.
+	 */
+	private String solution;
+	/**
 	 * Indicates that the solution hint was used.
 	 */
 	private boolean hintRevealed;
@@ -44,4 +48,13 @@ public class TeamContestProgressCode implements Serializable {
 	 * Time of acceptance.
 	 */
 	private long ts;
+
+	/**
+	 * Indicates whether the code has been accepted.
+	 *
+	 * @return {@code true} if accepted
+	 */
+	public boolean accepted() {
+		return ts > 0l && solution != null;
+	}
 }

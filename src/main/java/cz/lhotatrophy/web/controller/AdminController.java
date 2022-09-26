@@ -1,8 +1,8 @@
 package cz.lhotatrophy.web.controller;
 
-import cz.lhotatrophy.ApplicationConfig;
 import cz.lhotatrophy.core.exceptions.UsernameOrEmailIsTakenException;
 import cz.lhotatrophy.core.exceptions.WeakPasswordException;
+import cz.lhotatrophy.core.security.UserDetails;
 import cz.lhotatrophy.core.service.ClueListingQuerySpi;
 import cz.lhotatrophy.core.service.ClueService;
 import cz.lhotatrophy.core.service.EntityCacheService;
@@ -12,7 +12,6 @@ import cz.lhotatrophy.core.service.TaskListingQuerySpi;
 import cz.lhotatrophy.core.service.TaskService;
 import cz.lhotatrophy.core.service.TeamListingQuerySpi;
 import cz.lhotatrophy.core.service.TeamService;
-import cz.lhotatrophy.core.service.UserService;
 import cz.lhotatrophy.persist.entity.Clue;
 import cz.lhotatrophy.persist.entity.FridayOfferEnum;
 import cz.lhotatrophy.persist.entity.Location;
@@ -20,7 +19,6 @@ import cz.lhotatrophy.persist.entity.SaturdayOfferEnum;
 import cz.lhotatrophy.persist.entity.Task;
 import cz.lhotatrophy.persist.entity.TaskTypeEnum;
 import cz.lhotatrophy.persist.entity.Team;
-import cz.lhotatrophy.persist.entity.TeamContestProgress;
 import cz.lhotatrophy.persist.entity.TshirtOfferEnum;
 import cz.lhotatrophy.persist.entity.User;
 import cz.lhotatrophy.web.form.ClueForm;
@@ -41,6 +39,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  *
@@ -49,14 +48,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/admin")
 @Log4j2
-public class AdminController {
+public class AdminController extends AbstractController {
 
 	@Autowired
-	private transient ApplicationConfig appConfig;
-	@Autowired
 	private transient EntityCacheService cacheService;
-	@Autowired
-	private transient UserService userService;
 	@Autowired
 	private transient TeamService teamService;
 	@Autowired
@@ -72,10 +67,39 @@ public class AdminController {
 	@GetMapping()
 	public String index(final Model model) {
 		log.info("ADMIN");
+		initModel(model);
 		model.addAttribute("teamListing", teamService.getTeamListing(TeamListingQuerySpi.create()));
 		model.addAttribute("fridayTotal", new MutableInt(0));
 		model.addAttribute("saturdayTotal", new MutableInt(0));
 		return "admin/index";
+	}
+
+	/**
+	 * Impersonation
+	 */
+	@GetMapping("/impersonate/{userId}")
+	public String impersonate(
+			@PathVariable Long userId,
+			@RequestParam(required = false, defaultValue = "false") boolean reset
+	) {
+		log.info("IMPERSONATE");
+		final Optional<User> optUser = userService.getUserByIdFromCache(userId);
+		if (optUser.isEmpty()) {
+			// user not found
+			return "redirect:/admin";
+		}
+		final UserDetails userDetails = getUserDetails().get();
+		if (reset) {
+			userDetails.resetSwitch();
+		} else {
+			userService.runInTransaction(() -> {
+				userService.getUserById(userId)
+						.ifPresent(userToImpersonate -> {
+							userDetails.switchUser(userToImpersonate);
+						});
+			});
+		}
+		return "redirect:/admin";
 	}
 
 	/**
@@ -96,7 +120,7 @@ public class AdminController {
 	@GetMapping("/configuration")
 	public String config(final Model model) {
 		log.info("CONFIGURATION");
-		model.addAttribute("appConfig", appConfig);
+		initModel(model);
 		return "admin/configuration";
 	}
 
@@ -114,7 +138,7 @@ public class AdminController {
 		final Optional<User> optUser = userService.getUserByIdFromCache(userId);
 		if (optUser.isEmpty()) {
 			// user not found
-			return "redirect:/admin/index";
+			return "redirect:/admin";
 		}
 		final User user = optUser.get();
 		final Team team = user.getTeam();
@@ -144,7 +168,7 @@ public class AdminController {
 		final Optional<Team> optTeam = optUser.map(User::getTeam);
 		if (optUser.isEmpty() || optTeam.isEmpty()) {
 			// user or team not found
-			return "redirect:/admin/index";
+			return "redirect:/admin";
 		}
 		final User user = optUser.get();
 		final Team team = optTeam.get();
@@ -157,9 +181,11 @@ public class AdminController {
 		}
 		// update contest progress
 		try {
-			final TeamContestProgress contestProgress = contestProgressForm.toContestProgress();
-
-			// TODO - update team
+			teamService.runInTransaction(() -> {
+				final Team _team = teamService.getTeamById(team.getId()).get();
+				contestProgressForm.toContestProgress(_team::getContestProgress);
+				teamService.updateTeam(_team);
+			});
 		} catch (final Exception ex) {
 			// something went wrong
 			log.error("Contest progress update failed.", ex);

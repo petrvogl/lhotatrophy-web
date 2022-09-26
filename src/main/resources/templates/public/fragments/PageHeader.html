@@ -65,7 +65,10 @@
 					<h1>Administrace</h1>
 					<p>
 						Přihlášený uživatel: <th:block sec:authentication="name"> [ username ] </th:block>
-						<th:block sec:authorize="hasAuthority('SUPERADMIN')"> (SUPERADMIN) </th:block>
+						(
+						<th:block sec:authorize="hasAuthority('ADMIN')">ADMIN</th:block>
+						<th:block sec:authorize="hasAuthority('SUPERADMIN')">SUPERADMIN</th:block>
+						)
 					</p>
 					<form th:action="@{/logout}" method="post"><input type="submit" value="Odhlásit se"/></form>
 				</div>

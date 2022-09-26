@@ -11,11 +11,14 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -95,6 +98,12 @@ public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Tea
 	@Getter(AccessLevel.NONE)
 	private transient BiFunction<Long, Class<? extends EntityLongId>, ? extends EntityLongId> cachedEntityGetter;
 
+	@Transient
+	@ToString.Exclude
+	@Getter(AccessLevel.NONE)
+	@Setter(AccessLevel.NONE)
+	private transient Map<Object, Object> dataCache;
+
 	@PrePersist
 	@PreUpdate
 	void prePersist() {
@@ -121,6 +130,30 @@ public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Tea
 			}
 		}
 		return contestProgress;
+	}
+
+	/**
+	 * Informs whether the team has been disqualified.
+	 */
+	public boolean isDisqualified() {
+		return contestProgress != null && contestProgress.isDisqualified();
+	}
+
+	/**
+	 * Sets all attributes of {@code this} object by values of corresponding
+	 * attributes of {@code other} object except the primary and foreign key
+	 * attributes.
+	 *
+	 * @param other Other object
+	 */
+	public void merge(final Team other) {
+		if (other == null) {
+			// null-safe
+			return;
+		}
+		active = other.active;
+		name = other.name;
+		contestProgress = other.contestProgress;
 	}
 
 	private synchronized Set<TeamMember> getMembersSync(final boolean createIfNotSet) {
@@ -250,5 +283,66 @@ public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Tea
 	@ToString.Include(name = "ownerId")
 	Long getOwnerId() {
 		return owner == null ? null : owner.getId();
+	}
+
+	@Nonnull
+	private Map<Object, Object> getOrCreateDataCache() {
+		if (dataCache != null) {
+			return dataCache;
+		}
+		synchronized (this) {
+			if (dataCache == null) {
+				dataCache = new HashMap<>();
+			}
+		}
+		return dataCache;
+	}
+
+	private <T> Object putDataInternal(final Object key, final T data) {
+		final Map<Object, Object> cache = getOrCreateDataCache();
+		// the previous value may be of a different type
+		return cache.put(key, data);
+	}
+
+	private <T> T getDataOrDefaultInternal(final Object key, final T defaultValue) {
+		if (dataCache == null) {
+			return defaultValue;
+		}
+		final Object cachedValue = dataCache.get(key);
+		return (cachedValue == null ? defaultValue : (T) cachedValue);
+	}
+
+	public <T> T getData(@NonNull final Object key) {
+		return (T) getDataOrDefaultInternal(key, null);
+	}
+
+	public <T> T getDataOrDefault(@NonNull final Object key, @Nullable final T defaultValue) {
+		return (T) getDataOrDefaultInternal(key, defaultValue);
+	}
+
+	public <T> T getData(@NonNull final Object key, @NonNull final Supplier<T> valueLoader) {
+		T cachedValue = getDataOrDefaultInternal(key, null);
+		if (cachedValue == null) {
+			cachedValue = Objects.requireNonNull(valueLoader.get(), "ValueLoader must not supply null");
+			putDataInternal(key, cachedValue);
+		}
+		return cachedValue;
+	}
+
+	public <T> void setData(@NonNull final Object key, @Nullable final T data) {
+		if (data == null) {
+			// null value is considered a removal request
+			invalidate(key);
+		} else {
+			putDataInternal(key, data);
+		}
+	}
+
+	public void invalidate(final Object key) {
+		if (key != null) {
+			if (dataCache != null) {
+				dataCache.remove(key);
+			}
+		}
 	}
 }

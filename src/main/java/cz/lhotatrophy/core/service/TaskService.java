@@ -66,6 +66,17 @@ public interface TaskService extends Service {
 	public Optional<Task> getTaskByIdFromCache(@NonNull Long id);
 
 	/**
+	 * Returns the {@link Task} object associated with {@code code} in the
+	 * cache. This method provides a simple substitute for the conventional "if
+	 * cached, return; otherwise create, cache and return" pattern.
+	 *
+	 * @param code Globally unique task code
+	 * @return Cached {@code Task} object with the given code or
+	 * {@link Optional#empty()} if none found
+	 */
+	Optional<Task> getTaskByCodeFromCache(@NonNull String code);
+
+	/**
 	 * Rerurns a list of {@link Task} objects from the cache according to the
 	 * listing query. This method provides a simple substitute for the
 	 * conventional "if cached, return; otherwise create, cache and return"
@@ -75,6 +86,17 @@ public interface TaskService extends Service {
 	 * @return Cached list of {@code Task} objects
 	 */
 	List<Task> getTaskListing(@NonNull TaskListingQuerySpi query);
+
+	/**
+	 * Rerurns a stream of {@link Task} objects from the cache according to the
+	 * listing query. This method provides a simple substitute for the
+	 * conventional "if cached, return; otherwise create, cache and return"
+	 * pattern.
+	 *
+	 * @param query Listing query
+	 * @return Cached stream of {@code Task} objects
+	 */
+	Stream<Task> getTaskListingStream(@NonNull TaskListingQuerySpi query);
 
 	/**
 	 * Discards the cached {@link Task} object if it is present in the cache.

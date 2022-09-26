@@ -60,6 +60,15 @@ public class SessionHelperImpl implements SessionHelper {
 	}
 
 	/**
+	 * Check if the instance is a managed entity instance belonging to the
+	 * current persistence context.
+	 */
+	@Override
+	public boolean isManagedInPersistenceContext(@NonNull final Entity entity) {
+		return entityManager.contains(entity);
+	}
+
+	/**
 	 * Run command in transaction.
 	 */
 	@Override

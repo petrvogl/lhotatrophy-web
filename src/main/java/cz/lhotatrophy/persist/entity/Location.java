@@ -37,6 +37,11 @@ import org.apache.commons.lang3.StringUtils;
 public class Location extends AbstractEntity<Long, Location> implements EntityLongId<Location> {
 
 	/**
+	 * FIXME - implement as attribute
+	 */
+	private static final String DESTINATION_CODE = "dest";
+
+	/**
 	 * Lexicographically compares locations by {@code code} property
 	 */
 	private static final Comparator<Location> comparatorByCode = Comparator
@@ -89,6 +94,10 @@ public class Location extends AbstractEntity<Long, Location> implements EntityLo
 	 */
 	public void setDescription(final String description) {
 		this.description = StringUtils.trimToNull(description);
+	}
+
+	public boolean isDestination() {
+		return DESTINATION_CODE.equalsIgnoreCase(code);
 	}
 
 	/**

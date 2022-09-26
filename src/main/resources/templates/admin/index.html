@@ -50,7 +50,17 @@
 							[[${team.name}]]
 						</a>
 					</td>
-					<td> [[${owner.email}]] </td>
+					<td>
+						<button th:if="${!userDetails.switched}"
+								type="button"
+								th:with="onClick=|location.href = location.origin + '/admin/impersonate/${owner.id}'|"
+								th:attr="onClick=${onClick}">Impersonate</button>
+						<button th:if="${userDetails.switched and userDetails.effectiveUser.id == owner.id}"
+								type="button"
+								th:with="onClick=|location.href = location.origin + '/admin/impersonate/${owner.id}?reset=true'|"
+								th:attr="onClick=${onClick}">Switch back</button>
+						[[${owner.email}]]
+					</td>
 					<td> [[${friday}]] / [[${fridayTotal.value}]] </td>
 					<td> [[${saturday}]] / [[${saturdayTotal.value}]] </td>
 					<td class="right"> [[${team.expenses}]] Kč</td>

@@ -71,19 +71,24 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
 		private static final long serialVersionUID = 1L;
 		private User loggedInUser;
+		private User impersonatedUser;
 		private final Set<GrantedAuthority> authorities;
 
 		public UserDetailsImpl(@NonNull final User loggedInUser) {
 			this.loggedInUser = loggedInUser;
 			this.authorities = new LinkedHashSet();
-			final GrantedAuthority ga = Boolean.TRUE.equals(loggedInUser.getPrivileged())
+			final GrantedAuthority ga = loggedInUser.isPrivileged()
 					? ADMIN_ROLE
 					: USER_ROLE;
-			if (ga == ADMIN_ROLE && Objects.equals(loggedInUser.getEmail(), authorizedSuperadmin)) {
+			if (ga == ADMIN_ROLE && isAuthorizedSuperadmin()) {
 				// username match with preconfigured superadmin
 				this.authorities.add(SUPERADMIN_ROLE);
 			}
 			this.authorities.add(ga);
+		}
+
+		private boolean isAuthorizedSuperadmin() {
+			return Objects.equals(loggedInUser.getEmail(), authorizedSuperadmin);
 		}
 
 		@Override
@@ -116,17 +121,17 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
 		@Override
 		public boolean isAccountNonExpired() {
-			return true;
+			return loggedInUser.isActive();
 		}
 
 		@Override
 		public boolean isAccountNonLocked() {
-			return true;
+			return loggedInUser.isActive();
 		}
 
 		@Override
 		public boolean isCredentialsNonExpired() {
-			return true;
+			return loggedInUser.isActive();
 		}
 
 		@Override
@@ -135,8 +140,35 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		}
 
 		@Override
+		public boolean isSwitched() {
+			return impersonatedUser != null;
+		}
+
+		@Override
 		public User getLoggedInUser() {
 			return loggedInUser;
+		}
+
+		@Override
+		public User getEffectiveUser() {
+			return isSwitched() ? impersonatedUser : loggedInUser;
+		}
+
+		@Override
+		public void switchUser(final User user) {
+			if (user == null) {
+				resetSwitch();
+				return;
+			}
+			if (!loggedInUser.isPrivileged() || (user.isPrivileged() && !isAuthorizedSuperadmin())) {
+				throw new RuntimeException("Impersonation is denied.");
+			}
+			impersonatedUser = user;
+		}
+
+		@Override
+		public void resetSwitch() {
+			impersonatedUser = null;
 		}
 	}
 }

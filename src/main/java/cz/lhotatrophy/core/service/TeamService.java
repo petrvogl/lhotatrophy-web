@@ -14,18 +14,20 @@ import org.apache.commons.math3.stat.Frequency;
 public interface TeamService extends Service {
 
 	Optional<Team> getTeamById(@NonNull Long id);
-	
+
 	Optional<Team> getTeamByName(@NonNull String name);
-	
+
 	Optional<Team> getTeamByIdFromCache(@NonNull Long id);
-	
+
 	List<Team> getTeamListing(@NonNull TeamListingQuerySpi query);
-	
+
 	Frequency getTeamOrdersFrequency(@NonNull Class<? extends Enum> enumClass);
-	
+
 	void removeTeamFromCache(@NonNull Long id);
-	
+
+	Optional<Team> getEffectiveTeam();
+
 	Team registerNewTeam(@NonNull String name, @NonNull User owner);
-	
+
 	void updateTeam(@NonNull Team team);
 }

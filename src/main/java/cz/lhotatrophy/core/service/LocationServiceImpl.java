@@ -1,6 +1,7 @@
 package cz.lhotatrophy.core.service;
 
 import cz.lhotatrophy.persist.dao.LocationDao;
+import cz.lhotatrophy.persist.entity.EntityLongId;
 import cz.lhotatrophy.persist.entity.Location;
 import java.util.List;
 import java.util.Objects;
@@ -46,6 +47,11 @@ public class LocationServiceImpl extends AbstractService implements LocationServ
 	@Override
 	public Optional<Location> getLocationByIdFromCache(@NonNull final Long id) {
 		return cacheService.getEntityById(id, Location.class);
+	}
+
+	@Override
+	public Optional<Location> getLocationByCodeFromCache(@NonNull final String code) {
+		return cacheService.getEntityByCode(code).map(Location.class::cast);
 	}
 
 	/**

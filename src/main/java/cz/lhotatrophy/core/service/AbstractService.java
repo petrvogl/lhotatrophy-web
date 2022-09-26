@@ -3,9 +3,9 @@ package cz.lhotatrophy.core.service;
 import cz.lhotatrophy.core.security.UserDetails;
 import cz.lhotatrophy.persist.SessionHelper;
 import cz.lhotatrophy.persist.entity.Entity;
-import cz.lhotatrophy.persist.entity.User;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import javax.annotation.Nonnull;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -72,6 +72,17 @@ public abstract class AbstractService implements Service {
 	}
 
 	/**
+	 * Check if the instance is a managed entity instance belonging to the
+	 * current persistence context.
+	 *
+	 * @param entity Entity instance
+	 * @return {@code true} if entity is in persistence context
+	 */
+	protected boolean isManagedInPersistenceContext(@NonNull final Entity entity) {
+		return sessionHelper.isManagedInPersistenceContext(entity);
+	}
+
+	/**
 	 * If the given object is not a proxy, return it. But, if it is a Hibernate
 	 * proxy, ensure that the proxy is initialized, and return a direct
 	 * reference to its proxied entity object.
@@ -125,22 +136,12 @@ public abstract class AbstractService implements Service {
 	 *
 	 * @return User information
 	 */
-	@NonNull
+	@Nonnull
 	protected Optional<UserDetails> getUserDetails() {
 		return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
 				.map(Authentication::getPrincipal)
 				.filter(UserDetails.class::isInstance)
 				.map(UserDetails.class::cast);
-	}
-
-	/**
-	 * Provides logged-in user from HTTP session.
-	 *
-	 * @return User entity
-	 */
-	@NonNull
-	protected Optional<User> getLoggedInUser() {
-		return getUserDetails().map(UserDetails::getLoggedInUser);
 	}
 
 	/**

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	  lang="cs">
+	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHeadAdmin(additionalSources=~{this :: styles})">
+		<!--/* PROTOTYPE */-->
+		<title>Administrace — 24th Lhota Trophy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<style th:fragment="styles">
+			.locations, .row {
+				width: 410px;
+				margin: 0;
+				padding: 0;
+				list-style-type: none;
+			}
+			.locations .location {
+				display: inline-block;
+				margin: 6px;
+				width: 120px;
+				background-color: lightgray;
+			}
+			.locations .location a {
+				display: inline-block;
+				width: 100%;
+				text-align: center;
+				line-height: 8rem;
+				font-size: 4rem;
+				font-weight: bold;
+				border-bottom: solid 1px gray;
+			}
+			.locations .location p {
+				padding: 6px 6px 0 6px;
+				margin: 0;
+				text-align: center;
+			}
+			.row .c-codes, .row .destination {
+				display: inline-block;
+				margin: 6px;
+				width: 188px;
+				background-color: lightgray;
+			}
+			.row .c-codes a, .row .destination a {
+				display: inline-block;
+				width: 100%;
+				text-align: center;
+				line-height: 8rem;
+				font-size: 4rem;
+				font-weight: bold;
+				border-bottom: solid 1px gray;
+			}
+			.row .c-codes p, .row .destination p {
+				padding: 3px 6px 3px 6px;
+				margin: 0;
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body class="docu-theme">
+		<!--/* Page header */-->
+		<header th:replace="public/fragments/PageHeader.html :: PageHeaderAdmin"> [ Page Header ] </header>
+		<!--/* Page navigation */-->
+		<nav th:replace="public/fragments/PageNavigation.html :: PageNavigationAdmin"> [ Navigation ] </nav>
+
+		<!--/*
+		*	Page Content
+		*/-->
+		<main class="page-content"
+			  th:with="
+			  locationDiscovered=${service.contest.checkLocationIsDiscovered(location)},
+			  aTask=${service.task.getTaskRelatedToLocation(location, 'A_CODE')},
+			  bTask=${service.task.getTaskRelatedToLocation(location, 'B_CODE')}
+			  ">
+
+
+			<!--/*
+			*	
+			*	Exact location has NOT been discovered yet
+			*	
+			*	
+			*	
+			*/-->
+			<th:block th:unless="${locationDiscovered}">
+				<h2><th:block th:replace="public/fragments/Misc.html :: PinImage (height=20)"/> Stanoviště [[${location.code}]]</h2>
+				<p>Poloha stanoviště zatím neznámá</p>
+
+				<!--/*
+				*	If A-code exists for this location
+				*/-->
+				<th:block th:fragment="aTaskBlock"
+						  th:if="${aTask}"
+						  th:with="
+						  aTaskCompleted=${service.contest.checkTaskIsCompleted(aTask)},
+						  progressCode=${aTaskCompleted} ? ${team.contestProgress.getContestCode(aTask.code)} : null,
+						  _=${aTaskCompleted} ? null : ${submitACodeForm.setFrom(aTask)}
+						  ">
+
+					<h3>A-KÓD</h3>
+
+					<!--/*
+					*	If code has been already aquired
+					*/-->
+					<th:block th:if="${aTaskCompleted}">
+						<p>Kód <strong>[[${progressCode.solution}]]</strong> byl uznán</p>
+					</th:block>
+
+					<!--/*
+					*	If code has not been aquired yet
+					*/-->
+					<th:block th:unless="${aTaskCompleted}">
+						<!--/*
+						*	If solution hint is available
+						*/-->
+						<p th:if="${aTask.hasSolutionHint() and (progressCode == null or not progressCode.hintRevealed)}"><button>Získat nápovědu</button> (Cena: [[${appConfig.hintRevealedPenalty}]] km)</p>
+						<p th:if="${progressCode?.hintRevealed}">Nápověda: [[${aTask.solutionHint}]]</p>
+						<!--/*
+						*	If solution of this task can be revealed
+						*/-->
+						<p th:if="${aTask.revealSolutionAllowed == true and (progressCode == null or not progressCode.solutionRevealed)}"><button>Odhalit řešení</button> (Cena: [[${appConfig.solutionRevealedPenalty}]] km)</p>
+						<p th:if="${progressCode?.solutionRevealed}">Řešení: [[${aTask.anySolution}]]</p>
+
+						<form th:action="@{~/v-terenu/submitCode}"
+							  th:object="${submitACodeForm}"
+							  method="post">
+							<input th:field="*{taskType}" type="hidden" name="taskType"/>
+							<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
+							<input th:field="*{solution}" type="text" name="solution"/>
+							<input type="submit" value="Odeslat"/>
+						</form>
+					</th:block>
+				</th:block>
+
+			</th:block>
+
+
+			<!--/*
+			*	
+			*	Exact location has been discovered already
+			*	
+			*	
+			*	
+			*/-->
+			<th:block th:if="${locationDiscovered}">
+				<h2><th:block th:replace="public/fragments/Misc.html :: PinImage (height=20)"/> [[${location.name}]]</h2>
+				<p>[[${location.description}]]</p>
+
+				<!--/*
+				*	If A-code exists for this location
+				*/-->
+				<th:block th:replace="this :: aTaskBlock">
+					[ A-code block ]
+				</th:block>
+
+				<!--/*
+				*	If B-code exists for this location
+				*/-->
+				<th:block th:if="${bTask}"
+						  th:with="
+						  bTaskCompleted=${service.contest.checkTaskIsCompleted(bTask)},
+						  progressCode=${bTaskCompleted} ? ${team.contestProgress.getContestCode(bTask.code)} : null,
+						  _=${bTaskCompleted} ? null : ${submitBCodeForm.setFrom(bTask)}
+						  ">
+
+					<h3>B-KÓD</h3>
+
+					<p th:if="${bTaskCompleted}">
+						Kód <strong>[[${progressCode.solution}]]</strong> byl uznán
+					</p>
+
+					<!--/*
+					*	If B-code has not been aquired yet
+					*/-->
+					<form th:unless="${bTaskCompleted}"
+						  th:action="@{~/v-terenu/submitCode}"
+						  th:object="${submitBCodeForm}"
+						  method="post">
+						<input th:field="*{taskType}" type="hidden" name="taskType"/>
+						<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
+						<input th:field="*{solution}" type="text" name="solution"/>
+						<input type="submit" value="Odeslat"/>
+					</form>
+				</th:block>
+			</th:block>
+		</main>
+
+		<!--/* Page footer */-->
+		<footer th:replace="public/fragments/PageFooter.html :: PageFooterAdmin"> [ Copyright ] </footer>
+	</body>
+</html>

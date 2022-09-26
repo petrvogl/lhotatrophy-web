@@ -53,6 +53,17 @@ public interface LocationService extends Service {
 	public Optional<Location> getLocationByIdFromCache(@NonNull Long id);
 
 	/**
+	 * Returns the {@link Location} object associated with {@code code} in the
+	 * cache. This method provides a simple substitute for the conventional "if
+	 * cached, return; otherwise create, cache and return" pattern.
+	 *
+	 * @param code Globally unique location code
+	 * @return Cached {@code Location} object with the given code or
+	 * {@link Optional#empty()} if none found
+	 */
+	Optional<Location> getLocationByCodeFromCache(@NonNull String code);
+
+	/**
 	 * Rerurns a list of {@link Location} objects from the cache according to
 	 * the listing query. This method provides a simple substitute for the
 	 * conventional "if cached, return; otherwise create, cache and return"

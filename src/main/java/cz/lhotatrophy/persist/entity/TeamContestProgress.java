@@ -1,8 +1,10 @@
 package cz.lhotatrophy.persist.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -68,7 +70,25 @@ public class TeamContestProgress implements Serializable {
 	}
 
 	/**
-	 * Gets the code acquired by the team.
+	 * Checks if the solution was accepted in the specified group.
+	 *
+	 * @param solution Solution to check
+	 * @param group Group the solution belongs to
+	 * @return {@code true} if solution was accepted; {@code false} otherwise
+	 */
+	public boolean containsSolution(final String solution, final String group) {
+		if (contestCodes.isEmpty()) {
+			return false;
+		}
+		return contestCodes.values().stream()
+				.filter(progressCode -> progressCode.getGroup().equals(group))
+				.filter(progressCode -> progressCode.getSolution().equals(solution))
+				.findAny()
+				.isPresent();
+	}
+
+	/**
+	 * Returns the code acquired by the team.
 	 *
 	 * @param code Contest code
 	 * @return Code if acquired; {@code null} otherwise
@@ -78,19 +98,33 @@ public class TeamContestProgress implements Serializable {
 	}
 
 	/**
+	 * Returns all codes acquired by the team.
+	 *
+	 * @return All acquired codes
+	 */
+	@JsonIgnore
+	public Stream<TeamContestProgressCode> getAllAcquiredCodes() {
+		return contestCodes.values().stream()
+				.filter(TeamContestProgressCode::accepted);
+	}
+
+	/**
 	 * It records that the code has been accepted and indicates that none of the
 	 * available hints were used.
 	 *
 	 * @param code Contest code
 	 * @param group Group the code belongs to
+	 * @param solution Accepted solution
 	 * @param timestamp Time of acceptance
+	 * @return the new record
 	 */
-	public void addContestCode(
+	public TeamContestProgressCode addContestCode(
 			@NonNull final String code,
 			@NonNull final String group,
-			long timestamp
+			@NonNull final String solution,
+			final long timestamp
 	) {
-		addContestCode(code, group, false, false, false, timestamp);
+		return addContestCode(code, group, solution, false, false, false, timestamp);
 	}
 
 	/**
@@ -98,23 +132,27 @@ public class TeamContestProgress implements Serializable {
 	 *
 	 * @param code Contest code
 	 * @param group Group the code belongs to
+	 * @param solution Accepted solution
 	 * @param hintRevealed Indicates that the solution hint was used
 	 * @param procedureRevealed Indicates that the solution procedure was used
 	 * @param solutionRevealed Indicates that the right solution was revealed
 	 * @param timestamp Time of acceptance
+	 * @return the new record
 	 */
-	public void addContestCode(
+	public TeamContestProgressCode addContestCode(
 			@NonNull final String code,
 			@NonNull final String group,
-			boolean hintRevealed,
-			boolean procedureRevealed,
-			boolean solutionRevealed,
-			long timestamp
+			final String solution,
+			final boolean hintRevealed,
+			final boolean procedureRevealed,
+			final boolean solutionRevealed,
+			final long timestamp
 	) {
 		if (timestamp < 0l) {
 			throw new IllegalArgumentException("Time of code acceptance must not be negative.");
 		}
-		final TeamContestProgressCode c = new TeamContestProgressCode(code, group, hintRevealed, procedureRevealed, solutionRevealed, timestamp);
+		final TeamContestProgressCode c = new TeamContestProgressCode(code, group, solution, hintRevealed, procedureRevealed, solutionRevealed, timestamp);
 		contestCodes.put(code, c);
+		return c;
 	}
 }

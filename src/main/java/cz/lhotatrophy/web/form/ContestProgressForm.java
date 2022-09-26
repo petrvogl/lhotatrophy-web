@@ -1,9 +1,11 @@
 package cz.lhotatrophy.web.form;
 
 import cz.lhotatrophy.persist.entity.TeamContestProgress;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import lombok.Data;
+import lombok.NonNull;
 
 /**
  *
@@ -59,6 +61,15 @@ public class ContestProgressForm {
 	@Nonnull
 	public TeamContestProgress toContestProgress() {
 		final TeamContestProgress progress = new TeamContestProgress();
+		return toContestProgressInternal(progress);
+	}
+
+	@Nonnull
+	public TeamContestProgress toContestProgress(@NonNull final Supplier<TeamContestProgress> instanceSupplier) {
+		return toContestProgressInternal(instanceSupplier.get());
+	}
+
+	private TeamContestProgress toContestProgressInternal(final TeamContestProgress progress) {
 		progress.setDisqualified(Boolean.TRUE.equals(disqualified));
 		progress.setInsuranceAgainstWinning(Boolean.TRUE.equals(insuranceAgainstWinning));
 		progress.setMileageAtStart(mileageAtStart);

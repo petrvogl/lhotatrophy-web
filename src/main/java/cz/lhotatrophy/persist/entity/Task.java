@@ -2,6 +2,7 @@ package cz.lhotatrophy.persist.entity;
 
 import cz.lhotatrophy.persist.SchemaConstants;
 import cz.lhotatrophy.utils.CzechComparator;
+import cz.lhotatrophy.utils.TextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -140,6 +141,7 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	@Transient
 	@ToString.Exclude
 	@Setter(AccessLevel.NONE)
+	@Getter(AccessLevel.NONE)
 	private Set<String> solutions;
 
 	/**
@@ -171,7 +173,7 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	 * @return All valid solutions
 	 */
 	@Nonnull
-	public Set<String> getSolutions() {
+	public Set<String> getSolutionsNormalized() {
 		if (solutions != null) {
 			return solutions;
 		}
@@ -181,10 +183,20 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 						? Collections.emptySet()
 						: Arrays.stream(solutionsString.split(MULTIPLE_VALUES_SEPARATOR_REGEXP))
 								.filter(StringUtils::isNotEmpty)
+								.map(TextUtils::slugify)
 								.collect(Collectors.toUnmodifiableSet());
 			}
 		}
 		return solutions;
+	}
+
+	/**
+	 * Returns any valid solution to this task.
+	 *
+	 * @return One valid solution
+	 */
+	public String getAnySolution() {
+		return getSolutionsNormalized().stream().findFirst().get();
 	}
 
 	/**

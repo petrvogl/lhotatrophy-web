@@ -59,6 +59,11 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 	}
 
 	@Override
+	public Optional<Task> getTaskByCodeFromCache(@NonNull final String code) {
+		return cacheService.getEntityByCode(code).map(Task.class::cast);
+	}
+
+	@Override
 	public void invalidateTaskRelationshipsCache() {
 		// volatile access synchronization
 		taskRelationshipsRef.set(null);
@@ -149,6 +154,7 @@ public class TaskServiceImpl extends AbstractService implements TaskService {
 		return cacheService.getEntityListing(query, getDefaultIdsLoader());
 	}
 
+	@Override
 	public Stream<Task> getTaskListingStream(@NonNull final TaskListingQuerySpi query) {
 		return cacheService.getEntityListingStream(query, getDefaultIdsLoader());
 	}

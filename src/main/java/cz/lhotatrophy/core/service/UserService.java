@@ -140,6 +140,14 @@ public interface UserService extends Service {
 	Optional<User> getLoggedInUser();
 
 	/**
+	 * Provides the impersonated user if the user is switched, otherwise returns
+	 * the logged in user.
+	 *
+	 * @return User entity
+	 */
+	Optional<User> getEffectiveUser();
+
+	/**
 	 * Returns {@code true} if logged-in user has superadmin role.
 	 *
 	 * @return User entity

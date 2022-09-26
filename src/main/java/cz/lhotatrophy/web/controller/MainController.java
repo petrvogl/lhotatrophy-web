@@ -1,11 +1,9 @@
 package cz.lhotatrophy.web.controller;
 
-import cz.lhotatrophy.ApplicationConfig;
 import cz.lhotatrophy.core.exceptions.UsernameOrEmailIsTakenException;
 import cz.lhotatrophy.core.exceptions.WeakPasswordException;
 import cz.lhotatrophy.core.service.TeamListingQuerySpi;
 import cz.lhotatrophy.core.service.TeamService;
-import cz.lhotatrophy.core.service.UserService;
 import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.TeamMember;
 import cz.lhotatrophy.persist.entity.User;
@@ -36,12 +34,8 @@ import org.springframework.web.bind.annotation.PostMapping;
  */
 @Controller
 @Log4j2
-public class MainController {
+public class MainController extends AbstractController {
 
-	@Autowired
-	private transient ApplicationConfig appConfig;
-	@Autowired
-	private transient UserService userService;
 	@Autowired
 	private transient TeamService teamService;
 
@@ -54,7 +48,6 @@ public class MainController {
 			final Model model
 	) {
 		log.info("HOMEPAGE");
-
 		initModel(model);
 		return "public/index";
 	}
@@ -67,7 +60,6 @@ public class MainController {
 			final Model model
 	) {
 		log.info("LOGIN");
-
 		initModel(model);
 		return "public/login";
 	}
@@ -80,6 +72,10 @@ public class MainController {
 			final TeamRegistrationForm teamRegistrationForm
 	) {
 		log.info("TEAM REGISTRATION (GET)");
+		if (!isLoggedInUserSuperadmin()) {
+			// not allowed now
+			return "redirect:/";
+		}
 		return "public/register";
 	}
 
@@ -94,6 +90,10 @@ public class MainController {
 			final Model model
 	) {
 		log.info("TEAM REGISTRATION (POST)");
+		if (!isLoggedInUserSuperadmin()) {
+			// not allowed now
+			return "redirect:/";
+		}
 		final String email = teamRegistrationForm.getEmail().trim().toLowerCase();
 		final String passwd = teamRegistrationForm.getPassword().trim();
 		final String teamName = teamRegistrationForm.getTeamName().trim();
@@ -231,7 +231,7 @@ public class MainController {
 			final Model model
 	) {
 		log.info("TEAM");
-		final Optional<User> optUser = userService.getLoggedInUser();
+		final Optional<User> optUser = userService.getEffectiveUser();
 		final Optional<Team> optTeam = optUser.map(User::getTeam);
 
 		final Mutable<List<TeamMember>> members = new MutableObject();
@@ -246,10 +246,10 @@ public class MainController {
 			members.setValue(members_);
 		});
 
+		initModel(model);
 		// data to fill the form
 		model.addAttribute("teamSettings", members.getValue());
-
-		initModel(model);
+		model.addAttribute("teamMembers", teamService.getEffectiveTeam().map(Team::getMembers).orElse(Collections.emptySet()));
 		return "public/my-team";
 	}
 
@@ -263,7 +263,11 @@ public class MainController {
 			final Model model
 	) {
 		log.info("TEAM EDIT (POST)");
-		final Optional<User> optUser = userService.getLoggedInUser();
+		if (true) {
+			// not allowed now
+			return "redirect:/muj-tym";
+		}
+		final Optional<User> optUser = userService.getEffectiveUser();
 		final Optional<Team> optTeam = optUser.map(User::getTeam);
 
 		final Mutable<Set<TeamMember>> members = new MutableObject();
@@ -278,10 +282,11 @@ public class MainController {
 			});
 		});
 
+		initModel(model);
 		// data to fill the form
 		model.addAttribute("teamSettings", members.getValue());
 		request.getSession().setAttribute("TeamUpdateSuccess", true);
-		initModel(model);
+		model.addAttribute("teamMembers", teamService.getEffectiveTeam().map(Team::getMembers).orElse(Collections.emptySet()));
 		return "public/my-team";
 	}
 
@@ -291,25 +296,8 @@ public class MainController {
 	@GetMapping("/prihlasene-tymy")
 	public String teamList(final Model model) {
 		log.info("TEAM LISTING");
-		model.addAttribute("teamListing", teamService.getTeamListing(TeamListingQuerySpi.create()));
 		initModel(model);
+		model.addAttribute("teamListing", teamService.getTeamListing(TeamListingQuerySpi.create()));
 		return "public/team-list";
-	}
-
-	/**
-	 * Initialize the model.
-	 *
-	 * @param model
-	 */
-	private void initModel(final Model model) {
-		// global configuration
-		model.addAttribute("appConfig", appConfig);
-		// logged in user and team
-		final Optional<User> optUser = userService.getLoggedInUser();
-		final Optional<Team> optTeam = optUser.map(User::getTeam);
-		// set data
-		model.addAttribute("user", optUser.orElse(null));
-		model.addAttribute("team", optTeam.orElse(null));
-		model.addAttribute("teamMembers", optTeam.map(Team::getMembers).orElse(Collections.emptySet()));
 	}
 }

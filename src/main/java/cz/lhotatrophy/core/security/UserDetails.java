@@ -40,4 +40,33 @@ public interface UserDetails extends org.springframework.security.core.userdetai
 	 * @return User entity
 	 */
 	User getLoggedInUser();
+
+	/**
+	 * Provides the impersonated user if the user is switched, otherwise returns
+	 * the logged in user.
+	 *
+	 * @return User entity
+	 */
+	User getEffectiveUser();
+
+	/**
+	 * Allows administrators to impersonate any other specific user. This allows
+	 * actions to be taken on behalf of a specific user (but with the
+	 * permissions of the currently authenticated user).
+	 *
+	 * @param user User entity
+	 */
+	void switchUser(User user);
+
+	/**
+	 * Allows switch back to the originally logged in user.
+	 */
+	void resetSwitch();
+
+	/**
+	 * Indicates whether the user is switched (impersonated).
+	 *
+	 * @return {@code true} if switched
+	 */
+	boolean isSwitched();
 }

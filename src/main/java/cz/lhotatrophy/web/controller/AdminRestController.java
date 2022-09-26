@@ -1,6 +1,5 @@
 package cz.lhotatrophy.web.controller;
 
-import cz.lhotatrophy.core.service.TeamService;
 import cz.lhotatrophy.core.service.UserService;
 import cz.lhotatrophy.persist.entity.User;
 import java.util.Map;
@@ -26,8 +25,6 @@ public class AdminRestController {
 
 	@Autowired
 	private UserService userService;
-	@Autowired
-	private TeamService teamService;
 
 	@PostMapping("/setUserProperties/{userId}")
 	public Object setUserProperties(

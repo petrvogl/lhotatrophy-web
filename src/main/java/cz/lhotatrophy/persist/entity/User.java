@@ -73,6 +73,10 @@ public class User extends AbstractEntityWithSimpleProperties<Long, User> impleme
 		return Boolean.TRUE.equals(getActive());
 	}
 
+	public boolean isPrivileged() {
+		return Boolean.TRUE.equals(getPrivileged());
+	}
+
 	public void setCreated(final Long created) {
 		this.created = created;
 		// reset calculated value
