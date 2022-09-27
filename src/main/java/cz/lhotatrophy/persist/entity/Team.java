@@ -5,19 +5,18 @@ import com.google.common.collect.Lists;
 import cz.lhotatrophy.persist.ContestProgressToJsonStringConverter;
 import cz.lhotatrophy.persist.SchemaConstants;
 import cz.lhotatrophy.utils.EnumUtils;
+import cz.lhotatrophy.utils.TemporaryStorage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -61,7 +60,7 @@ import org.apache.commons.math3.util.Pair;
 @Setter
 @ToString
 @NoArgsConstructor
-public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Team>, EntityWithCacheAccess {
+public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Team>, EntityWithCacheAccess, EntityWithTemporaryStorage {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -102,7 +101,7 @@ public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Tea
 	@ToString.Exclude
 	@Getter(AccessLevel.NONE)
 	@Setter(AccessLevel.NONE)
-	private transient Map<Object, Object> dataCache;
+	private transient TemporaryStorage temporaryStorage = TemporaryStorage.create();
 
 	@PrePersist
 	@PreUpdate
@@ -285,64 +284,28 @@ public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Tea
 		return owner == null ? null : owner.getId();
 	}
 
-	@Nonnull
-	private Map<Object, Object> getOrCreateDataCache() {
-		if (dataCache != null) {
-			return dataCache;
-		}
-		synchronized (this) {
-			if (dataCache == null) {
-				dataCache = new HashMap<>();
-			}
-		}
-		return dataCache;
+	@Override
+	public <T> T getTemporary(@NonNull final Object key) {
+		return (T) temporaryStorage.get(key);
 	}
 
-	private <T> Object putDataInternal(final Object key, final T data) {
-		final Map<Object, Object> cache = getOrCreateDataCache();
-		// the previous value may be of a different type
-		return cache.put(key, data);
+	@Override
+	public <T> T getTemporaryOrDefault(@NonNull final Object key, @Nullable final T defaultValue) {
+		return (T) temporaryStorage.getOrDefault(key, defaultValue);
 	}
 
-	private <T> T getDataOrDefaultInternal(final Object key, final T defaultValue) {
-		if (dataCache == null) {
-			return defaultValue;
-		}
-		final Object cachedValue = dataCache.get(key);
-		return (cachedValue == null ? defaultValue : (T) cachedValue);
+	@Override
+	public <T> T getTemporary(@NonNull final Object key, @NonNull final Supplier<T> valueLoader) {
+		return temporaryStorage.get(key, valueLoader);
 	}
 
-	public <T> T getData(@NonNull final Object key) {
-		return (T) getDataOrDefaultInternal(key, null);
+	@Override
+	public <T> void setTemporary(@NonNull final Object key, @Nullable final T data) {
+		temporaryStorage.put(key, data);
 	}
 
-	public <T> T getDataOrDefault(@NonNull final Object key, @Nullable final T defaultValue) {
-		return (T) getDataOrDefaultInternal(key, defaultValue);
-	}
-
-	public <T> T getData(@NonNull final Object key, @NonNull final Supplier<T> valueLoader) {
-		T cachedValue = getDataOrDefaultInternal(key, null);
-		if (cachedValue == null) {
-			cachedValue = Objects.requireNonNull(valueLoader.get(), "ValueLoader must not supply null");
-			putDataInternal(key, cachedValue);
-		}
-		return cachedValue;
-	}
-
-	public <T> void setData(@NonNull final Object key, @Nullable final T data) {
-		if (data == null) {
-			// null value is considered a removal request
-			invalidate(key);
-		} else {
-			putDataInternal(key, data);
-		}
-	}
-
-	public void invalidate(final Object key) {
-		if (key != null) {
-			if (dataCache != null) {
-				dataCache.remove(key);
-			}
-		}
+	@Override
+	public void invalidateTemporary(final Object key) {
+		temporaryStorage.invalidate(key);
 	}
 }

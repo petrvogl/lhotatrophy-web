@@ -239,7 +239,7 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 	@Override
 	public boolean checkLocationIsDiscovered(@NonNull final Location location, @NonNull final Team team) {
 		final String cacheKey = "LocationDiscovered." + location.getCode();
-		final Boolean resultCached = team.getData(cacheKey);
+		final Boolean resultCached = team.getTemporary(cacheKey);
 		if (resultCached != null) {
 			return resultCached;
 		}
@@ -255,7 +255,7 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 				.isPresent();
 		// cache positive result (can't be changed)
 		if (discovered) {
-			team.setData(cacheKey, discovered);
+			team.setTemporary(cacheKey, discovered);
 		}
 		return discovered;
 	}
