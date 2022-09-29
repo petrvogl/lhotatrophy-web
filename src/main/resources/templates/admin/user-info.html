@@ -40,7 +40,7 @@
 				<h2>Postup týmu v soutěži</h2>
 
 				<h3>Základní údaje</h3>
-				
+
 				<form th:action="@{~__|/admin/user-info/${user.id}|__}"
 					  th:object="${contestProgressForm}"
 					  method="post">
@@ -112,7 +112,9 @@
 					</table>
 				</form>
 
-				<h3>Zadané kódy</h3>
+				<h3>Kompletní data</h3>
+
+				<pre th:text="${contestProgressJson}"> JSON </pre>
 
 			</th:block>
 

@@ -5,9 +5,9 @@ import cz.lhotatrophy.core.security.UserDetails;
 import cz.lhotatrophy.core.service.UserService;
 import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.User;
-import cz.lhotatrophy.web.service.ContestViewServices;
-import cz.lhotatrophy.web.service.LocationViewServices;
-import cz.lhotatrophy.web.service.TaskViewServices;
+import cz.lhotatrophy.web.service.ContestViewService;
+import cz.lhotatrophy.web.service.LocationViewService;
+import cz.lhotatrophy.web.service.TaskViewService;
 import cz.lhotatrophy.web.service.ViewServices;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
@@ -40,9 +40,9 @@ public abstract class AbstractController {
 		if (services.isInitialized()) {
 			return services;
 		}
-		services.setContest(getBean(ContestViewServices.class));
-		services.setLocation(getBean(LocationViewServices.class));
-		services.setTask(getBean(TaskViewServices.class));
+		services.setContest(getBean(ContestViewService.class));
+		services.setLocation(getBean(LocationViewService.class));
+		services.setTask(getBean(TaskViewService.class));
 		services.setInitialized();
 		return services;
 	}
@@ -60,7 +60,7 @@ public abstract class AbstractController {
 	 * @param model Model attributes holder
 	 */
 	protected void initModel(final Model model) {
-		// view services
+		// view services and utils
 		model.addAttribute("service", getViewServices());
 		// global configuration
 		model.addAttribute("appConfig", getApplicationConfig());

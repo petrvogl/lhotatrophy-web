@@ -72,8 +72,14 @@ public class ApplicationConfig {
 	 * Price of the insurance against winning (given in kilometers).
 	 */
 	@Nonnull
-	@Value("${contest.price.insurance:50}")
+	@Value("${contest.insurance.price:50}")
 	private transient Integer insurancePrice;
+	/**
+	 * Condition for making insurance available (given in number of C-codes).
+	 */
+	@Nonnull
+	@Value("${contest.insurance.cCodeLimit:5}")
+	private transient Integer insuranceCCodeLimit;
 	/**
 	 * Bonus for acquiring the contest code (given in kilometers).
 	 */
@@ -126,6 +132,7 @@ public class ApplicationConfig {
 				+ "  maxOverLimitSeconds\t{} sec\n"
 				+ "  idealRouteLength\t{} km\n"
 				+ "  insurancePrice\t{} km\n"
+				+ "  insuranceUnlocked\t{} C-codes\n"
 				+ "Codes:\n"
 				+ "  cCodeAcquiredBonus\t{} km\n"
 				+ "  aCodeMissingPenalty\t{} km\n"
@@ -139,6 +146,7 @@ public class ApplicationConfig {
 				maxOverLimitSeconds,
 				idealRouteLength,
 				insurancePrice,
+				insuranceCCodeLimit,
 				cCodeAcquiredBonus,
 				aCodeMissingPenalty,
 				bCodeMissingPenalty,

@@ -132,6 +132,26 @@ public class TeamContestProgress implements Serializable {
 	 *
 	 * @param code Contest code
 	 * @param group Group the code belongs to
+	 * @param hintRevealed Indicates that the solution hint was used
+	 * @param procedureRevealed Indicates that the solution procedure was used
+	 * @param solutionRevealed Indicates that the right solution was revealed
+	 * @return the new record
+	 */
+	public TeamContestProgressCode addContestCode(
+			@NonNull final String code,
+			@NonNull final String group,
+			final boolean hintRevealed,
+			final boolean procedureRevealed,
+			final boolean solutionRevealed
+	) {
+		return addContestCode(code, group, null, hintRevealed, procedureRevealed, solutionRevealed, 0l);
+	}
+
+	/**
+	 * It records that some progress has been made in acquiring the code.
+	 *
+	 * @param code Contest code
+	 * @param group Group the code belongs to
 	 * @param solution Accepted solution
 	 * @param hintRevealed Indicates that the solution hint was used
 	 * @param procedureRevealed Indicates that the solution procedure was used

@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -142,7 +143,7 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	@ToString.Exclude
 	@Setter(AccessLevel.NONE)
 	@Getter(AccessLevel.NONE)
-	private Set<String> solutions;
+	private transient Set<String> solutions;
 
 	/**
 	 * Identification codes of objects intended to be rewards for completing
@@ -151,7 +152,7 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	@Transient
 	@ToString.Exclude
 	@Setter(AccessLevel.NONE)
-	private Set<String> rewardCodes;
+	private transient Set<String> rewardCodes;
 
 	/**
 	 * Sets the all valid solutions to this task. Solutions must be separated by
@@ -214,6 +215,13 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	}
 
 	/**
+	 * Indicates whether this task is active.
+	 */
+	public boolean isActive() {
+		return Boolean.TRUE.equals(active);
+	}
+
+	/**
 	 * Indicates whether the solution hint is available for this task.
 	 */
 	public boolean hasSolutionHint() {
@@ -273,6 +281,17 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 			}
 		}
 		return rewardCodes;
+	}
+
+	/**
+	 * Returns all identification codes of objects intended to be rewards for
+	 * completing this task.
+	 *
+	 * @return identification codes of rewards
+	 */
+	@Nonnull
+	public Stream<String> getRewardCodesStream() {
+		return getRewardCodes().stream();
 	}
 
 	/**

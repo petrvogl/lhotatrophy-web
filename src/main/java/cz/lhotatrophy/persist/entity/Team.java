@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -111,6 +112,13 @@ public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Tea
 		}
 	}
 
+	/**
+	 * Indicates whether this team is active.
+	 */
+	public boolean isActive() {
+		return Boolean.TRUE.equals(active);
+	}
+
 	public User getOwner() {
 		if (cachedEntityGetter == null || owner == null) {
 			return owner;
@@ -119,7 +127,7 @@ public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Tea
 		return (User) cachedEntityGetter.apply(owner.getId(), User.class);
 	}
 
-	@NonNull
+	@Nonnull
 	public TeamContestProgress getContestProgress() {
 		if (contestProgress == null) {
 			synchronized (this) {

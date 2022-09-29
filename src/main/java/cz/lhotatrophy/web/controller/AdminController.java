@@ -19,8 +19,10 @@ import cz.lhotatrophy.persist.entity.SaturdayOfferEnum;
 import cz.lhotatrophy.persist.entity.Task;
 import cz.lhotatrophy.persist.entity.TaskTypeEnum;
 import cz.lhotatrophy.persist.entity.Team;
+import cz.lhotatrophy.persist.entity.TeamContestProgress;
 import cz.lhotatrophy.persist.entity.TshirtOfferEnum;
 import cz.lhotatrophy.persist.entity.User;
+import cz.lhotatrophy.utils.JsonUtils;
 import cz.lhotatrophy.web.form.ClueForm;
 import cz.lhotatrophy.web.form.ContestProgressForm;
 import cz.lhotatrophy.web.form.LocationForm;
@@ -82,7 +84,7 @@ public class AdminController extends AbstractController {
 			@PathVariable Long userId,
 			@RequestParam(required = false, defaultValue = "false") boolean reset
 	) {
-		log.info("IMPERSONATE");
+		log.info("IMPERSONATE {} {}", userId, reset ? "OFF" : "ON");
 		final Optional<User> optUser = userService.getUserByIdFromCache(userId);
 		if (optUser.isEmpty()) {
 			// user not found
@@ -146,7 +148,12 @@ public class AdminController extends AbstractController {
 		model.addAttribute("user", user);
 		model.addAttribute("team", team);
 		if (team != null) {
-			contestProgressForm.setFrom(team.getContestProgress());
+			final TeamContestProgress contestProgress = team.getContestProgress();
+			final String contestProgressJson = team.getTemporary("ContestProgress.asJson", () -> {
+				return JsonUtils.objectToString(contestProgress, true);
+			});
+			model.addAttribute("contestProgressJson", contestProgressJson);
+			contestProgressForm.setFrom(contestProgress);
 		}
 		// render template
 		return "admin/user-info";
@@ -172,9 +179,14 @@ public class AdminController extends AbstractController {
 		}
 		final User user = optUser.get();
 		final Team team = optTeam.get();
+		final TeamContestProgress contestProgress = team.getContestProgress();
+		final String contestProgressJson = team.getTemporary("ContestProgress.asJson", () -> {
+			return JsonUtils.objectToString(contestProgress, true);
+		});
 		// set model
 		model.addAttribute("user", user);
 		model.addAttribute("team", team);
+		model.addAttribute("contestProgressJson", contestProgressJson);
 		// validation results
 		if (bindingResult.hasErrors()) {
 			return "admin/user-info";
@@ -193,7 +205,7 @@ public class AdminController extends AbstractController {
 			return "admin/user-info";
 		}
 		// render template
-		return "admin/user-info";
+		return "redirect:/admin/user-info/" + userId;
 	}
 
 	/**

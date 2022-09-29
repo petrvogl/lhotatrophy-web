@@ -69,12 +69,18 @@ public class User extends AbstractEntityWithSimpleProperties<Long, User> impleme
 	@Getter(AccessLevel.NONE)
 	private transient BiFunction<Long, Class<? extends EntityLongId>, ? extends EntityLongId> cachedEntityGetter;
 
+	/**
+	 * Indicates whether this user is active.
+	 */
 	public boolean isActive() {
-		return Boolean.TRUE.equals(getActive());
+		return Boolean.TRUE.equals(active);
 	}
 
+	/**
+	 * Indicates whether this user has privileged authorities.
+	 */
 	public boolean isPrivileged() {
-		return Boolean.TRUE.equals(getPrivileged());
+		return Boolean.TRUE.equals(privileged);
 	}
 
 	public void setCreated(final Long created) {

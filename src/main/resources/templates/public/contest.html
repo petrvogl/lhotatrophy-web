@@ -66,40 +66,98 @@
 		<!--/*
 		*	Page Content
 		*/-->
-		<main class="page-content">
+		<main class="page-content"
+			  th:with="
+			  inactiveTeam=${!team.isActive() || !team.owner.isActive()},
+			  disqualifiedTeam=${!inactiveTeam and team.isDisqualified()},
+			  teamIsAtStart=${!inactiveTeam and !disqualifiedTeam and team.contestProgress.mileageAtStart == null},
+			  teamIsInPlay=${!inactiveTeam and !disqualifiedTeam and team.contestProgress.mileageAtStart != null}">
 
 			<h2>V terénu</h2>
 
 			<h3>[[${team.name}]]</h3>
 			<p>Startovní číslo: [[${team.id}]]</p>
 
-			<ul class="locations">
-				<li th:each="location, iterStat : ${locations}"
-					th:with="
-					locationDiscovered=${service.contest.checkLocationIsDiscovered(location)},
-					aTask=${service.task.getTaskRelatedToLocation(location, 'A_CODE')},
-					bTask=${service.task.getTaskRelatedToLocation(location, 'B_CODE')}"
-					class="location">
-					<a th:href="@{~/v-terenu/stanoviste-__${location.code}__}">[[${iterStat.count}]]</a>
-					<p>
-						<th:block th:if="${locationDiscovered}"><th:block th:replace="public/fragments/Misc.html :: PinImage"/></th:block>
-						<th:block th:unless="${locationDiscovered}">&nbsp;</th:block>
-						<span th:if="${service.contest.checkTaskIsCompleted(aTask)}">A</span>
-						<span th:if="${service.contest.checkTaskIsCompleted(bTask)}">B</span>
-					</p>
-				</li>
-			</ul>
+			<!--/*
+			*	
+			*	Inactive teams
+			*	
+			*	
+			*/-->
+			<th:block th:if="${inactiveTeam}">
+				<p>Tento tým se soutěže neúčastní</p>
 
-			<ul class="row">
-				<li class="c-codes">
-					<a href="/v-terenu/c-kody">C-KÓDY</a>
-					<p>0</p>
-				</li>
-				<li class="destination">
-					<a href="/v-terenu/cil">CÍL</a>
-					<p>0</p>
-				</li>
-			</ul>
+			</th:block>
+
+			<!--/*
+			*	
+			*	Disqualified teams
+			*	
+			*	
+			*/-->
+			<th:block th:if="${disqualifiedTeam}">
+				<p>Tým diskvalifikován</p>
+
+			</th:block>
+
+			<!--/*
+			*	
+			*	Teams at start
+			*	
+			*	
+			*/-->
+			<th:block th:if="${teamIsAtStart}">
+				<p>Zadejte stav tachometru</p>
+				<form th:action="@{~/v-terenu/submitMileage}"
+					  th:object="${submitMileageForm}"
+					  method="post">
+					<input th:field="*{type}" type="hidden" name="type"/>
+					<input th:field="*{mileage}" type="number" name="mileage" min="0"/>
+					<input type="submit" value="Odeslat"/>
+					<div th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="error"> [ error ] </div>
+					<th:block th:if="${#fields.hasGlobalErrors()}">
+						<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
+					</th:block>
+				</form>
+			</th:block>
+
+			<!--/*
+			*	
+			*	Teams in play or finished
+			*	
+			*	
+			*/-->
+			<th:block th:if="${teamIsInPlay}">
+
+				<ul class="locations">
+					<li th:each="location, iterStat : ${locations}"
+						th:with="
+						locationDiscovered=${service.contest.checkLocationIsDiscovered(location)},
+						aTask=${service.task.getTaskRelatedToLocation(location, 'A_CODE')},
+						bTask=${service.task.getTaskRelatedToLocation(location, 'B_CODE')}"
+						class="location">
+						<a th:href="@{~/v-terenu/stanoviste-__${location.code}__}">[[${iterStat.count}]]</a>
+						<p>
+							<th:block th:if="${locationDiscovered}"><th:block th:replace="public/fragments/Misc.html :: PinImage"/></th:block>
+							<th:block th:unless="${locationDiscovered}">&nbsp;</th:block>
+							<span th:if="${service.contest.checkTaskIsCompleted(aTask)}">A</span>
+							<span th:if="${service.contest.checkTaskIsCompleted(bTask)}">B</span>
+						</p>
+					</li>
+				</ul>
+
+				<ul class="row">
+					<li class="c-codes">
+						<a href="/v-terenu/c-kody">C-KÓDY</a>
+						<p>[[${service.contest.cCodesAcquiredCount()}]]</p>
+					</li>
+					<li class="destination">
+						<a href="/v-terenu/cil">CÍL</a>
+						<p>[[${service.contest.getCluesDiscovered().size()}]]</p>
+					</li>
+				</ul>
+			</th:block>
+
 
 		</main>
 

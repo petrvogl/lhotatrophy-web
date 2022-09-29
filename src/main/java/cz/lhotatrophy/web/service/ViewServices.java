@@ -26,9 +26,9 @@ public final class ViewServices {
 		return INSTANCE;
 	}
 
-	private ContestViewServices contest;
-	private LocationViewServices location;
-	private TaskViewServices task;
+	private ContestViewService contest;
+	private LocationViewService location;
+	private TaskViewService task;
 
 	@Setter(AccessLevel.NONE)
 	private boolean initialized;

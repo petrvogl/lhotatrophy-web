@@ -103,6 +103,13 @@
 					*/-->
 					<th:block th:if="${aTaskCompleted}">
 						<p>Kód <strong>[[${progressCode.solution}]]</strong> byl uznán</p>
+
+						<!--/*
+						*	Rewards for completing this task
+						*/-->
+						<th:block th:replace="this :: taskRewards(${aTask})">
+							[ A-code rewards ]
+						</th:block>
 					</th:block>
 
 					<!--/*
@@ -117,7 +124,7 @@
 						<!--/*
 						*	If solution of this task can be revealed
 						*/-->
-						<p th:if="${aTask.revealSolutionAllowed == true and (progressCode == null or not progressCode.solutionRevealed)}"><button>Odhalit řešení</button> (Cena: [[${appConfig.solutionRevealedPenalty}]] km)</p>
+						<p th:if="${aTask.revealSolutionAllowed == true and progressCode != null and progressCode.hintRevealed and !progressCode.solutionRevealed}"><button>Odhalit řešení</button> (Cena: [[${appConfig.solutionRevealedPenalty}]] km)</p>
 						<p th:if="${progressCode?.solutionRevealed}">Řešení: [[${aTask.anySolution}]]</p>
 
 						<form th:action="@{~/v-terenu/submitCode}"
@@ -142,7 +149,7 @@
 			*	
 			*/-->
 			<th:block th:if="${locationDiscovered}">
-				<h2><th:block th:replace="public/fragments/Misc.html :: PinImage (height=20)"/> [[${location.name}]]</h2>
+				<h2><th:block th:replace="public/fragments/Misc.html :: PinImage (height=20)"/> [[${location.code}]]: [[${location.name}]]</h2>
 				<p>[[${location.description}]]</p>
 
 				<!--/*
@@ -166,6 +173,13 @@
 
 					<p th:if="${bTaskCompleted}">
 						Kód <strong>[[${progressCode.solution}]]</strong> byl uznán
+
+						<!--/*
+						*	Rewards for completing this task
+						*/-->
+						<th:block th:replace="this :: taskRewards(${bTask})">
+							[ B-code rewards ]
+						</th:block>
 					</p>
 
 					<!--/*
@@ -183,6 +197,30 @@
 				</th:block>
 			</th:block>
 		</main>
+
+
+		<th:block th:fragment="taskRewards(_task)"
+				  th:if="${_task}">
+			<h4>Odměny</h4>
+
+			<p th:if="${_task.rewardCodes.isEmpty()}"> Za tento kód nejsou žádné odměny. </p>
+
+			<ul th:unless="${_task.rewardCodes.isEmpty()}">
+				<li th:each="reward : ${service.task.getTaskRewards(_task)}"
+					th:with="entityClass=${reward.getClass().getSimpleName()}">
+					<th:block th:switch="${entityClass}">
+						<th:block th:case="'Location'">
+							Získali jste polohu
+							<a th:href="@{~/v-terenu/stanoviste-__${reward.code}__}">stanovište [[${reward.code}]]</a>
+						</th:block>
+						<th:block th:case="'Clue'">
+							Získali jste indicii k nalezení
+							<a href="/v-terenu/cil">cílovéh stanovište</a>
+						</th:block>
+					</th:block>
+				</li>
+			</ul>
+		</th:block>
 
 		<!--/* Page footer */-->
 		<footer th:replace="public/fragments/PageFooter.html :: PageFooterAdmin"> [ Copyright ] </footer>

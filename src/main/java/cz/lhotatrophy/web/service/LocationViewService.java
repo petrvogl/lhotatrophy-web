@@ -9,6 +9,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Log4j2
-public final class LocationViewServices {
+public final class LocationViewService {
 
 }

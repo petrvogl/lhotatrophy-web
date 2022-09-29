@@ -82,8 +82,8 @@ public class EntityCacheServiceImpl extends AbstractService implements EntityCac
 	private static final Cache<Pair<Long, String>, EntityLongId> entityCache = CacheBuilder
 			.newBuilder()
 			.maximumSize(10_000)
-			//.expireAfterWrite(60, TimeUnit.MINUTES)
-			.expireAfterWrite(3, TimeUnit.MINUTES)
+			.expireAfterWrite(60, TimeUnit.MINUTES)
+			//.expireAfterWrite(3, TimeUnit.MINUTES)
 			.build();
 
 	/**
@@ -93,8 +93,8 @@ public class EntityCacheServiceImpl extends AbstractService implements EntityCac
 	private static final Cache<EntityListingQuerySpi, List<Long>> idsListingCache = CacheBuilder
 			.newBuilder()
 			.maximumSize(100)
-			//.expireAfterWrite(2, TimeUnit.MINUTES)
-			.expireAfterWrite(1, TimeUnit.MINUTES)
+			.expireAfterWrite(5, TimeUnit.MINUTES)
+			//.expireAfterWrite(1, TimeUnit.MINUTES)
 			.build();
 
 	/**
