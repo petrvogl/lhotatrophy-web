@@ -24,13 +24,46 @@
 
 			<table class="invisible-theme enabled-rows-hover">
 				<tr>
-					<td>Přesný time-stamp limitu dasažení cíle</td>
+					<td>Přesný čas otevření registrací</td>
 					<td>
-						[[${appConfig.completionLimitEpochMilli}]] ms
+						[[${appConfig.teamRegistrationOpenString}]]
 					</td>
 				</tr>
 				<tr>
-					<td>Penalizace za každou minutu překročení limitu</td>
+					<td>Přesný čas uzavření registrací</td>
+					<td>
+						[[${appConfig.teamRegistrationClosedString}]]
+					</td>
+				</tr>
+				<tr>
+					<td>Limit registrovaných týmů</td>
+					<td>
+						[[${appConfig.teamRegistrationLimit}]]
+					</td>
+				</tr>
+			</table>
+			<hr />
+			<table class="invisible-theme enabled-rows-hover">
+				<tr>
+					<td>Přesný čas, od kdy je možné zadat<br/>počáteční stavu tachometru</td>
+					<td>
+						[[${appConfig.gameOpenTimeString}]]
+					</td>
+				</tr>
+				<tr>
+					<td>Přesný čas, od kdy je možné<br/>zadávat soutěžní kódy</td>
+					<td>
+						[[${appConfig.gameStartTimeString}]]
+					</td>
+				</tr>
+				<tr>
+					<td>Přesný čas limitu dasažení cíle<br/>bez penalizace</td>
+					<td>
+						[[${appConfig.gameEndTimeString}]]
+					</td>
+				</tr>
+				<tr>
+					<td>Penalizace za každou minutu<br/>po překročení limitu</td>
 					<td>
 						[[${appConfig.penaltyPerMinute}]] km
 					</td>
@@ -38,7 +71,7 @@
 				<tr>
 					<td>Maximální možné překročení limitu</td>
 					<td>
-						[[${appConfig.maxOverLimitSeconds}]] sec
+						[[${appConfig.maxOverLimitSeconds/60}]] min
 					</td>
 				</tr>
 				<tr>
@@ -54,23 +87,35 @@
 					</td>
 				</tr>
 				<tr>
-					<td>Bonus za získání C-kódu</td>
+					<td>Odemknutí pojistky po zadání</td>
+					<td>
+						[[${appConfig.insuranceCCodeLimit}]]. C kódu
+					</td>
+				</tr>
+			</table>
+			<hr />
+			<table class="invisible-theme enabled-rows-hover">
+				<tr>
+					<td>Bonus za získání C kódu</td>
 					<td>
 						[[${appConfig.cCodeAcquiredBonus}]] km
 					</td>
 				</tr>
 				<tr>
-					<td>Penalizace za chybějící A-kód</td>
+					<td>Penalizace za chybějící A kód</td>
 					<td>
 						[[${appConfig.aCodeMissingPenalty}]] km
 					</td>
 				</tr>
 				<tr>
-					<td>Penalizace za chybějící B-kód</td>
+					<td>Penalizace za chybějící B kód</td>
 					<td>
 						[[${appConfig.bCodeMissingPenalty}]] km
 					</td>
 				</tr>
+			</table>
+			<hr />
+			<table class="invisible-theme enabled-rows-hover">
 				<tr>
 					<td>Penalizace za použití nápovědy</td>
 					<td>
@@ -87,6 +132,12 @@
 					<td>Penalizace za odhalení řešení</td>
 					<td>
 						[[${appConfig.solutionRevealedPenalty}]] km
+					</td>
+				</tr>
+				<tr>
+					<td>Penalizace za odhalení polohy cíle</td>
+					<td>
+						[[${appConfig.destinationRevealedPenalty}]] km
 					</td>
 				</tr>
 			</table>

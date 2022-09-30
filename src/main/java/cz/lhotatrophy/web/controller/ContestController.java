@@ -89,6 +89,9 @@ public class ContestController extends AbstractController {
 			@ModelAttribute("submitBCodeForm") final SubmitCodeForm submitBCodeForm,
 			final Model model
 	) {
+		if (!checkContestIsOn()) {
+			return "redirect:/v-terenu";
+		}
 		log.info("LOCATION {}", locationCode);
 		final Optional<Location> optLocation = locationService.getLocationByCodeFromCache(locationCode);
 		if (optLocation.isEmpty()) {
@@ -108,6 +111,9 @@ public class ContestController extends AbstractController {
 			final SubmitCodeForm submitCodeForm,
 			final Model model
 	) {
+		if (!checkContestIsOn()) {
+			return "redirect:/v-terenu";
+		}
 		log.info("C-CODES");
 		submitCodeForm.setTaskType("C");
 		initModel(model);
@@ -121,6 +127,9 @@ public class ContestController extends AbstractController {
 	public String destinationPage(
 			final Model model
 	) {
+		if (!checkContestIsOn()) {
+			return "redirect:/v-terenu";
+		}
 		log.info("DESTINATION");
 		initModel(model);
 		return "public/contest-destination";
@@ -134,6 +143,9 @@ public class ContestController extends AbstractController {
 			final SubmitCodeForm submitCodeForm,
 			final Model model
 	) {
+		if (!checkContestIsOn()) {
+			return "redirect:/v-terenu";
+		}
 		log.info("SUBMIT CODE");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
 		final TaskTypeEnum taskType = submitCodeForm.getType();
@@ -170,6 +182,9 @@ public class ContestController extends AbstractController {
 			final BindingResult bindingResult,
 			final Model model
 	) {
+		if (!checkContestIsOpen()) {
+			return "redirect:/v-terenu";
+		}
 		log.info("SUBMIT MILEAGE");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
 		if (optTeam.isEmpty()) {

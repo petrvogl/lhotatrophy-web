@@ -103,7 +103,7 @@
 					</div>
 
 					<div th:if="${team != null and teamSettings != null}"
-						 th:with="ordersClosed=${#dates.createNow().getTime() lt #dates.create(2022,7,4,18,00).getTime() or #dates.createNow().getTime() gt #dates.create(2022,7,16,0,00).getTime()}"
+						 th:with="ordersClosed=${now.isAfter(appConfig.teamRegistrationClosedInstant) or now.isBefore(appConfig.teamRegistrationOpenInstant)}"
 						 class="block full">
 						<div class="block-inner visible firewatch-8 bg-firewatch-2">
 

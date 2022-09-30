@@ -8,10 +8,10 @@ import cz.lhotatrophy.persist.entity.TaskTypeEnum;
 import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.TeamContestProgress;
 import cz.lhotatrophy.persist.entity.TeamContestProgressCode;
+import cz.lhotatrophy.utils.DateTimeUtils;
 import cz.lhotatrophy.utils.TextUtils;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,13 +53,11 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 			return Integer.MAX_VALUE;
 		}
 		// constants
-		final Instant completionLimitInstant = appConfig.getCompletionLimitInstant();
+		final Instant completionLimitInstant = appConfig.getGameEndInstant();
 		final long maxOverLimitSeconds = appConfig.getMaxOverLimitSeconds();
 		final Instant timeAtFinishInstant = (contestProgress.getTimestampAtFinish() == null)
 				? null
-				: Instant.ofEpochMilli(contestProgress.getTimestampAtFinish())
-						.atZone(ZoneId.systemDefault())
-						.toInstant();
+				: DateTimeUtils.toInstant(contestProgress.getTimestampAtFinish());
 		final Duration timeLimitExceededDuration;
 		if (timeAtFinishInstant != null && timeAtFinishInstant.isAfter(completionLimitInstant)) {
 			// the team has finished the game after time limit
@@ -74,9 +72,7 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 				timeLimitExceededDuration = Duration.ZERO;
 			} else {
 				// the team is still in the game
-				final Instant now = Instant.now()
-						.atZone(ZoneId.systemDefault())
-						.toInstant();
+				final Instant now = Instant.now();
 				if (now.isAfter(completionLimitInstant)) {
 					timeLimitExceededDuration = Duration.ofMillis(ChronoUnit.MILLIS.between(completionLimitInstant, now));
 					if (timeLimitExceededDuration.getSeconds() >= maxOverLimitSeconds) {

@@ -91,7 +91,7 @@ public class User extends AbstractEntityWithSimpleProperties<Long, User> impleme
 
 	public LocalDateTime getCreatedDateTime() {
 		if (createdDateTime == null && created != null) {
-			createdDateTime = DateTimeUtils.createLocalDateTime(created);
+			createdDateTime = DateTimeUtils.toLocalDateTime(created);
 		}
 		return createdDateTime;
 	}

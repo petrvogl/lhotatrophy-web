@@ -5,10 +5,14 @@ import cz.lhotatrophy.core.security.UserDetails;
 import cz.lhotatrophy.core.service.UserService;
 import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.User;
+import cz.lhotatrophy.utils.DateTimeUtils;
 import cz.lhotatrophy.web.service.ContestViewService;
 import cz.lhotatrophy.web.service.LocationViewService;
 import cz.lhotatrophy.web.service.TaskViewService;
 import cz.lhotatrophy.web.service.ViewServices;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nonnull;
@@ -62,6 +66,7 @@ public abstract class AbstractController {
 	protected void initModel(final Model model) {
 		// view services and utils
 		model.addAttribute("service", getViewServices());
+		model.addAttribute("now", NowInstatntUtils.INSTANCE);
 		// global configuration
 		model.addAttribute("appConfig", getApplicationConfig());
 		// effective user and team
@@ -109,5 +114,71 @@ public abstract class AbstractController {
 		return getUserDetails()
 				.map(d -> d.hasAuthority(UserDetails.SUPERADMIN_ROLE))
 				.orElse(Boolean.FALSE);
+	}
+
+	protected boolean checkContestIsOn() {
+		final Long limitSeconds = appConfig.getMaxOverLimitSeconds() + 1l;
+		final Instant limit = appConfig.getGameStartInstant().plus(limitSeconds, ChronoUnit.SECONDS);
+		return NowInstatntUtils.INSTANCE.isAfter(appConfig.getGameStartInstant())
+				&& NowInstatntUtils.INSTANCE.isBefore(limit);
+	}
+
+	protected boolean checkContestIsOpen() {
+		final Long limitSeconds = appConfig.getMaxOverLimitSeconds() + 1l;
+		final Instant limit = appConfig.getGameStartInstant().plus(limitSeconds, ChronoUnit.SECONDS);
+		return NowInstatntUtils.INSTANCE.isAfter(appConfig.getGameOpenInstant())
+				&& NowInstatntUtils.INSTANCE.isBefore(limit);
+	}
+
+	/**
+	 * Date utils object.
+	 * <ul>
+	 * <li>{@code now.isAfter('yyyy-MM-dd HH:mm')}</li>
+	 * <li>{@code now.isBefore('yyyy-MM-dd HH:mm')}</li>
+	 * <li>{@code now.isAfter(Instant)}</li>
+	 * <li>{@code now.isBefore(Instant)}</li>
+	 * <ul/>
+	 */
+	private static class NowInstatntUtils {
+
+		static final NowInstatntUtils INSTANCE = new NowInstatntUtils();
+
+		public boolean isAfter(final String date) {
+			if (date == null) {
+				return false;
+			}
+			final LocalDateTime _date = DateTimeUtils.parse(date, DateTimeUtils.YYYY_MM_DD__HH_MM);
+			if (_date == null) {
+				return false;
+			}
+			final Instant instant = DateTimeUtils.toInstant(_date);
+			return Instant.now().isAfter(instant);
+		}
+
+		public boolean isAfter(final Instant instant) {
+			if (instant == null) {
+				return false;
+			}
+			return Instant.now().isAfter(instant);
+		}
+
+		public boolean isBefore(final String date) {
+			if (date == null) {
+				return false;
+			}
+			final LocalDateTime _date = DateTimeUtils.parse(date, DateTimeUtils.YYYY_MM_DD__HH_MM);
+			if (_date == null) {
+				return false;
+			}
+			final Instant instant = DateTimeUtils.toInstant(_date);
+			return Instant.now().isBefore(instant);
+		}
+
+		public boolean isBefore(final Instant instant) {
+			if (instant == null) {
+				return false;
+			}
+			return Instant.now().isBefore(instant);
+		}
 	}
 }
