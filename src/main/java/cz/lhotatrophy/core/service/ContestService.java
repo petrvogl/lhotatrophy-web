@@ -38,6 +38,8 @@ public interface ContestService extends Service {
 	 */
 	boolean acceptSolution(@NonNull String solution, @NonNull Task task, @NonNull Team team);
 
+	boolean acceptDestinationSolution(@NonNull String solution, @NonNull Team team);
+
 	/**
 	 * Records that the solution hint has been revealed.
 	 *
@@ -64,6 +66,14 @@ public interface ContestService extends Service {
 	 * @return {@code true} if revealed
 	 */
 	boolean revealSolution(@NonNull Task task, @NonNull Team team);
+
+	/**
+	 * Records that the exact destination location has been revealed.
+	 *
+	 * @param team Team
+	 * @return {@code true} if revealed
+	 */
+	boolean revealDestination(@NonNull Team team);
 
 	/**
 	 * Verifies the conditions for obtaining insurance and records its
@@ -133,6 +143,8 @@ public interface ContestService extends Service {
 	List<Task> getTasksCompleted(@NonNull Team team, @NonNull TaskTypeEnum taskType);
 
 	List<TeamContestProgressCode> getCodesAcquired(@NonNull Team team, @NonNull TaskTypeEnum taskType);
+
+	boolean checkDestinationRevealed(@NonNull Team team);
 
 	/**
 	 * Gets the current team's score. The score is calculated and measured in

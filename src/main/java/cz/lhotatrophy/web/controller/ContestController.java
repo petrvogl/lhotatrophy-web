@@ -10,11 +10,17 @@ import cz.lhotatrophy.persist.entity.Location;
 import cz.lhotatrophy.persist.entity.Task;
 import cz.lhotatrophy.persist.entity.TaskTypeEnum;
 import cz.lhotatrophy.persist.entity.Team;
+import cz.lhotatrophy.persist.entity.TeamContestProgress;
+import cz.lhotatrophy.persist.entity.TeamContestProgressCode;
+import cz.lhotatrophy.web.form.ConfirmationForm;
+import cz.lhotatrophy.web.form.DestinationPhotoForm;
+import cz.lhotatrophy.web.form.HintRevealForm;
 import cz.lhotatrophy.web.form.SubmitCodeForm;
 import cz.lhotatrophy.web.form.SubmitMileageForm;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -47,6 +53,9 @@ public class ContestController extends AbstractController {
 
 	private static final String START_MILEAGE_FORM_TYPE = "start";
 	private static final String FINISH_MILEAGE_FORM_TYPE = "finish";
+	private static final String HINT_REVEAL_FORM_TYPE = "hint";
+	private static final String PROCEDURE_REVEAL_FORM_TYPE = "procedure";
+	private static final String SOLUTION_REVEAL_FORM_TYPE = "solution";
 
 	/**
 	 * Contest dashboard
@@ -87,6 +96,7 @@ public class ContestController extends AbstractController {
 			@PathVariable String locationCode,
 			@ModelAttribute("submitACodeForm") final SubmitCodeForm submitACodeForm,
 			@ModelAttribute("submitBCodeForm") final SubmitCodeForm submitBCodeForm,
+			@ModelAttribute("hintRevealForm") final HintRevealForm hintRevealForm,
 			final Model model
 	) {
 		if (!checkContestIsOn()) {
@@ -98,6 +108,7 @@ public class ContestController extends AbstractController {
 			// location does not exists
 			return "redirect:/v-terenu";
 		}
+		// NOTE: HintRevealForm is initialized in template
 		initModel(model);
 		model.addAttribute("location", optLocation.get());
 		return "public/contest-location";
@@ -109,6 +120,7 @@ public class ContestController extends AbstractController {
 	@GetMapping("/c-kody")
 	public String cCodesPage(
 			final SubmitCodeForm submitCodeForm,
+			final ConfirmationForm confirmationForm,
 			final Model model
 	) {
 		if (!checkContestIsOn()) {
@@ -125,13 +137,23 @@ public class ContestController extends AbstractController {
 	 */
 	@GetMapping("/cil")
 	public String destinationPage(
+			final ConfirmationForm confirmationForm,
+			final SubmitMileageForm submitMileageForm,
+			final DestinationPhotoForm destinationPhotoForm,
 			final Model model
 	) {
 		if (!checkContestIsOn()) {
 			return "redirect:/v-terenu";
 		}
 		log.info("DESTINATION");
+		final Optional<Location> optLocation = locationService.getLocationByCodeFromCache("DEST");
+		if (optLocation.isEmpty()) {
+			// location does not exists
+			return "redirect:/v-terenu";
+		}
+		submitMileageForm.setType(FINISH_MILEAGE_FORM_TYPE);
 		initModel(model);
+		model.addAttribute("location", optLocation.get());
 		return "public/contest-destination";
 	}
 
@@ -140,10 +162,9 @@ public class ContestController extends AbstractController {
 	 */
 	@PostMapping("/submitCode")
 	public String submitCode(
-			final SubmitCodeForm submitCodeForm,
-			final Model model
+			final SubmitCodeForm submitCodeForm
 	) {
-		if (!checkContestIsOn()) {
+		if (!checkContestIsOn() || !checkTeamIsInPlay()) {
 			return "redirect:/v-terenu";
 		}
 		log.info("SUBMIT CODE");
@@ -152,22 +173,31 @@ public class ContestController extends AbstractController {
 		final Optional<Task> optTask = Optional.ofNullable(submitCodeForm.getTaskCode())
 				.flatMap(code -> taskService.getTaskByCodeFromCache(code));
 		final String solution = submitCodeForm.getSolution();
-		if (optTeam.isEmpty() || taskType == null || solution == null || (taskType != TaskTypeEnum.C_CODE && optTask.isEmpty())) {
+		if (optTeam.isEmpty() || taskType == null || (taskType != TaskTypeEnum.C_CODE && optTask.isEmpty())) {
 			// not valid
 			return "redirect:/v-terenu";
 		}
 		final Team team = optTeam.get();
 		// verify C code
 		if (taskType == TaskTypeEnum.C_CODE) {
-			contestService.acceptSolution(solution, taskType, team);
-			// TODO - log if accepted
+			if (solution != null) {
+
+				contestService.acceptSolution(solution, taskType, team);
+				//
+				// TODO - log if accepted
+				//
+			}
 			return "redirect:/v-terenu/c-kody";
 		}
 		// verify A/B code
 		final Task task = optTask.get();
-		if (!contestService.checkTaskIsCompleted(task, team)) {
-			contestService.acceptSolution(solution, task, team);
-			// TODO - log if accepted
+		if (solution != null) {
+			if (!contestService.checkTaskIsCompleted(task, team)) {
+				contestService.acceptSolution(solution, task, team);
+				//
+				// TODO - log if accepted
+				//
+			}
 		}
 		final Location location = taskService.getLocationRelatedToTask(task).orElse(null);
 		return "redirect:/v-terenu/stanoviste-" + location.getCode();
@@ -206,18 +236,162 @@ public class ContestController extends AbstractController {
 			// TODO - save image
 			//
 		} else if (FINISH_MILEAGE_FORM_TYPE.equals(submitMileageForm.getType()) && team.getContestProgress().getMileageAtFinish() == null) {
-			if (bindingResult.hasErrors()) {
-				initModel(model);
-				return "public/contest-destination";
+			if (contestService.checkTeamIsInPlay(team)) {
+				final TeamContestProgress contestProgress = team.getContestProgress();
+				final String solution = StringUtils.trimToNull(submitMileageForm.getDestCode());
+				final Integer mileage = submitMileageForm.getMileage();
+				if (solution == null) {
+					bindingResult.rejectValue("destCode", "Invalid", "Musí být zadán cílový kód.");
+				}
+				if (mileage == null || mileage < contestProgress.getMileageAtStart()) {
+					bindingResult.rejectValue("mileage", "Invalid", "Stav tachometru musí být vyšší než na startu.");
+				}
+				if (!bindingResult.hasErrors() && contestProgress.getDestinationSolution() == null) {
+					final boolean accepted = contestService.acceptDestinationSolution(solution, team);
+					if (!accepted) {
+						bindingResult.rejectValue("destCode", "Invalid", "Cílový kód není správný.");
+					}
+				}
+				if (!bindingResult.hasErrors()) {
+					final boolean updated = contestService.setMileageAtFinish(team, mileage);
+					if (!updated) {
+						bindingResult.rejectValue("mileage", "Invalid", "Stav tachometru není validní.");
+					}
+				}
+				if (bindingResult.hasErrors()) {
+					initModel(model);
+					final Optional<Location> optLocation = locationService.getLocationByCodeFromCache("DEST");
+					model.addAttribute("location", optLocation.orElse(null));
+					model.addAttribute("destinationPhotoForm", new DestinationPhotoForm());
+					return "public/contest-destination";
+				}
+				//
+				// TODO - save image
+				//
 			}
-			contestService.setMileageAtFinish(team, submitMileageForm.getMileage());
-			//
-			// TODO - save image
-			//
 			return "redirect:/v-terenu/cil";
 		} else {
 			// ignoring invalid form and invalid states
 		}
 		return "redirect:/v-terenu";
+	}
+
+	/**
+	 * Reveal hint, procedure or solution
+	 */
+	@PostMapping("/revealHint")
+	public String revealHint(
+			final HintRevealForm hintRevealForm,
+			final BindingResult bindingResult
+	) {
+		if (!checkContestIsOn() || !checkTeamIsInPlay()) {
+			return "redirect:/v-terenu";
+		}
+		log.info("REVEAL HINT");
+		final Optional<Team> optTeam = teamService.getEffectiveTeam();
+		final Optional<Task> optTask = Optional.ofNullable(hintRevealForm.getTaskCode())
+				.flatMap(code -> taskService.getTaskByCodeFromCache(code));
+		if (optTeam.isEmpty() || optTask.isEmpty() || hintRevealForm.getType() == null) {
+			// task does not exist or logged in user has no team so cannot compete
+			return "redirect:/v-terenu";
+		}
+		final Team team = optTeam.get();
+		final Task task = optTask.get();
+		final TeamContestProgress contestProgress = team.getContestProgress();
+		final TeamContestProgressCode contestCode = contestProgress.getContestCode(task.getCode());
+		switch (hintRevealForm.getType()) {
+			case HINT_REVEAL_FORM_TYPE:
+				if ((contestCode == null || !contestCode.revealed(true, false, false))
+						&& contestService.revealSolutionHint(task, team)) {
+					//
+					// TODO - log
+					//
+				}
+				break;
+			case PROCEDURE_REVEAL_FORM_TYPE:
+				if ((contestCode == null || !contestCode.revealed(false, true, false))
+						&& contestService.revealSolutionProcedure(task, team)) {
+					//
+					// TODO - log
+					//
+				}
+				break;
+			case SOLUTION_REVEAL_FORM_TYPE:
+				if ((contestCode == null || !contestCode.revealed(false, false, true))
+						&& contestService.revealSolution(task, team)) {
+					//
+					// TODO - log
+					//
+				}
+				break;
+			default:
+				// ignoring invalid form and invalid states
+				return "redirect:/v-terenu";
+		}
+		final Location location = taskService.getLocationRelatedToTask(task).orElse(null);
+		return "redirect:/v-terenu/stanoviste-" + location.getCode();
+	}
+
+	/**
+	 * Buy insurance
+	 */
+	@PostMapping("/buyInsurance")
+	public String buyInsurance(
+			final ConfirmationForm confirmationForm
+	) {
+		if (!checkContestIsOn() || !checkTeamIsInPlay()) {
+			return "redirect:/v-terenu";
+		}
+		log.info("BUY INSURANCE");
+		final Optional<Team> optTeam = teamService.getEffectiveTeam();
+		if (optTeam.isEmpty()) {
+			// logged in user has no team so cannot compete
+			return "redirect:/v-terenu";
+		}
+		final Team team = optTeam.get();
+		if (!contestService.checkHasInsurance(team)) {
+			// insurance not obtained yet
+			if (contestService.buyInsurance(team)) {
+				//
+				// TODO - log
+				//
+			}
+		}
+		return "redirect:/v-terenu/c-kody";
+	}
+
+	/**
+	 * Reveal destination
+	 */
+	@PostMapping("/revealDestination")
+	public String revealDestination(
+			final ConfirmationForm confirmationForm
+	) {
+		if (!checkContestIsOn() || !checkTeamIsInPlay()) {
+			return "redirect:/v-terenu";
+		}
+		log.info("REVEAL DESTINATION");
+		final Optional<Team> optTeam = teamService.getEffectiveTeam();
+		if (optTeam.isEmpty()) {
+			// logged in user has no team so cannot compete
+			return "redirect:/v-terenu";
+		}
+		final Team team = optTeam.get();
+		if (!contestService.checkDestinationRevealed(team)) {
+			// insurance not obtained yet
+			if (contestService.revealDestination(team)) {
+				//
+				// TODO - log
+				//
+			}
+		}
+		return "redirect:/v-terenu/cil";
+	}
+
+	private boolean checkTeamIsInPlay() {
+		// check in the context of the effective user
+		return teamService.getEffectiveTeam()
+				.map(team -> contestService.checkTeamIsInPlay(team))
+				.orElse(false);
 	}
 }

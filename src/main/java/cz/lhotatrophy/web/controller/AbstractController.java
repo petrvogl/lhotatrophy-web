@@ -118,14 +118,14 @@ public abstract class AbstractController {
 
 	protected boolean checkContestIsOn() {
 		final Long limitSeconds = appConfig.getMaxOverLimitSeconds() + 1l;
-		final Instant limit = appConfig.getGameStartInstant().plus(limitSeconds, ChronoUnit.SECONDS);
+		final Instant limit = appConfig.getGameEndInstant().plus(limitSeconds, ChronoUnit.SECONDS);
 		return NowInstatntUtils.INSTANCE.isAfter(appConfig.getGameStartInstant())
 				&& NowInstatntUtils.INSTANCE.isBefore(limit);
 	}
 
 	protected boolean checkContestIsOpen() {
 		final Long limitSeconds = appConfig.getMaxOverLimitSeconds() + 1l;
-		final Instant limit = appConfig.getGameStartInstant().plus(limitSeconds, ChronoUnit.SECONDS);
+		final Instant limit = appConfig.getGameEndInstant().plus(limitSeconds, ChronoUnit.SECONDS);
 		return NowInstatntUtils.INSTANCE.isAfter(appConfig.getGameOpenInstant())
 				&& NowInstatntUtils.INSTANCE.isBefore(limit);
 	}

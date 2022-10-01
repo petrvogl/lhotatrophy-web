@@ -15,5 +15,7 @@ public class SubmitMileageForm {
 	@Positive(message = "Vyplň kladné číslo")
 	private Integer mileage;
 
+	private String destCode;
+
 	private String type;
 }

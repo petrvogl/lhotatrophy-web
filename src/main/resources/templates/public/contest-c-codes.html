@@ -3,59 +3,11 @@
 	  xmlns:th="http://www.thymeleaf.org"
 	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	  lang="cs">
-	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHeadAdmin(additionalSources=~{this :: styles})">
+	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHeadAdmin">
 		<!--/* PROTOTYPE */-->
 		<title>Administrace — 24th Lhota Trophy</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
-		<style th:fragment="styles">
-			.locations, .row {
-				width: 410px;
-				margin: 0;
-				padding: 0;
-				list-style-type: none;
-			}
-			.locations .location {
-				display: inline-block;
-				margin: 6px;
-				width: 120px;
-				background-color: lightgray;
-			}
-			.locations .location a {
-				display: inline-block;
-				width: 100%;
-				text-align: center;
-				line-height: 8rem;
-				font-size: 4rem;
-				font-weight: bold;
-				border-bottom: solid 1px gray;
-			}
-			.locations .location p {
-				padding: 6px 6px 0 6px;
-				margin: 0;
-				text-align: center;
-			}
-			.row .c-codes, .row .destination {
-				display: inline-block;
-				margin: 6px;
-				width: 188px;
-				background-color: lightgray;
-			}
-			.row .c-codes a, .row .destination a {
-				display: inline-block;
-				width: 100%;
-				text-align: center;
-				line-height: 8rem;
-				font-size: 4rem;
-				font-weight: bold;
-				border-bottom: solid 1px gray;
-			}
-			.row .c-codes p, .row .destination p {
-				padding: 3px 6px 3px 6px;
-				margin: 0;
-				text-align: center;
-			}
-		</style>
 	</head>
 	<body class="docu-theme">
 		<!--/* Page header */-->
@@ -68,12 +20,13 @@
 		*/-->
 		<main class="page-content">
 
-			<h3>C-KÓD</h3>
+			<h3>C KÓD</h3>
 
 			<!--/*
 			*	C-code input
 			*/-->
-			<form th:action="@{~/v-terenu/submitCode}"
+			<form th:if="${service.contest.checkTeamIsInPlay()}"
+				  th:action="@{~/v-terenu/submitCode}"
 				  th:object="${submitCodeForm}"
 				  method="post">
 				<input th:field="*{taskType}" type="hidden" name="taskType"/>
@@ -99,7 +52,7 @@
 			*	Insurance NOT available
 			*/-->
 			<th:block th:unless="${service.contest.isInsuranceAvailable()}">
-				Možnost zakoupení pojistky se odemkne až získáte [[${appConfig.insuranceCCodeLimit}]]. C-kód.
+				<p> Možnost zakoupení pojistky se odemkne až získáte [[${appConfig.insuranceCCodeLimit}]]. C kód. </p>
 			</th:block>
 
 			<th:block th:if="${service.contest.isInsuranceAvailable()}">
@@ -107,18 +60,43 @@
 				*	Insurance already obtained
 				*/-->
 				<th:block th:if="${service.contest.checkHasInsurance()}">
-					Gratulujeme, získali jste pojistku proti výhře první ceny.
-					Pokud tuto pojistku získají všechny týmy, které úspěšně dorazí do cíle, tak bude pojistka ze hry vyřazena.
+					<p> 
+						Gratulujeme, získali jste pojistku proti výhře první ceny.
+						Pokud tuto pojistku získají všechny týmy, které úspěšně dorazí do cíle, tak bude pojistka ze hry vyřazena.
+					</p>
 				</th:block>
 
 				<!--/*
 				*	Insurance to buy
 				*/-->
-				<th:block th:unless="${service.contest.checkHasInsurance()}">
-					<button>Koupit pojistku</button> (Cena: [[${appConfig.insurancePrice}]] km)
+				<th:block th:if="${!service.contest.checkHasInsurance() and service.contest.checkTeamIsInPlay()}">
+					<form th:action="@{~/v-terenu/buyInsurance}"
+						  th:object="${confirmationForm}"
+						  method="post"
+						  th:data-confirm-message="|Opravdu si přejete koupit pojistku? Bude vást to stát ${appConfig.insurancePrice} km.|">
+						<input type="submit" value="Koupit pojistku" />
+						(Cena: [[${appConfig.insurancePrice}]] km)
+					</form>
 				</th:block>
 			</th:block>
 
+			<script type="text/javascript">
+				/* <![CDATA[ */
+				const forms = document.querySelectorAll("form");
+				forms.forEach(form => {
+					const confirmMessage = form.getAttribute("data-confirm-message");
+					if (LT.isNotEmpty(confirmMessage)) {
+						form.onsubmit = (event) => {
+							const confirmed = window.confirm(confirmMessage);
+							if (!confirmed) {
+								event.preventDefault();
+							}
+							return confirmed;
+						};
+					}
+				});
+				/* ]]> */
+			</script>
 		</main>
 
 		<!--/* Page footer */-->

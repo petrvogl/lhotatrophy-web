@@ -150,4 +150,16 @@ public final class ContestViewService {
 				.map(team -> contestService.getCluesDiscovered(team))
 				.orElse(Collections.emptyList());
 	}
+
+	/**
+	 * {@code ${service.contest.checkDestinationRevealed()}}
+	 */
+	public boolean checkDestinationRevealed() {
+		final MutableBoolean revealed = new MutableBoolean(false);
+		// check in the context of the effective user
+		teamService.getEffectiveTeam().ifPresent(team -> {
+			revealed.setValue(contestService.checkDestinationRevealed(team));
+		});
+		return revealed.booleanValue();
+	}
 }

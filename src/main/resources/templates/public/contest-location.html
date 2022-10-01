@@ -3,59 +3,11 @@
 	  xmlns:th="http://www.thymeleaf.org"
 	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	  lang="cs">
-	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHeadAdmin(additionalSources=~{this :: styles})">
+	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHeadAdmin">
 		<!--/* PROTOTYPE */-->
 		<title>Administrace — 24th Lhota Trophy</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
-		<style th:fragment="styles">
-			.locations, .row {
-				width: 410px;
-				margin: 0;
-				padding: 0;
-				list-style-type: none;
-			}
-			.locations .location {
-				display: inline-block;
-				margin: 6px;
-				width: 120px;
-				background-color: lightgray;
-			}
-			.locations .location a {
-				display: inline-block;
-				width: 100%;
-				text-align: center;
-				line-height: 8rem;
-				font-size: 4rem;
-				font-weight: bold;
-				border-bottom: solid 1px gray;
-			}
-			.locations .location p {
-				padding: 6px 6px 0 6px;
-				margin: 0;
-				text-align: center;
-			}
-			.row .c-codes, .row .destination {
-				display: inline-block;
-				margin: 6px;
-				width: 188px;
-				background-color: lightgray;
-			}
-			.row .c-codes a, .row .destination a {
-				display: inline-block;
-				width: 100%;
-				text-align: center;
-				line-height: 8rem;
-				font-size: 4rem;
-				font-weight: bold;
-				border-bottom: solid 1px gray;
-			}
-			.row .c-codes p, .row .destination p {
-				padding: 3px 6px 3px 6px;
-				margin: 0;
-				text-align: center;
-			}
-		</style>
 	</head>
 	<body class="docu-theme">
 		<!--/* Page header */-->
@@ -92,17 +44,17 @@
 						  th:if="${aTask}"
 						  th:with="
 						  aTaskCompleted=${service.contest.checkTaskIsCompleted(aTask)},
-						  progressCode=${aTaskCompleted} ? ${team.contestProgress.getContestCode(aTask.code)} : null,
+						  progressCode=${team.contestProgress.getContestCode(aTask.code)},
 						  _=${aTaskCompleted} ? null : ${submitACodeForm.setFrom(aTask)}
 						  ">
 
-					<h3>A-KÓD</h3>
+					<h3>A KÓD</h3>
 
 					<!--/*
 					*	If code has been already aquired
 					*/-->
 					<th:block th:if="${aTaskCompleted}">
-						<p>Kód <strong>[[${progressCode.solution}]]</strong> byl uznán</p>
+						<p>Kód <strong>[[${progressCode.solution}]]</strong> je správný.</p>
 
 						<!--/*
 						*	Rewards for completing this task
@@ -115,16 +67,38 @@
 					<!--/*
 					*	If code has not been aquired yet
 					*/-->
-					<th:block th:unless="${aTaskCompleted}">
+					<th:block th:if="${!aTaskCompleted and service.contest.checkTeamIsInPlay()}">
 						<!--/*
 						*	If solution hint is available
 						*/-->
-						<p th:if="${aTask.hasSolutionHint() and (progressCode == null or not progressCode.hintRevealed)}"><button>Získat nápovědu</button> (Cena: [[${appConfig.hintRevealedPenalty}]] km)</p>
+						<th:block th:if="${aTask.hasSolutionHint() and (progressCode == null or !progressCode.hintRevealed)}">
+							<th:block th:replace="this :: hintForm(
+									  _task=${aTask},
+									  _progressCode=${progressCode},
+									  _type='hint',
+									  _label='Získat nápovědu',
+									  _message=|(Cena: ${appConfig.hintRevealedPenalty} km)|,
+									  _confirmMessage=|Opravdu chcete odhalit nápovědu? Bude vás to stát ${appConfig.hintRevealedPenalty} km.|
+									  )">
+								[ Reveal Hint Form ]
+							</th:block>
+						</th:block>
 						<p th:if="${progressCode?.hintRevealed}">Nápověda: [[${aTask.solutionHint}]]</p>
 						<!--/*
 						*	If solution of this task can be revealed
 						*/-->
-						<p th:if="${aTask.revealSolutionAllowed == true and progressCode != null and progressCode.hintRevealed and !progressCode.solutionRevealed}"><button>Odhalit řešení</button> (Cena: [[${appConfig.solutionRevealedPenalty}]] km)</p>
+						<th:block th:if="${aTask.revealSolutionAllowed == true and progressCode != null and progressCode.hintRevealed and !progressCode.solutionRevealed}">
+							<th:block th:replace="this :: hintForm(
+									  _task=${aTask},
+									  _progressCode=${progressCode},
+									  _type='solution',
+									  _label='Odhalit řešení',
+									  _message=|(Cena: ${appConfig.solutionRevealedPenalty} km)|,
+									  _confirmMessage=|Opravdu chcete odhalit řešení? Bude vás to stát ${appConfig.solutionRevealedPenalty} km.|
+									  )">
+								[ Reveal Solution Form ]
+							</th:block>
+						</th:block>
 						<p th:if="${progressCode?.solutionRevealed}">Řešení: [[${aTask.anySolution}]]</p>
 
 						<form th:action="@{~/v-terenu/submitCode}"
@@ -165,14 +139,14 @@
 				<th:block th:if="${bTask}"
 						  th:with="
 						  bTaskCompleted=${service.contest.checkTaskIsCompleted(bTask)},
-						  progressCode=${bTaskCompleted} ? ${team.contestProgress.getContestCode(bTask.code)} : null,
+						  progressCode=${team.contestProgress.getContestCode(bTask.code)},
 						  _=${bTaskCompleted} ? null : ${submitBCodeForm.setFrom(bTask)}
 						  ">
 
-					<h3>B-KÓD</h3>
+					<h3>B KÓD</h3>
 
-					<p th:if="${bTaskCompleted}">
-						Kód <strong>[[${progressCode.solution}]]</strong> byl uznán
+					<th:block th:if="${bTaskCompleted}">
+						<p>Kód <strong>[[${progressCode.solution}]]</strong> je správný.</p>
 
 						<!--/*
 						*	Rewards for completing this task
@@ -180,12 +154,12 @@
 						<th:block th:replace="this :: taskRewards(${bTask})">
 							[ B-code rewards ]
 						</th:block>
-					</p>
+					</th:block>
 
 					<!--/*
 					*	If B-code has not been aquired yet
 					*/-->
-					<form th:unless="${bTaskCompleted}"
+					<form th:if="${!bTaskCompleted and service.contest.checkTeamIsInPlay()}"
 						  th:action="@{~/v-terenu/submitCode}"
 						  th:object="${submitBCodeForm}"
 						  method="post">
@@ -196,9 +170,58 @@
 					</form>
 				</th:block>
 			</th:block>
+
+			<script type="text/javascript">
+				/* <![CDATA[ */
+				const forms = document.querySelectorAll("form");
+				forms.forEach(form => {
+					const confirmMessage = form.getAttribute("data-confirm-message");
+					if (LT.isNotEmpty(confirmMessage)) {
+						form.onsubmit = (event) => {
+							const confirmed = window.confirm(confirmMessage);
+							if (!confirmed) {
+								event.preventDefault();
+							}
+							return confirmed;
+						};
+					}
+				});
+				/* ]]> */
+			</script>
 		</main>
 
 
+		<!--/*
+		*	
+		*	Local fragment
+		*	
+		*	
+		*	
+		*/-->
+		<th:block th:fragment="hintForm(_task, _progressCode, _type, _label, _message, _confirmMessage)"
+				  th:if="${_task}">
+			<th:block th:with="
+					  _=${hintRevealForm.setTaskCode(_task.code)},
+					  _=${hintRevealForm.setType(_type)}">
+				<form th:action="@{~/v-terenu/revealHint}"
+					  th:object="${hintRevealForm}"
+					  method="post"
+					  th:data-confirm-message="${_confirmMessage} ?: _">
+					<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
+					<input th:field="*{type}" type="hidden" name="type"/>
+					<input type="submit" th:value="${_label}" />
+					[[${_message}]]
+				</form>
+			</th:block>
+		</th:block>
+
+		<!--/*
+		*	
+		*	Local fragment
+		*	
+		*	
+		*	
+		*/-->
 		<th:block th:fragment="taskRewards(_task)"
 				  th:if="${_task}">
 			<h4>Odměny</h4>

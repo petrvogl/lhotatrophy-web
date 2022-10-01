@@ -99,7 +99,7 @@
 				<p>Tým diskvalifikován</p>
 
 			</th:block>
-			
+
 			<!--/*
 			*	
 			*	Before opening
@@ -123,7 +123,7 @@
 						  th:object="${submitMileageForm}"
 						  method="post">
 						<input th:field="*{type}" type="hidden" name="type"/>
-						<input th:field="*{mileage}" type="number" name="mileage" min="0"/>
+						<input th:field="*{mileage}" type="number" name="mileage" min="0"/> km
 						<input type="submit" value="Odeslat"/>
 						<div th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="error"> [ error ] </div>
 						<th:block th:if="${#fields.hasGlobalErrors()}">
@@ -140,7 +140,7 @@
 				<th:block th:if="${teamIsInPlay and now.isBefore(appConfig.gameStartInstant)}">
 					<p>Vyčkejte do předání obálek se šiframi</p>
 				</th:block>
-				
+
 				<!--/*
 				*	
 				*	Teams in play or finished

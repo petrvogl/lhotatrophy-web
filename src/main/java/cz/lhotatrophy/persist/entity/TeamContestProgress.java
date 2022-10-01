@@ -54,6 +54,14 @@ public class TeamContestProgress implements Serializable {
 	 */
 	private Long timestampAtFinish;
 	/**
+	 * Indicates that the exact destination location was revealed.
+	 */
+	private boolean destinationRevealed;
+	/**
+	 * Solution at destination location.
+	 */
+	private String destinationSolution;
+	/**
 	 * Records of accepted contest codes. The key of a map is the accepted code
 	 * and the mapped value is the detailed information about the acceptance.
 	 */

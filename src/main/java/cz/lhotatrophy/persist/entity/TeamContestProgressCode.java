@@ -70,8 +70,8 @@ public class TeamContestProgressCode implements Serializable {
 	public boolean revealed(final boolean hint, final boolean procedure, final boolean solution) {
 		// validate that exactly one of booleans is true
 		if ((hint ? 1 : 0) + (procedure ? 1 : 0) + (solution ? 1 : 0) == 1) {
-			throw new IllegalArgumentException("Only one of the arguments can be true.");
+			return (hint && hintRevealed) || (procedure && procedureRevealed) || (solution && solutionRevealed);
 		}
-		return (hint && hintRevealed) || (procedure && procedureRevealed) || (solution && solutionRevealed);
+		throw new IllegalArgumentException("Only one of the arguments can be true.");
 	}
 }

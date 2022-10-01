@@ -105,6 +105,10 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 		if (contestProgress.isInsuranceAgainstWinning()) {
 			totalMileage += appConfig.getInsurancePrice();
 		}
+		// include the cost of destination location revealing
+		if (contestProgress.isDestinationRevealed()) {
+			totalMileage += appConfig.getDestinationRevealedPenalty();
+		}
 		// include the results achieved in the game
 		int ACodesAcquiredCount = 0;
 		int BCodesAcquiredCount = 0;
@@ -115,11 +119,11 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 					totalMileage += code.isHintRevealed() ? appConfig.getHintRevealedPenalty() : 0;
 					totalMileage += code.isProcedureRevealed() ? appConfig.getProcedureRevealedPenalty() : 0;
 					totalMileage += code.isSolutionRevealed() ? appConfig.getSolutionRevealedPenalty() : 0;
-					if (code.getTs() > 0) {
+					if (code.accepted()) {
 						ACodesAcquiredCount++;
 					}
 				case "B":
-					if (code.getTs() > 0) {
+					if (code.accepted()) {
 						BCodesAcquiredCount++;
 					}
 					break;
@@ -240,6 +244,43 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 	}
 
 	@Override
+	public boolean acceptDestinationSolution(
+			@NonNull final String solution,
+			@NonNull final Team team
+	) {
+		if (!checkTeamIsInPlay(team)) {
+			return false;
+		}
+		final String _solution = normalizeSolution(solution);
+		final String rightSolution = taskService.getTaskByCodeFromCache("D0")
+				.map(Task::getAnySolution)
+				.orElse("");
+		if (!rightSolution.equals(_solution)) {
+			// incorrect solution
+			log.info("Solution \'{}\' NOT accepted: team=[{}] task=[DEST]", solution, team.getId());
+			return false;
+		}
+		// update contest progress
+		final Boolean updated = runInTransaction(() -> {
+			final Team _team = teamService.getTeamById(team.getId()).get();
+			final TeamContestProgress contestProgress = _team.getContestProgress();
+			if (contestProgress.getDestinationSolution() != null) {
+				// already set
+				return false;
+			}
+			contestProgress.setDestinationSolution(solution);
+			teamService.updateTeam(_team);
+			return true;
+		});
+		if (updated) {
+			log.warn("Solution \'{}\' already accepted: team=[{}] task=[DEST]", solution, team.getId());
+		} else {
+			log.info("Solution \'{}\' accepted: team=[{}] task=[DEST]", solution, team.getId());
+		}
+		return updated;
+	}
+
+	@Override
 	public boolean revealSolutionHint(
 			@NonNull final Task task,
 			@NonNull final Team team
@@ -318,6 +359,31 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 			log.warn("Solution hint already revealed: team=[{}] task=[{}]", team.getId(), task.getCode());
 		} else {
 			log.info("Solution hint revealed: team=[{}] task=[{}]", team.getId(), task.getCode());
+		}
+		return true;
+	}
+
+	@Override
+	public boolean revealDestination(@NonNull final Team team) {
+		if (!checkTeamIsInPlay(team)) {
+			return false;
+		}
+		// update contest progress
+		final Boolean revealed = runInTransaction(() -> {
+			final Team _team = teamService.getTeamById(team.getId()).get();
+			final TeamContestProgress contestProgress = _team.getContestProgress();
+			if (contestProgress.isDestinationRevealed()) {
+				// destination has been revealed
+				return null;
+			}
+			contestProgress.setDestinationRevealed(true);
+			teamService.updateTeam(_team);
+			return true;
+		});
+		if (revealed == null) {
+			log.warn("Destination location already revealed: team=[{}]", team.getId());
+		} else {
+			log.info("Destination location revealed: team=[{}]", team.getId());
 		}
 		return true;
 	}
@@ -499,6 +565,12 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 					.collect(Collectors.toList());
 		});
 		return resultCached;
+	}
+
+	@Override
+	public boolean checkDestinationRevealed(@NonNull final Team team) {
+		final TeamContestProgress contestProgress = team.getContestProgress();
+		return contestProgress.isDestinationRevealed();
 	}
 
 	/**
