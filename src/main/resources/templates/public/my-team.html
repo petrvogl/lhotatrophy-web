@@ -27,6 +27,40 @@
 						</div>
 					</div>
 
+					<div class="block golden-ratio">
+						<div class="block-inner">
+
+							<p class="p_1">24.&nbsp;Lhota Trophy odstartuje v&nbsp;sobotu 8. října v&nbsp;6:00 <a href="https://mapy.cz/s/gecudusudu" target="_blank">v&nbsp;hotelu Luna</a>.</p>
+
+							<p>Na místo se dostavte nejpozději v&nbsp;sobotu v 5:30. Příjezd je možný nejdříve v&nbsp;pátek 7.&nbsp;října po 15:00. Na stejném místě proběhne v pátek prolog – nepovinná, ale vřele doporučená část tohoto ročníku, během které zjistíte více o&nbsp;příběhu hry a&nbsp;budete moci získat užitečné bonifikace. V&nbsp;případě, že se nedostavíte na místo startu v&nbsp;pátek večer, budete moci prolog absolvovat i&nbsp;během soboty.</p>
+
+							<p>Týmy ve hře představují postavu pistolníka Paula Payna – každému členu týmu tedy obstarejte (westernový) klobouk.</p>
+
+							<p>Kromě obvyklé výbavy na Lhota Trophy doporučujeme si vzít také westernové kostýmy, detektor kovů a&nbsp;UV&nbsp;lampu.</p>
+
+						</div>
+					</div>
+
+					<div class="block rest-of-golden-ratio stonetown-news">
+						<div class="block-inner visible firewatch-0 bg-firewatch-5">
+
+							<a href="/doc/stonetown_news_39.pdf" target="_blank"><img src="/img/stonetown_news_mini.png" /></a>
+							<p class="center"><strong>Čtěte Stonetown News! (formát A3)</strong></p>
+							<p class="p-1 center"><a href="/doc/stonetown_news_39_a4.pdf" target="_blank">&raquo;&nbsp;alternativa pro tisk na A4</a></p>
+
+						</div>
+					</div>
+
+					<div class="block full">
+						<div class="block-inner">
+
+							<div class="iframe-container">
+								<iframe width="560" height="315" src="https://www.youtube.com/embed/7uJaa244u3g" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+							</div>
+
+						</div>
+					</div>
+
 					<!--/*
 					*	Hlášení o úspěšném uložení nastavení
 					*/-->
@@ -37,7 +71,7 @@
 							<p>Nastavení týmu bylo uloženo.</p>
 						</div>
 					</div>
-					
+
 					<!--/*
 					*	Hlášení o úspěšné registraci
 					*/-->
@@ -60,7 +94,7 @@
 						</div>
 					</div>
 
-
+					<!--/*
 					<div class="block rest-of-2-fifths">
 						<div class="block-inner">
 
@@ -101,6 +135,7 @@
 
 						</div>
 					</div>
+					*/-->
 
 					<div th:if="${team != null and teamSettings != null}"
 						 th:with="ordersClosed=${now.isAfter(appConfig.teamRegistrationClosedInstant) or now.isBefore(appConfig.teamRegistrationOpenInstant)}"
@@ -225,7 +260,7 @@
 									<th:block th:unless="${zaplaceno}">(Jako náhradníci zatím neplaťte.)</th:block>
 								</p>
 							</th:block>
-							
+
 							<!--/*
 							*	Pro všechny
 							*	
