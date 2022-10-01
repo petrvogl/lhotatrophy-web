@@ -8,6 +8,7 @@ import cz.lhotatrophy.persist.entity.TaskTypeEnum;
 import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.TeamContestProgress;
 import cz.lhotatrophy.persist.entity.TeamContestProgressCode;
+import cz.lhotatrophy.persist.filestore.FileStoreEnum;
 import cz.lhotatrophy.utils.DateTimeUtils;
 import cz.lhotatrophy.utils.TextUtils;
 import java.time.Duration;
@@ -38,6 +39,8 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 	private transient TaskService taskService;
 	@Autowired
 	private transient TeamService teamService;
+	@Autowired
+	private transient FileStoreService fileStoreService;
 
 	private int getContestTaskCount(final TaskTypeEnum type) {
 		final TaskListingQuerySpi query = TaskListingQuerySpi.create()
@@ -571,6 +574,26 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 	public boolean checkDestinationRevealed(@NonNull final Team team) {
 		final TeamContestProgress contestProgress = team.getContestProgress();
 		return contestProgress.isDestinationRevealed();
+	}
+
+	@Override
+	public boolean checkStartImageUploaded(@NonNull final Team team) {
+		final String cacheKey = "ImageUploaded.Start";
+		final Boolean resultCached = team.getTemporary(cacheKey, () -> {
+			return fileStoreService.load(FileStoreEnum.USER_UPLOAD, team.getStartPhotoName())
+					.isPresent();
+		});
+		return resultCached;
+	}
+
+	@Override
+	public boolean checkFinishImageUploaded(@NonNull final Team team) {
+		final String cacheKey = "ImageUploaded.Finish";
+		final Boolean resultCached = team.getTemporary(cacheKey, () -> {
+			return fileStoreService.load(FileStoreEnum.USER_UPLOAD, team.getFinishPhotoName())
+					.isPresent();
+		});
+		return resultCached;
 	}
 
 	/**

@@ -146,6 +146,10 @@ public interface ContestService extends Service {
 
 	boolean checkDestinationRevealed(@NonNull Team team);
 
+	boolean checkStartImageUploaded(@NonNull Team team);
+
+	boolean checkFinishImageUploaded(@NonNull Team team);
+
 	/**
 	 * Gets the current team's score. The score is calculated and measured in
 	 * kilometers driven from the start to the finish - the lower the mileage

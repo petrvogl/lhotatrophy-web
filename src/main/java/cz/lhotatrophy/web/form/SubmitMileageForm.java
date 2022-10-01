@@ -1,8 +1,9 @@
 package cz.lhotatrophy.web.form;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
@@ -11,9 +12,11 @@ import lombok.Data;
 @Data
 public class SubmitMileageForm {
 
-	@NotBlank(message = "Vyplň stav tachometru")
+	@NotNull(message = "Vyplň stav tachometru")
 	@Positive(message = "Vyplň kladné číslo")
 	private Integer mileage;
+
+	private MultipartFile file;
 
 	private String destCode;
 

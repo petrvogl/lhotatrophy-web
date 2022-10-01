@@ -162,4 +162,28 @@ public final class ContestViewService {
 		});
 		return revealed.booleanValue();
 	}
+
+	/**
+	 * {@code ${service.contest.checkStartImageUploaded()}}
+	 */
+	public boolean checkStartImageUploaded() {
+		final MutableBoolean uploaded = new MutableBoolean(false);
+		// check in the context of the effective user
+		teamService.getEffectiveTeam().ifPresent(team -> {
+			uploaded.setValue(contestService.checkStartImageUploaded(team));
+		});
+		return uploaded.booleanValue();
+	}
+
+	/**
+	 * {@code ${service.contest.checkFinishImageUploaded()}}
+	 */
+	public boolean checkFinishImageUploaded() {
+		final MutableBoolean uploaded = new MutableBoolean(false);
+		// check in the context of the effective user
+		teamService.getEffectiveTeam().ifPresent(team -> {
+			uploaded.setValue(contestService.checkFinishImageUploaded(team));
+		});
+		return uploaded.booleanValue();
+	}
 }

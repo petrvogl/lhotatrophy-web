@@ -25,23 +25,23 @@
 
 			<!--/*
 			*	
-			*	Team has finished the game
+			*	Team has finished the game (image uploaded)
 			*	
-			*	// if image uploaded
+			*	
 			*	
 			*/-->
-			<th:block th:if="${false}">
+			<th:block th:if="${service.contest.checkFinishImageUploaded()}">
 				<p> Hra pro vás již skončila </p>
 			</th:block>
 
 			<!--/*
 			*	
-			*	Team is in play
+			*	Team is in play (image NOT uploaded)
 			*	
-			*	// if image NOT uploaded
+			*	
 			*	
 			*/-->
-			<th:block th:if="${true}">
+			<th:block th:if="${!service.contest.checkFinishImageUploaded()}">
 
 				<!--/*
 				*	If hint has not been used
@@ -124,14 +124,17 @@
 					*	Upload photo form
 					*/-->
 					<form th:action="@{~/v-terenu/submitDestinationPhoto}"
-						  th:object="${destinationPhotoForm}"
-						  method="post">
+						  th:object="${fileUploadForm}"
+						  method="post"
+						  enctype="multipart/form-data">
 						<fieldset th:disabled="${service.contest.checkTeamIsInPlay()}"
 								  style="padding: 0; border: none;">
-							<div>
-								<input th:field="*{photo}" type="file" name="photo"/>
-							</div>
+							<input th:field="*{file}" type="file" name="fole"/>
 							<input type="submit" value="Nahrát fotografii"/>
+							<div th:if="${#fields.hasErrors('file')}" th:errors="*{file}" class="error"> [ error ] </div>
+							<th:block th:if="${#fields.hasGlobalErrors()}">
+								<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
+							</th:block>
 						</fieldset>
 					</form>
 				</th:block>

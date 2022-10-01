@@ -292,6 +292,14 @@ public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Tea
 		return owner == null ? null : owner.getId();
 	}
 
+	public String getStartPhotoName() {
+		return id + "_startPhoto.jpg";
+	}
+
+	public String getFinishPhotoName() {
+		return id + "_finishPhoto.jpg";
+	}
+
 	@Override
 	public <T> T getTemporary(@NonNull final Object key) {
 		return (T) temporaryStorage.get(key);

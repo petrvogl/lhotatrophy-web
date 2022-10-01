@@ -121,11 +121,14 @@
 					<p>Zadejte stav tachometru</p>
 					<form th:action="@{~/v-terenu/submitMileage}"
 						  th:object="${submitMileageForm}"
-						  method="post">
+						  method="post"
+						  enctype="multipart/form-data">
 						<input th:field="*{type}" type="hidden" name="type"/>
 						<input th:field="*{mileage}" type="number" name="mileage" min="0"/> km
+						<input th:field="*{file}" type="file" name="file"/> km
 						<input type="submit" value="Odeslat"/>
 						<div th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="error"> [ error ] </div>
+						<div th:if="${#fields.hasErrors('file')}" th:errors="*{file}" class="error"> [ error ] </div>
 						<th:block th:if="${#fields.hasGlobalErrors()}">
 							<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
 						</th:block>

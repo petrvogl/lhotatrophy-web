@@ -2,6 +2,7 @@ package cz.lhotatrophy.web.controller;
 
 import cz.lhotatrophy.core.service.ContestService;
 import cz.lhotatrophy.core.service.EntityCacheService;
+import cz.lhotatrophy.core.service.FileStoreService;
 import cz.lhotatrophy.core.service.LocationListingQuerySpi;
 import cz.lhotatrophy.core.service.LocationService;
 import cz.lhotatrophy.core.service.TaskService;
@@ -12,13 +13,16 @@ import cz.lhotatrophy.persist.entity.TaskTypeEnum;
 import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.TeamContestProgress;
 import cz.lhotatrophy.persist.entity.TeamContestProgressCode;
+import cz.lhotatrophy.persist.filestore.FileStoreEnum;
 import cz.lhotatrophy.web.form.ConfirmationForm;
-import cz.lhotatrophy.web.form.DestinationPhotoForm;
+import cz.lhotatrophy.web.form.FileUploadForm;
 import cz.lhotatrophy.web.form.HintRevealForm;
 import cz.lhotatrophy.web.form.SubmitCodeForm;
 import cz.lhotatrophy.web.form.SubmitMileageForm;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import javax.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +34,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
@@ -50,6 +55,8 @@ public class ContestController extends AbstractController {
 	private transient LocationService locationService;
 	@Autowired
 	private transient TaskService taskService;
+	@Autowired
+	private transient FileStoreService fileStoreService;
 
 	private static final String START_MILEAGE_FORM_TYPE = "start";
 	private static final String FINISH_MILEAGE_FORM_TYPE = "finish";
@@ -139,7 +146,7 @@ public class ContestController extends AbstractController {
 	public String destinationPage(
 			final ConfirmationForm confirmationForm,
 			final SubmitMileageForm submitMileageForm,
-			final DestinationPhotoForm destinationPhotoForm,
+			final FileUploadForm fileUploadForm,
 			final Model model
 	) {
 		if (!checkContestIsOn()) {
@@ -208,7 +215,7 @@ public class ContestController extends AbstractController {
 	 */
 	@PostMapping("/submitMileage")
 	public String submitMileage(
-			final SubmitMileageForm submitMileageForm,
+			@Valid final SubmitMileageForm submitMileageForm,
 			final BindingResult bindingResult,
 			final Model model
 	) {
@@ -227,47 +234,57 @@ public class ContestController extends AbstractController {
 			return "redirect:/v-terenu";
 		}
 		if (START_MILEAGE_FORM_TYPE.equals(submitMileageForm.getType()) && team.getContestProgress().getMileageAtStart() == null) {
+			try {
+				final MultipartFile file = submitMileageForm.getFile();
+				if (file == null || StringUtils.isEmpty(file.getOriginalFilename()) || file.getInputStream() == null) {
+					bindingResult.rejectValue("file", "NotFound", "Nahraj fotografii tachometru");
+				}
+				if (!bindingResult.hasErrors()) {
+					// save image
+					fileStoreService.store(FileStoreEnum.USER_UPLOAD, file.getInputStream(), team.getStartPhotoName());
+					// save mileage
+					contestService.setMileageAtStart(team, submitMileageForm.getMileage());
+					teamService.removeTeamFromCache(team.getId());
+				}
+			} catch (final IOException ex) {
+				log.error("Error saving image uploaded by team [{}]: \n  [{}]\n  [{}]",
+						team.getId(), ex.getMessage(), Optional.ofNullable(ex.getCause()).map(Throwable::getMessage).orElse(""));
+				bindingResult.rejectValue("file", "StorageError", "Fotografii se nepodařilo uložit, zkuste to znovu");
+			}
 			if (bindingResult.hasErrors()) {
 				initModel(model);
 				return "public/contest";
 			}
-			contestService.setMileageAtStart(team, submitMileageForm.getMileage());
-			//
-			// TODO - save image
-			//
 		} else if (FINISH_MILEAGE_FORM_TYPE.equals(submitMileageForm.getType()) && team.getContestProgress().getMileageAtFinish() == null) {
 			if (contestService.checkTeamIsInPlay(team)) {
 				final TeamContestProgress contestProgress = team.getContestProgress();
 				final String solution = StringUtils.trimToNull(submitMileageForm.getDestCode());
 				final Integer mileage = submitMileageForm.getMileage();
 				if (solution == null) {
-					bindingResult.rejectValue("destCode", "Invalid", "Musí být zadán cílový kód.");
+					bindingResult.rejectValue("destCode", "Invalid", "Musí být zadán cílový kód");
 				}
 				if (mileage == null || mileage < contestProgress.getMileageAtStart()) {
-					bindingResult.rejectValue("mileage", "Invalid", "Stav tachometru musí být vyšší než na startu.");
+					bindingResult.rejectValue("mileage", "Invalid", "Stav tachometru musí být vyšší než na startu");
 				}
 				if (!bindingResult.hasErrors() && contestProgress.getDestinationSolution() == null) {
 					final boolean accepted = contestService.acceptDestinationSolution(solution, team);
 					if (!accepted) {
-						bindingResult.rejectValue("destCode", "Invalid", "Cílový kód není správný.");
+						bindingResult.rejectValue("destCode", "Invalid", "Cílový kód není správný");
 					}
 				}
 				if (!bindingResult.hasErrors()) {
 					final boolean updated = contestService.setMileageAtFinish(team, mileage);
 					if (!updated) {
-						bindingResult.rejectValue("mileage", "Invalid", "Stav tachometru není validní.");
+						bindingResult.rejectValue("mileage", "Invalid", "Stav tachometru není validní");
 					}
 				}
 				if (bindingResult.hasErrors()) {
 					initModel(model);
 					final Optional<Location> optLocation = locationService.getLocationByCodeFromCache("DEST");
 					model.addAttribute("location", optLocation.orElse(null));
-					model.addAttribute("destinationPhotoForm", new DestinationPhotoForm());
+					model.addAttribute("fileUploadForm", new FileUploadForm());
 					return "public/contest-destination";
 				}
-				//
-				// TODO - save image
-				//
 			}
 			return "redirect:/v-terenu/cil";
 		} else {
@@ -279,10 +296,53 @@ public class ContestController extends AbstractController {
 	/**
 	 * Reveal hint, procedure or solution
 	 */
+	@PostMapping("/submitDestinationPhoto")
+	public String submitDestinationPhoto(
+			@Valid final FileUploadForm fileUploadForm,
+			final BindingResult bindingResult,
+			final Model model
+	) {
+		if (!checkContestIsOpen()) {
+			return "redirect:/v-terenu";
+		}
+		log.info("SUBMIT DESTINATION PHOTO");
+		final Optional<Team> optTeam = teamService.getEffectiveTeam();
+		if (optTeam.isEmpty()) {
+			// logged in user has no team so cannot compete
+			return "redirect:/";
+		}
+		final Team team = optTeam.get();
+		try {
+			final MultipartFile file = fileUploadForm.getFile();
+			if (file == null || StringUtils.isEmpty(file.getOriginalFilename()) || file.getInputStream() == null) {
+				bindingResult.rejectValue("file", "NotFound", "Nahraj fotografii tachometru");
+			}
+			if (!bindingResult.hasErrors()) {
+				// save image
+				fileStoreService.store(FileStoreEnum.USER_UPLOAD, file.getInputStream(), team.getFinishPhotoName());
+				teamService.removeTeamFromCache(team.getId());
+			}
+		} catch (final IOException ex) {
+			log.error("Error saving image uploaded by team [{}]: \n  [{}]\n  [{}]",
+					team.getId(), ex.getMessage(), Optional.ofNullable(ex.getCause()).map(Throwable::getMessage).orElse(""));
+			bindingResult.rejectValue("file", "StorageError", "Fotografii se nepodařilo uložit, zkuste to znovu");
+		}
+		if (bindingResult.hasErrors()) {
+			initModel(model);
+			final Optional<Location> optLocation = locationService.getLocationByCodeFromCache("DEST");
+			model.addAttribute("location", optLocation.orElse(null));
+			model.addAttribute("submitMileageForm", new SubmitMileageForm());
+			return "public/contest-destination";
+		}
+		return "redirect:/v-terenu/cil";
+	}
+
+	/**
+	 * Reveal hint, procedure or solution
+	 */
 	@PostMapping("/revealHint")
 	public String revealHint(
-			final HintRevealForm hintRevealForm,
-			final BindingResult bindingResult
+			final HintRevealForm hintRevealForm
 	) {
 		if (!checkContestIsOn() || !checkTeamIsInPlay()) {
 			return "redirect:/v-terenu";

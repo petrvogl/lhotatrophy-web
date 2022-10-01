@@ -48,7 +48,7 @@
 						  _=${aTaskCompleted} ? null : ${submitACodeForm.setFrom(aTask)}
 						  ">
 
-					<h3>A KÓD</h3>
+					<h3>KÓD [[${aTask.code}]]</h3>
 
 					<!--/*
 					*	If code has been already aquired
@@ -143,7 +143,7 @@
 						  _=${bTaskCompleted} ? null : ${submitBCodeForm.setFrom(bTask)}
 						  ">
 
-					<h3>B KÓD</h3>
+					<h3>KÓD [[${bTask.code}]]</h3>
 
 					<th:block th:if="${bTaskCompleted}">
 						<p>Kód <strong>[[${progressCode.solution}]]</strong> je správný.</p>
