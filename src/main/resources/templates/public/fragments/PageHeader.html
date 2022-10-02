@@ -42,6 +42,8 @@
 						<li><a href="/prihlasene-tymy">Přihlášené týmy</a></li>
 						<li><a href="https://www.facebook.com/groups/lhotatrophy">Facebook</a></li>
 						<li><a href="/muj-tym">Můj tým</a></li>
+						<li th:if="${now.isAfter(appConfig.gameOpenInstant)}"><a href="/denik">DENIK</a></li>
+						<li th:if="${now.isAfter(appConfig.gameResultsInstant)}"><a href="/vysledky">Výsledky</a></li>
 					</ul>
 					<form th:if="${user}"
 						  th:action="@{/logout}"

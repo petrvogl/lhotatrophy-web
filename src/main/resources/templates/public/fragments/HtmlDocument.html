@@ -9,6 +9,7 @@
 	*	Common document head element
 	*	
 	*	@param pageTitle - Document title
+	*	@param additionalSources - Stylesheets and scripts
 	*/-->
 	<head th:fragment="DocumentHead">
 		<!--/*
@@ -34,6 +35,12 @@
 		<meta name="msapplication-TileColor" content="#da532c"/>
 		<meta name="theme-color" content="#ffffff"/>
 		<!--/*
+		*	Additional sources
+		*/-->
+		<th:block th:if="${additionalSources}">
+			<th:block th:replace="${additionalSources}" />
+		</th:block>
+		<!--/*
 		*	Global site tag (gtag.js) - Google Analytics
 		*/-->
 		<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-V0JF66FV93"></script>
@@ -52,6 +59,7 @@
 	*	Admin document head element
 	*	
 	*	@param pageTitle - Document title
+	*	@param additionalSources - Stylesheets and scripts
 	*/-->
 	<head th:fragment="DocumentHeadAdmin">
 		<!--/*

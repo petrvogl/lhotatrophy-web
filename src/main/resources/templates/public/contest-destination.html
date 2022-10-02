@@ -18,10 +18,26 @@
 		<!--/*
 		*	Page Content
 		*/-->
-		<main class="page-content">
+		<main class="page-content"
+			  th:with="
+			  clues=${service.contest.getCluesDiscovered()},
+			  hasClues=${clues.size() gt 0}">
 
 			<h2>Cílové stanoviště</h2>
 			<p th:if="${service.contest.checkDestinationRevealed()}">[[${location.description}]]</p>
+
+			<!--/*
+			*	Clues listing
+			*/-->
+			<h3>Indicie k poloze cíle</h3>
+			<th:block th:unless="${hasClues}">
+				<p>Zatím jste žádnou indicii nezískali.</p>
+			</th:block>
+			<th:block th:if="${hasClues}">
+				<th:block th:each="clue : ${clues}">
+					<p> [[${clue.description}]] </p>
+				</th:block>
+			</th:block>
 
 			<!--/*
 			*	
@@ -72,7 +88,6 @@
 						/* ]]> */
 					</script>
 				</th:block>
-
 
 				<!--/*
 				*	
