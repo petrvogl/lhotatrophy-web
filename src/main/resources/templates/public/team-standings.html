@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	  lang="cs">
+	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHeadAdmin">
+		<!--/* PROTOTYPE */-->
+		<title>Administrace — 24th Lhota Trophy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	</head>
+	<body class="docu-theme">
+		<!--/* Page header */-->
+		<header th:replace="public/fragments/PageHeader.html :: PageHeaderAdmin"> [ Page Header ] </header>
+		<!--/* Page navigation */-->
+		<nav th:replace="public/fragments/PageNavigation.html :: PageNavigationAdmin"> [ Navigation ] </nav>
+
+		<!--/*
+		*	Page Content
+		*/-->
+		<main class="page-content">
+
+			<h3>Výsledková listina</h3>
+
+			<!--/*
+			*	
+			*	Team standings are hidden
+			*	
+			*	
+			*	
+			*/-->
+			<th:block th:if="${now.isBefore(appConfig.gameResultsInstant)}">
+				Umístění týmů na žebříčku vítězů se zobrazí až po skončení soutěže.
+			</th:block>
+
+
+			<!--/*
+			*	
+			*	Team standings are published
+			*	
+			*	
+			*	
+			*/-->
+			<th:block th:if="${now.isAfter(appConfig.gameResultsInstant)}">
+
+				<table>
+					<tr>
+						<th class="center">#</th>
+						<th class="center">Pojistka</th>
+						<th>Tým</th>
+						<th class="center">Výsledné<br/>skóre</th>
+						<th class="center">A kódy</th>
+						<th class="center">B kódy</th>
+						<th class="center">C kódy</th>
+						<th class="center">Trasa [km]</th>
+						<th class="center">Časová<br/>penalizace</th>
+					</tr>
+					<tr th:each="team, iterStat : ${service.contest.getTeamStandings()}"
+						th:with="
+						score=${service.contest.getTeamScore(team)},
+						disqualified=${team.isDisqualified() or score == null}
+						"
+						>
+						<td class="center">[[${iterStat.count}]]</td>
+						<td class="center">[[${team.contestProgress.insuranceAgainstWinning ? 'Ano' : ''}]]</td>
+						<td>[[${team.name}]]</td>
+						<td class="right">[[${disqualified ? '--' : score}]]</td>
+						<td class="center">[[${service.contest.aCodesAcquiredCount(team)}]]</td>
+						<td class="center">[[${service.contest.bCodesAcquiredCount(team)}]]</td>
+						<td class="center">[[${service.contest.cCodesAcquiredCount(team)}]]</td>
+						<td class="right">[[${disqualified ? '--' : team.contestProgress.getMileage()}]]</td>
+						<td class="center">[[${disqualified ? '--' : service.contest.getTeamTimeExceededPenalty(team)}]]</td>
+					</tr>
+				</table>
+
+			</th:block>
+		</main>
+
+		<!--/* Page footer */-->
+		<footer th:replace="public/fragments/PageFooter.html :: PageFooterAdmin"> [ Copyright ] </footer>
+	</body>
+</html>

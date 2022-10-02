@@ -83,6 +83,13 @@ public class ApplicationConfig {
 	private transient String gameEndTimeString;
 	private transient Instant gameEndInstant;
 	/**
+	 * The exact timestamp of publishing game results.
+	 */
+	@Nonnull
+	@Value("${contest.timeLimit.gameResults:2022-10-09 00:00}")
+	private transient String gameResultsTimeString;
+	private transient Instant gameResultsInstant;
+	/**
 	 * Penalty (given in kilometers) for every minute that exceeds the limit if
 	 * a team has finished the game after the time limit has expired.
 	 */
@@ -281,5 +288,22 @@ public class ApplicationConfig {
 			}
 		}
 		return gameEndInstant;
+	}
+
+	/**
+	 * Return the exact instant of publishing game results.
+	 */
+	@Nonnull
+	@SuppressWarnings("DoubleCheckedLocking")
+	public Instant getGameResultsInstant() {
+		if (gameResultsInstant == null) {
+			synchronized (this) {
+				if (gameResultsInstant == null) {
+					final LocalDateTime dateTime = DateTimeUtils.parse(gameResultsTimeString, DateTimeUtils.YYYY_MM_DD__HH_MM);
+					gameResultsInstant = DateTimeUtils.toInstant(dateTime);
+				}
+			}
+		}
+		return gameResultsInstant;
 	}
 }

@@ -30,6 +30,7 @@ public class WebSecurityConfig {
 				.antMatchers("/vendor/**").permitAll()
 				.antMatchers("/register").permitAll()
 				.antMatchers("/prihlasene-tymy").permitAll()
+				.antMatchers("/vysledky").permitAll()
 				.antMatchers("/zmena-hesla").permitAll()
 				.antMatchers("/zmena-hesla/**").permitAll()
 				.antMatchers("/admin/register").permitAll()

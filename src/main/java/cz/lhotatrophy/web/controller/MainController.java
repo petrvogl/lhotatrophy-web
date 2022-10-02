@@ -300,4 +300,14 @@ public class MainController extends AbstractController {
 		model.addAttribute("teamListing", teamService.getTeamListing(TeamListingQuerySpi.create()));
 		return "public/team-list";
 	}
+
+	/**
+	 * Team standings
+	 */
+	@GetMapping("/vysledky")
+	public String teamStandings(final Model model) {
+		log.info("TEAM STANDINGS");
+		initModel(model);
+		return "public/team-standings";
+	}
 }

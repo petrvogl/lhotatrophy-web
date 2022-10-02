@@ -151,7 +151,7 @@ public interface ContestService extends Service {
 	boolean checkFinishImageUploaded(@NonNull Team team);
 
 	/**
-	 * Gets the current team's score. The score is calculated and measured in
+	 * Returns the current team's score. The score is calculated and measured in
 	 * kilometers driven from the start to the finish - the lower the mileage
 	 * the better.
 	 *
@@ -159,4 +159,29 @@ public interface ContestService extends Service {
 	 * @return current team's score
 	 */
 	int calculateScore(TeamContestProgress contestProgress);
+
+	/**
+	 * Returns the current score of the team. Returns {@code Integer.MAX_VALUE}
+	 * if team is disqualified.
+	 *
+	 * @param team Team
+	 * @return Score
+	 */
+	int getTeamScore(@NonNull Team team);
+
+	/**
+	 * Returns penalty for exceeding the time limit. Returns
+	 * {@code Integer.MAX_VALUE} if team is disqualified.
+	 *
+	 * @param team Team
+	 * @return Penalty
+	 */
+	int getTeamTimeExceededPenalty(@NonNull Team team);
+
+	/**
+	 * Returns the current team standings on the leaderboard.
+	 *
+	 * @return Current team standings
+	 */
+	List<Team> getTeamStandings();
 }

@@ -1,5 +1,6 @@
 package cz.lhotatrophy.core.service;
 
+import com.google.common.base.Suppliers;
 import cz.lhotatrophy.ApplicationConfig;
 import cz.lhotatrophy.persist.entity.Clue;
 import cz.lhotatrophy.persist.entity.Location;
@@ -11,12 +12,16 @@ import cz.lhotatrophy.persist.entity.TeamContestProgressCode;
 import cz.lhotatrophy.persist.filestore.FileStoreEnum;
 import cz.lhotatrophy.utils.DateTimeUtils;
 import cz.lhotatrophy.utils.TextUtils;
+import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
@@ -42,6 +47,49 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 	@Autowired
 	private transient FileStoreService fileStoreService;
 
+	/**
+	 * Comparator instance singleton in the scope of this service.
+	 */
+	private static TeamComparatorByScore comparatorByScore;
+
+	private TeamComparatorByScore getTeamComparatorByScore() {
+		if (comparatorByScore != null) {
+			return comparatorByScore;
+		}
+		comparatorByScore = new TeamComparatorByScore();
+		return comparatorByScore;
+	}
+
+	/**
+	 * Compares teams by score. Includes the cost of insurance but does not
+	 * apply its effect.
+	 */
+	private class TeamComparatorByScore implements Comparator<Team>, Serializable {
+
+		@Override
+		public int compare(final Team t1, final Team t2) {
+			final int byScore = getTeamScore(t1) - getTeamScore(t2);
+			if (byScore == 0) {
+				final Long time1 = t1.getContestProgress().getTimestampAtFinish();
+				final Long time2 = t2.getContestProgress().getTimestampAtFinish();
+				// then sort by timestamp of finishing the game
+				return Objects.compare(time1, time2, Comparator.nullsLast(Comparator.naturalOrder())
+				);
+			}
+			return byScore;
+		}
+
+		@Override
+		public int hashCode() {
+			return 58171;
+		}
+
+		@Override
+		public boolean equals(final Object obj) {
+			return this == obj;
+		}
+	}
+
 	private int getContestTaskCount(final TaskTypeEnum type) {
 		final TaskListingQuerySpi query = TaskListingQuerySpi.create()
 				.setActive(Boolean.TRUE)
@@ -54,38 +102,6 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 		if (contestProgress == null || contestProgress.isDisqualified()) {
 			// no progress yet or disqualified
 			return Integer.MAX_VALUE;
-		}
-		// constants
-		final Instant completionLimitInstant = appConfig.getGameEndInstant();
-		final long maxOverLimitSeconds = appConfig.getMaxOverLimitSeconds();
-		final Instant timeAtFinishInstant = (contestProgress.getTimestampAtFinish() == null)
-				? null
-				: DateTimeUtils.toInstant(contestProgress.getTimestampAtFinish());
-		final Duration timeLimitExceededDuration;
-		if (timeAtFinishInstant != null && timeAtFinishInstant.isAfter(completionLimitInstant)) {
-			// the team has finished the game after time limit
-			timeLimitExceededDuration = Duration.ofMillis(ChronoUnit.MILLIS.between(completionLimitInstant, timeAtFinishInstant));
-			if (timeLimitExceededDuration.getSeconds() >= maxOverLimitSeconds) {
-				// team is disqualified
-				return Integer.MAX_VALUE;
-			}
-		} else {
-			if (timeAtFinishInstant != null) {
-				// the team has finished the game before time limit
-				timeLimitExceededDuration = Duration.ZERO;
-			} else {
-				// the team is still in the game
-				final Instant now = Instant.now();
-				if (now.isAfter(completionLimitInstant)) {
-					timeLimitExceededDuration = Duration.ofMillis(ChronoUnit.MILLIS.between(completionLimitInstant, now));
-					if (timeLimitExceededDuration.getSeconds() >= maxOverLimitSeconds) {
-						// team is disqualified
-						return Integer.MAX_VALUE;
-					}
-				} else {
-					timeLimitExceededDuration = Duration.ZERO;
-				}
-			}
 		}
 		// score accumulator variable
 		int totalMileage;
@@ -140,12 +156,58 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 		totalMileage += (getContestTaskCount(TaskTypeEnum.A_CODE) - ACodesAcquiredCount) * appConfig.getACodeMissingPenalty();
 		totalMileage += (getContestTaskCount(TaskTypeEnum.B_CODE) - BCodesAcquiredCount) * appConfig.getBCodeMissingPenalty();
 		// penalty for exceeding the time limit
-		if (!timeLimitExceededDuration.isZero()) {
-			final long penaltyPerMinute = appConfig.getPenaltyPerMinute();
-			totalMileage += (timeLimitExceededDuration.getSeconds() / 60) * penaltyPerMinute + penaltyPerMinute;
+		final Integer penaltyForExceedingTimelimit = calculatePenaltyForExceedingTimeLimit(contestProgress);
+		if (penaltyForExceedingTimelimit == Integer.MAX_VALUE) {
+			// team is disqualified
+			return Integer.MAX_VALUE;
 		}
+		totalMileage += penaltyForExceedingTimelimit;
 		// total mileage
 		return totalMileage;
+	}
+
+	private int calculatePenaltyForExceedingTimeLimit(final TeamContestProgress contestProgress) {
+		if (contestProgress == null) {
+			// no progress yet
+			return Integer.MAX_VALUE;
+		}
+		// constants
+		final Instant completionLimitInstant = appConfig.getGameEndInstant();
+		final long maxOverLimitSeconds = appConfig.getMaxOverLimitSeconds();
+		final Instant timeAtFinishInstant = (contestProgress.getTimestampAtFinish() == null)
+				? null
+				: DateTimeUtils.toInstant(contestProgress.getTimestampAtFinish());
+		final Duration timeLimitExceededDuration;
+		if (timeAtFinishInstant != null && timeAtFinishInstant.isAfter(completionLimitInstant)) {
+			// the team has finished the game after time limit
+			timeLimitExceededDuration = Duration.ofMillis(ChronoUnit.MILLIS.between(completionLimitInstant, timeAtFinishInstant));
+			if (timeLimitExceededDuration.getSeconds() >= maxOverLimitSeconds) {
+				// team is disqualified
+				return Integer.MAX_VALUE;
+			}
+		} else {
+			if (timeAtFinishInstant != null) {
+				// the team has finished the game before time limit
+				timeLimitExceededDuration = Duration.ZERO;
+			} else {
+				// the team is still in the game
+				final Instant now = Instant.now();
+				if (now.isAfter(completionLimitInstant)) {
+					timeLimitExceededDuration = Duration.ofMillis(ChronoUnit.MILLIS.between(completionLimitInstant, now));
+					if (timeLimitExceededDuration.getSeconds() >= maxOverLimitSeconds) {
+						// team is disqualified
+						return Integer.MAX_VALUE;
+					}
+				} else {
+					timeLimitExceededDuration = Duration.ZERO;
+				}
+			}
+		}
+		if (!timeLimitExceededDuration.isZero()) {
+			final long penaltyPerMinute = appConfig.getPenaltyPerMinute();
+			return Math.toIntExact((timeLimitExceededDuration.getSeconds() / 60) * penaltyPerMinute + penaltyPerMinute);
+		}
+		return 0;
 	}
 
 	@Override
@@ -596,8 +658,18 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 		return resultCached;
 	}
 
+	@Override
+	public int getTeamScore(@NonNull final Team team) {
+		return team.getTemporary("TeamScore", () -> calculateScore(team.getContestProgress()));
+	}
+
+	@Override
+	public int getTeamTimeExceededPenalty(@NonNull final Team team) {
+		return team.getTemporary("TimeExceeded", () -> calculatePenaltyForExceedingTimeLimit(team.getContestProgress()));
+	}
+
 	/**
-	 * Gets the current team's position on the leaderboard.
+	 * Returns the current team's position on the leaderboard.
 	 *
 	 * @param team Competing team
 	 * @return Team's position on the leaderboard
@@ -606,12 +678,34 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 		return 0;
 	}
 
-	/**
-	 * Gets the current team standings on the leaderboard.
-	 *
-	 * @return Current team standings
-	 */
+	@Override
 	public List<Team> getTeamStandings() {
-		return new LinkedList<>();
+		// cache
+		final List<Team> resultCached = Suppliers.memoizeWithExpiration(() -> {
+			final List<Team> result = new LinkedList<>();
+			final List<Team> temporary = new LinkedList<>();
+			// Get teams sorted by score
+			final TeamListingQuerySpi query = TeamListingQuerySpi.create()
+					.setActive(Boolean.TRUE)
+					.setSorting(getTeamComparatorByScore());
+			teamService.getTeamListingStream(query).forEachOrdered(team -> {
+				// apply the effect of insurance
+				final boolean insurance = team.getContestProgress().isInsuranceAgainstWinning();
+				if (insurance) {
+					temporary.add(team);
+				} else {
+					result.add(team);
+					if (!temporary.isEmpty()) {
+						result.addAll(temporary);
+						temporary.clear();
+					}
+				}
+			});
+			if (!temporary.isEmpty()) {
+				result.addAll(temporary);
+			}
+			return result;
+		}, 1l, TimeUnit.MINUTES).get();
+		return resultCached;
 	}
 }

@@ -68,6 +68,17 @@ public class TeamContestProgress implements Serializable {
 	private final Map<String, TeamContestProgressCode> contestCodes = new HashMap<>();
 
 	/**
+	 * The mileage driven from the start to the finish (km unit).
+	 */
+	@JsonIgnore
+	public int getMileage() {
+		if (mileageAtStart == null || mileageAtFinish == null) {
+			return 0;
+		}
+		return mileageAtFinish - mileageAtStart;
+	}
+
+	/**
 	 * Checks if the code was acquired by the team.
 	 *
 	 * @param code Contest code to check

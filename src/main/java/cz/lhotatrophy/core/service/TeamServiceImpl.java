@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.math3.stat.Frequency;
@@ -99,6 +100,11 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 	@Override
 	public List<Team> getTeamListing(@NonNull final TeamListingQuerySpi query) {
 		return cacheService.getEntityListing(query, getDefaultIdsLoader());
+	}
+
+	@Override
+	public Stream<Team> getTeamListingStream(@NonNull final TeamListingQuerySpi query) {
+		return cacheService.getEntityListingStream(query, getDefaultIdsLoader());
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import cz.lhotatrophy.persist.entity.Clue;
 import cz.lhotatrophy.persist.entity.Location;
 import cz.lhotatrophy.persist.entity.Task;
 import cz.lhotatrophy.persist.entity.TaskTypeEnum;
+import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.TeamContestProgressCode;
 import java.util.Collections;
 import java.util.List;
@@ -109,6 +110,10 @@ public final class ContestViewService {
 				.orElse(0);
 	}
 
+	public int aCodesAcquiredCount(final Team team) {
+		return contestService.getTasksCompleted(team, TaskTypeEnum.A_CODE).size();
+	}
+
 	/**
 	 * {@code ${service.contest.bCodesAcquiredCount()}}
 	 */
@@ -120,6 +125,10 @@ public final class ContestViewService {
 				.orElse(0);
 	}
 
+	public int bCodesAcquiredCount(final Team team) {
+		return contestService.getTasksCompleted(team, TaskTypeEnum.B_CODE).size();
+	}
+
 	/**
 	 * {@code ${service.contest.cCodesAcquiredCount()}}
 	 */
@@ -129,6 +138,10 @@ public final class ContestViewService {
 				.map(team -> contestService.getTasksCompleted(team, TaskTypeEnum.C_CODE))
 				.map(List::size)
 				.orElse(0);
+	}
+
+	public int cCodesAcquiredCount(final Team team) {
+		return contestService.getTasksCompleted(team, TaskTypeEnum.C_CODE).size();
 	}
 
 	/**
@@ -185,5 +198,36 @@ public final class ContestViewService {
 			uploaded.setValue(contestService.checkFinishImageUploaded(team));
 		});
 		return uploaded.booleanValue();
+	}
+
+	/**
+	 * {@code ${service.contest.getTeamScore(team)}}
+	 */
+	public Integer getTeamScore(final Team team) {
+		final int score = contestService.getTeamScore(team);
+		if (score == Integer.MAX_VALUE) {
+			// team is disqualified
+			return null;
+		}
+		return score;
+	}
+
+	/**
+	 * {@code ${service.contest.getTeamTimeExceededPenalty(team)}}
+	 */
+	public Integer getTeamTimeExceededPenalty(final Team team) {
+		final Integer penalty = contestService.getTeamTimeExceededPenalty(team);
+		if (penalty == Integer.MAX_VALUE) {
+			// team is disqualified
+			return null;
+		}
+		return penalty;
+	}
+
+	/**
+	 * {@code ${service.contest.getTeamStandings()}}
+	 */
+	public List<Team> getTeamStandings() {
+		return contestService.getTeamStandings();
 	}
 }
