@@ -47,7 +47,7 @@
 				*	If hint has not been used
 				*/-->
 				<th:block th:if="${!service.contest.checkDestinationRevealed() and service.contest.checkTeamIsInPlay()}">
-					<form th:action="@{~/v-terenu/revealDestination}"
+					<form th:action="@{~/denik/revealDestination}"
 						  th:object="${confirmationForm}"
 						  method="post"
 						  th:data-confirm-message="|Opravdu si přejete odhalit polohu cílového stanoviště? Bude vást to stát ${appConfig.destinationRevealedPenalty} km.|">
@@ -89,7 +89,7 @@
 					<!--/*
 					*	Destination code input
 					*/-->
-					<form th:action="@{~/v-terenu/submitMileage}"
+					<form th:action="@{~/denik/submitMileage}"
 						  th:object="${submitMileageForm}"
 						  method="post">
 						<fieldset th:disabled="${!service.contest.checkTeamIsInPlay()}"
@@ -123,7 +123,7 @@
 					<!--/*
 					*	Upload photo form
 					*/-->
-					<form th:action="@{~/v-terenu/submitDestinationPhoto}"
+					<form th:action="@{~/denik/submitDestinationPhoto}"
 						  th:object="${fileUploadForm}"
 						  method="post"
 						  enctype="multipart/form-data">

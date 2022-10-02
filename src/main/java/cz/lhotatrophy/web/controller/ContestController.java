@@ -41,7 +41,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @author Petr Vogl
  */
 @Controller
-@RequestMapping("/v-terenu")
+@RequestMapping("/denik")
 @Log4j2
 public class ContestController extends AbstractController {
 
@@ -107,13 +107,13 @@ public class ContestController extends AbstractController {
 			final Model model
 	) {
 		if (!checkContestIsOn()) {
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		log.info("LOCATION {}", locationCode);
 		final Optional<Location> optLocation = locationService.getLocationByCodeFromCache(locationCode);
 		if (optLocation.isEmpty()) {
 			// location does not exists
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		// NOTE: HintRevealForm is initialized in template
 		initModel(model);
@@ -131,7 +131,7 @@ public class ContestController extends AbstractController {
 			final Model model
 	) {
 		if (!checkContestIsOn()) {
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		log.info("C-CODES");
 		submitCodeForm.setTaskType("C");
@@ -150,13 +150,13 @@ public class ContestController extends AbstractController {
 			final Model model
 	) {
 		if (!checkContestIsOn()) {
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		log.info("DESTINATION");
 		final Optional<Location> optLocation = locationService.getLocationByCodeFromCache("DEST");
 		if (optLocation.isEmpty()) {
 			// location does not exists
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		submitMileageForm.setType(FINISH_MILEAGE_FORM_TYPE);
 		initModel(model);
@@ -172,7 +172,7 @@ public class ContestController extends AbstractController {
 			final SubmitCodeForm submitCodeForm
 	) {
 		if (!checkContestIsOn() || !checkTeamIsInPlay()) {
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		log.info("SUBMIT CODE");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
@@ -182,7 +182,7 @@ public class ContestController extends AbstractController {
 		final String solution = submitCodeForm.getSolution();
 		if (optTeam.isEmpty() || taskType == null || (taskType != TaskTypeEnum.C_CODE && optTask.isEmpty())) {
 			// not valid
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		final Team team = optTeam.get();
 		// verify C code
@@ -194,7 +194,7 @@ public class ContestController extends AbstractController {
 				// TODO - log if accepted
 				//
 			}
-			return "redirect:/v-terenu/c-kody";
+			return "redirect:/denik/c-kody";
 		}
 		// verify A/B code
 		final Task task = optTask.get();
@@ -207,7 +207,7 @@ public class ContestController extends AbstractController {
 			}
 		}
 		final Location location = taskService.getLocationRelatedToTask(task).orElse(null);
-		return "redirect:/v-terenu/stanoviste-" + location.getCode();
+		return "redirect:/denik/stanoviste-" + location.getCode();
 	}
 
 	/**
@@ -220,7 +220,7 @@ public class ContestController extends AbstractController {
 			final Model model
 	) {
 		if (!checkContestIsOpen()) {
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		log.info("SUBMIT MILEAGE");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
@@ -231,7 +231,7 @@ public class ContestController extends AbstractController {
 		final Team team = optTeam.get();
 		if (!team.isActive() || !team.getOwner().isActive() || team.isDisqualified()) {
 			// not active or disqualified
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		if (START_MILEAGE_FORM_TYPE.equals(submitMileageForm.getType()) && team.getContestProgress().getMileageAtStart() == null) {
 			try {
@@ -286,11 +286,11 @@ public class ContestController extends AbstractController {
 					return "public/contest-destination";
 				}
 			}
-			return "redirect:/v-terenu/cil";
+			return "redirect:/denik/cil";
 		} else {
 			// ignoring invalid form and invalid states
 		}
-		return "redirect:/v-terenu";
+		return "redirect:/denik";
 	}
 
 	/**
@@ -303,7 +303,7 @@ public class ContestController extends AbstractController {
 			final Model model
 	) {
 		if (!checkContestIsOpen()) {
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		log.info("SUBMIT DESTINATION PHOTO");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
@@ -334,7 +334,7 @@ public class ContestController extends AbstractController {
 			model.addAttribute("submitMileageForm", new SubmitMileageForm());
 			return "public/contest-destination";
 		}
-		return "redirect:/v-terenu/cil";
+		return "redirect:/denik/cil";
 	}
 
 	/**
@@ -345,7 +345,7 @@ public class ContestController extends AbstractController {
 			final HintRevealForm hintRevealForm
 	) {
 		if (!checkContestIsOn() || !checkTeamIsInPlay()) {
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		log.info("REVEAL HINT");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
@@ -353,7 +353,7 @@ public class ContestController extends AbstractController {
 				.flatMap(code -> taskService.getTaskByCodeFromCache(code));
 		if (optTeam.isEmpty() || optTask.isEmpty() || hintRevealForm.getType() == null) {
 			// task does not exist or logged in user has no team so cannot compete
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		final Team team = optTeam.get();
 		final Task task = optTask.get();
@@ -386,10 +386,10 @@ public class ContestController extends AbstractController {
 				break;
 			default:
 				// ignoring invalid form and invalid states
-				return "redirect:/v-terenu";
+				return "redirect:/denik";
 		}
 		final Location location = taskService.getLocationRelatedToTask(task).orElse(null);
-		return "redirect:/v-terenu/stanoviste-" + location.getCode();
+		return "redirect:/denik/stanoviste-" + location.getCode();
 	}
 
 	/**
@@ -400,13 +400,13 @@ public class ContestController extends AbstractController {
 			final ConfirmationForm confirmationForm
 	) {
 		if (!checkContestIsOn() || !checkTeamIsInPlay()) {
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		log.info("BUY INSURANCE");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
 		if (optTeam.isEmpty()) {
 			// logged in user has no team so cannot compete
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		final Team team = optTeam.get();
 		if (!contestService.checkHasInsurance(team)) {
@@ -417,7 +417,7 @@ public class ContestController extends AbstractController {
 				//
 			}
 		}
-		return "redirect:/v-terenu/c-kody";
+		return "redirect:/denik/c-kody";
 	}
 
 	/**
@@ -428,13 +428,13 @@ public class ContestController extends AbstractController {
 			final ConfirmationForm confirmationForm
 	) {
 		if (!checkContestIsOn() || !checkTeamIsInPlay()) {
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		log.info("REVEAL DESTINATION");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
 		if (optTeam.isEmpty()) {
 			// logged in user has no team so cannot compete
-			return "redirect:/v-terenu";
+			return "redirect:/denik";
 		}
 		final Team team = optTeam.get();
 		if (!contestService.checkDestinationRevealed(team)) {
@@ -445,7 +445,7 @@ public class ContestController extends AbstractController {
 				//
 			}
 		}
-		return "redirect:/v-terenu/cil";
+		return "redirect:/denik/cil";
 	}
 
 	private boolean checkTeamIsInPlay() {

@@ -101,7 +101,7 @@
 						</th:block>
 						<p th:if="${progressCode?.solutionRevealed}">Řešení: [[${aTask.anySolution}]]</p>
 
-						<form th:action="@{~/v-terenu/submitCode}"
+						<form th:action="@{~/denik/submitCode}"
 							  th:object="${submitACodeForm}"
 							  method="post">
 							<input th:field="*{taskType}" type="hidden" name="taskType"/>
@@ -160,7 +160,7 @@
 					*	If B-code has not been aquired yet
 					*/-->
 					<form th:if="${!bTaskCompleted and service.contest.checkTeamIsInPlay()}"
-						  th:action="@{~/v-terenu/submitCode}"
+						  th:action="@{~/denik/submitCode}"
 						  th:object="${submitBCodeForm}"
 						  method="post">
 						<input th:field="*{taskType}" type="hidden" name="taskType"/>
@@ -203,7 +203,7 @@
 			<th:block th:with="
 					  _=${hintRevealForm.setTaskCode(_task.code)},
 					  _=${hintRevealForm.setType(_type)}">
-				<form th:action="@{~/v-terenu/revealHint}"
+				<form th:action="@{~/denik/revealHint}"
 					  th:object="${hintRevealForm}"
 					  method="post"
 					  th:data-confirm-message="${_confirmMessage} ?: _">
@@ -234,11 +234,11 @@
 					<th:block th:switch="${entityClass}">
 						<th:block th:case="'Location'">
 							Získali jste polohu
-							<a th:href="@{~/v-terenu/stanoviste-__${reward.code}__}">stanovište [[${reward.code}]]</a>
+							<a th:href="@{~/denik/stanoviste-__${reward.code}__}">stanovište [[${reward.code}]]</a>
 						</th:block>
 						<th:block th:case="'Clue'">
 							Získali jste indicii k nalezení
-							<a href="/v-terenu/cil">cílovéh stanovište</a>
+							<a href="/denik/cil">cílovéh stanovište</a>
 						</th:block>
 					</th:block>
 				</li>

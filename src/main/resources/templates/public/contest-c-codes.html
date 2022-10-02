@@ -26,7 +26,7 @@
 			*	C-code input
 			*/-->
 			<form th:if="${service.contest.checkTeamIsInPlay()}"
-				  th:action="@{~/v-terenu/submitCode}"
+				  th:action="@{~/denik/submitCode}"
 				  th:object="${submitCodeForm}"
 				  method="post">
 				<input th:field="*{taskType}" type="hidden" name="taskType"/>
@@ -70,7 +70,7 @@
 				*	Insurance to buy
 				*/-->
 				<th:block th:if="${!service.contest.checkHasInsurance() and service.contest.checkTeamIsInPlay()}">
-					<form th:action="@{~/v-terenu/buyInsurance}"
+					<form th:action="@{~/denik/buyInsurance}"
 						  th:object="${confirmationForm}"
 						  method="post"
 						  th:data-confirm-message="|Opravdu si přejete koupit pojistku? Bude vást to stát ${appConfig.insurancePrice} km.|">

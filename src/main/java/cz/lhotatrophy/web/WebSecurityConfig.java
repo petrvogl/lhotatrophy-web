@@ -38,7 +38,7 @@ public class WebSecurityConfig {
 				.antMatchers("/admin/**").access("hasAuthority('ADMIN')")
 				.antMatchers("/rest/admin*").access("hasAuthority('ADMIN')")
 				// contest
-				.antMatchers("/v-terenu/**").access("hasAuthority('ADMIN')")
+				.antMatchers("/denik/**").access("hasAuthority('ADMIN')")
 				// the rest
 				.anyRequest().authenticated()
 				.and().csrf().ignoringAntMatchers("/rest/**")
