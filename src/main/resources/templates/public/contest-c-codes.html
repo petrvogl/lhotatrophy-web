@@ -45,6 +45,19 @@
 					<p> [[${code.solution}]] </p>
 				</th:block>
 			</th:block>
+			
+			<!--/*
+			*	Wrong attempts listing
+			*/-->
+			<th:block th:with="invalidCodes=${team.contestProgress.getInvalidCodes('C')}">
+				<th:block th:if="${invalidCodes.size() gt 0}">
+					<h3>Chybné pokusy</h3>
+
+					<th:block th:each="code : ${invalidCodes}">
+						<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
+					</th:block>
+				</th:block>
+			</th:block>
 
 			<h3>Pojistka</h3>
 

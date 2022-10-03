@@ -124,6 +124,19 @@
 							</th:block>
 						</fieldset>
 					</form>
+
+					<!--/*
+					*	Wrong attempts listing
+					*/-->
+					<th:block th:with="invalidCodes=${team.contestProgress.getInvalidCodes('D0')}">
+						<th:block th:if="${invalidCodes.size() gt 0}">
+							<h3>Chybné pokusy</h3>
+
+							<th:block th:each="code : ${invalidCodes}">
+								<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
+							</th:block>
+						</th:block>
+					</th:block>
 				</th:block>
 
 				<!--/*

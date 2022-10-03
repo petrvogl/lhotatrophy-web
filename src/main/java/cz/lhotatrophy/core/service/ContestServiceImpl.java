@@ -224,6 +224,15 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 		return TextUtils.slugify(solution);
 	}
 
+	private void saveInvalidSolution(final Long teamId, final String code, final String solution) {
+		runInTransaction(() -> {
+			final Team _team = teamService.getTeamById(teamId).get();
+			final TeamContestProgress contestProgress = _team.getContestProgress();
+			contestProgress.addInvalidCode(code, solution);
+			teamService.updateTeam(_team);
+		});
+	}
+
 	@Override
 	public boolean acceptSolution(
 			@NonNull final String solution,
@@ -240,6 +249,7 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 		if (task == null) {
 			// incorrect solution
 			log.info("Solution \'{}\' NOT accepted: team=[{}] taskType=[{}]", solution, team.getId(), taskType.name());
+			saveInvalidSolution(team.getId(), String.valueOf(taskType), solution);
 			return false;
 		}
 		return acceptSolutionInternal(solution, task, team);
@@ -275,6 +285,7 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 		if (!task.getSolutionsNormalized().contains(_solution)) {
 			// incorrect solution
 			log.info("Solution \'{}\' NOT accepted: team=[{}] task=[{}]", solution, team.getId(), task.getCode());
+			saveInvalidSolution(team.getId(), task.getCode(), solution);
 			return false;
 		}
 		// update contest progress
@@ -323,6 +334,7 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 		if (!rightSolution.equals(_solution)) {
 			// incorrect solution
 			log.info("Solution \'{}\' NOT accepted: team=[{}] task=[DEST]", solution, team.getId());
+			saveInvalidSolution(team.getId(), "D0", solution);
 			return false;
 		}
 		// update contest progress

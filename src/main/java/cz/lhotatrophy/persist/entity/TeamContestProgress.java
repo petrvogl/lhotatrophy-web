@@ -2,9 +2,13 @@ package cz.lhotatrophy.persist.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -66,6 +70,12 @@ public class TeamContestProgress implements Serializable {
 	 * and the mapped value is the detailed information about the acceptance.
 	 */
 	private final Map<String, TeamContestProgressCode> contestCodes = new HashMap<>();
+	/**
+	 * Records of NOT accepted contest codes (wrong attempts). The key of a map
+	 * is a task code (or group) and the mapped value is the list of unaccepted
+	 * solutions to the task.
+	 */
+	private final Map<String, List<String>> invalidCodes = new HashMap<>();
 
 	/**
 	 * The mileage driven from the start to the finish (km unit).
@@ -193,5 +203,38 @@ public class TeamContestProgress implements Serializable {
 		final TeamContestProgressCode c = new TeamContestProgressCode(code, group, solution, hintRevealed, procedureRevealed, solutionRevealed, timestamp);
 		contestCodes.put(code, c);
 		return c;
+	}
+
+	/**
+	 * Returns the list of all invalid solutions related to the specified
+	 * task/code.
+	 *
+	 * @param code Contest code
+	 * @return the list of all invalid solutions
+	 */
+	@Nonnull
+	public List<String> getInvalidCodes(final String code) {
+		final List<String> invalid = invalidCodes.get(code);
+		return invalid == null ? Collections.emptyList() : invalid;
+	}
+
+	/**
+	 * It records that the solution has NOT been accepted.
+	 *
+	 * @param code Contest code
+	 * @param solution Invalid solution
+	 * @return the list of all invalid solutions related to the specified code
+	 */
+	public List<String> addInvalidCode(
+			@NonNull final String code,
+			@NonNull final String solution
+	) {
+		List<String> invalid = invalidCodes.get(code);
+		if (invalid == null) {
+			invalid = new LinkedList<>();
+			invalidCodes.put(code, invalid);
+		}
+		invalid.add(solution);
+		return invalid;
 	}
 }

@@ -85,7 +85,6 @@ public class ContestController extends AbstractController {
 		} else {
 			// team is in play or finished
 			final LocationListingQuerySpi query = LocationListingQuerySpi.create()
-					.setActive(Boolean.TRUE)
 					.setDestination(Boolean.FALSE)
 					.setSorting(Location.orderByCode());
 			final List<Location> locations = locationService.getLocationListing(query);
