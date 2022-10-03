@@ -3,22 +3,20 @@
 	  xmlns:th="http://www.thymeleaf.org"
 	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	  lang="cs">
-	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHeadAdmin">
-		<!--/* PROTOTYPE */-->
-		<title>Administrace — 24th Lhota Trophy</title>
+	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHead(
+		  pageTitle='Stanoviště')">		
+		<title>Stanoviště</title>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>		
 	</head>
-	<body class="docu-theme">
+	<body>
 		<!--/* Page header */-->
-		<header th:replace="public/fragments/PageHeader.html :: PageHeaderAdmin"> [ Page Header ] </header>
-		<!--/* Page navigation */-->
-		<nav th:replace="public/fragments/PageNavigation.html :: PageNavigationAdmin"> [ Navigation ] </nav>
+		<header th:replace="public/fragments/PageHeader.html :: PageHeader"> [ Page Header ] </header>
 
 		<!--/*
 		*	Page Content
 		*/-->
-		<main class="page-content"
+		<main id="content"
 			  th:with="
 			  locationDiscovered=${service.contest.checkLocationIsDiscovered(location)},
 			  aTask=${service.task.getTaskRelatedToLocation(location, 'A_CODE')},
@@ -34,8 +32,8 @@
 			*	
 			*/-->
 			<th:block th:unless="${locationDiscovered}">
-				<h2><th:block th:replace="public/fragments/Misc.html :: PinImage (height=20)"/> Stanoviště [[${location.code}]]</h2>
-				<p>Poloha stanoviště zatím neznámá</p>
+				<h1><th:block th:replace="public/fragments/Misc.html :: PinImage (height=20)"/> Stanoviště [[${location.code}]]</h1>
+				<p>Poloha stanoviště zatím není známá</p>
 
 				<!--/*
 				*	If A-code exists for this location
@@ -48,7 +46,7 @@
 						  _=${aTaskCompleted} ? null : ${submitACodeForm.setFrom(aTask)}
 						  ">
 
-					<h3>KÓD [[${aTask.code}]]</h3>
+					<h2>KÓD [[${aTask.code}]]</h2>
 
 					<!--/*
 					*	If code has been already aquired
@@ -123,6 +121,7 @@
 							</th:block>
 						</th:block>
 					</th:block>
+
 				</th:block>
 
 			</th:block>
@@ -136,7 +135,7 @@
 			*	
 			*/-->
 			<th:block th:if="${locationDiscovered}">
-				<h2><th:block th:replace="public/fragments/Misc.html :: PinImage (height=20)"/> [[${location.code}]]: [[${location.name}]]</h2>
+				<h1><th:block th:replace="public/fragments/Misc.html :: PinImage (height=20)"/> [[${location.code}]]: [[${location.name}]]</h1>
 				<p>[[${location.description}]]</p>
 
 				<!--/*
@@ -156,7 +155,7 @@
 						  _=${bTaskCompleted} ? null : ${submitBCodeForm.setFrom(bTask)}
 						  ">
 
-					<h3>KÓD [[${bTask.code}]]</h3>
+					<h2>KÓD [[${bTask.code}]]</h2>
 
 					<th:block th:if="${bTaskCompleted}">
 						<p>Kód <strong>[[${progressCode.solution}]]</strong> je správný.</p>
@@ -194,6 +193,7 @@
 							</th:block>
 						</th:block>
 					</th:block>
+
 				</th:block>
 			</th:block>
 
@@ -271,7 +271,7 @@
 			</ul>
 		</th:block>
 
-		<!--/* Page footer */-->
-		<footer th:replace="public/fragments/PageFooter.html :: PageFooterAdmin"> [ Copyright ] </footer>
+		<!--/* Common page footer */-->
+		<footer th:replace="public/fragments/PageFooter.html :: PageFooter"> [ Page Footer ] </footer>
 	</body>
 </html>

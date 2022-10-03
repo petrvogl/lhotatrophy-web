@@ -3,33 +3,31 @@
 	  xmlns:th="http://www.thymeleaf.org"
 	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	  lang="cs">
-	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHeadAdmin">
-		<!--/* PROTOTYPE */-->
-		<title>Administrace — 24th Lhota Trophy</title>
+	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHead(
+		  pageTitle='Cíl')">		
+		<title>Cíl</title>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>		
 	</head>
-	<body class="docu-theme">
+	<body>
 		<!--/* Page header */-->
-		<header th:replace="public/fragments/PageHeader.html :: PageHeaderAdmin"> [ Page Header ] </header>
-		<!--/* Page navigation */-->
-		<nav th:replace="public/fragments/PageNavigation.html :: PageNavigationAdmin"> [ Navigation ] </nav>
+		<header th:replace="public/fragments/PageHeader.html :: PageHeader"> [ Page Header ] </header>
 
 		<!--/*
 		*	Page Content
 		*/-->
-		<main class="page-content"
+		<main id="content"
 			  th:with="
 			  clues=${service.contest.getCluesDiscovered()},
 			  hasClues=${clues.size() gt 0}">
 
-			<h2>Cílové stanoviště</h2>
+			<h1 class="h1">Cílové stanoviště</h1>
 			<p th:if="${service.contest.checkDestinationRevealed()}">[[${location.description}]]</p>
 
 			<!--/*
 			*	Clues listing
 			*/-->
-			<h3>Indicie k poloze cíle</h3>
+			<h2>Indicie k poloze cíle</h2>
 			<th:block th:unless="${hasClues}">
 				<p>Zatím jste žádnou indicii nezískali.</p>
 			</th:block>
@@ -94,84 +92,92 @@
 				*	1. step - submit destination code and mileage
 				*	
 				*/-->
-				<th:block>
-					<h3>1. krok</h3>
-					<p>
-						Zadejte cílový kód a stav tachometru na cílovém stanovišti. Zadáním těchto údajů pro vás hra skončí.
-						Zastaví se časomíra a nebude již možné zadávat žádné další soutěžní kódy.
-					</p>
+				<div class="block golden-ratio">
+					<div class="block-inner visible firewatch-8 bg-firewatch-2">
 
-					<!--/*
-					*	Destination code input
-					*/-->
-					<form th:action="@{~/denik/submitMileage}"
-						  th:object="${submitMileageForm}"
-						  method="post">
-						<fieldset th:disabled="${!service.contest.checkTeamIsInPlay()}"
-								  style="padding: 0; border: none;">
-							<input th:field="*{type}" type="hidden" name="type"/>
-							<div>
-								Kód: <input th:field="*{destCode}" type="text" name="destCode"/>
-							</div>
-							<div>
-								Stav tachometru: <input th:field="*{mileage}" type="number" name="mileage" min="0"/> km
-							</div>
-							<input type="submit" value="Odeslat"/>
-							<div th:if="${#fields.hasErrors('destCode')}" th:errors="*{destCode}" class="error"> [ error ] </div>
-							<div th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="error"> [ error ] </div>
-							<th:block th:if="${#fields.hasGlobalErrors()}">
-								<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
-							</th:block>
-						</fieldset>
-					</form>
+						<h2 class="h2">1. krok</h2>
+						<p>
+							Zadejte cílový kód a stav tachometru na cílovém stanovišti. Zadáním těchto údajů pro vás hra skončí.
+							Zastaví se časomíra a nebude již možné zadávat žádné další soutěžní kódy.
+						</p>
 
-					<!--/*
-					*	Wrong attempts listing
-					*/-->
-					<th:block th:with="invalidCodes=${team.contestProgress.getInvalidCodes('D0')}">
-						<th:block th:if="${invalidCodes.size() gt 0}">
-							<h3>Chybné pokusy</h3>
+						<!--/*
+						*	Destination code input
+						*/-->
+						<form th:action="@{~/denik/submitMileage}"
+							  th:object="${submitMileageForm}"
+							  method="post">
+							<fieldset th:disabled="${!service.contest.checkTeamIsInPlay()}"
+									  style="padding: 0; border: none;">
+								<input th:field="*{type}" type="hidden" name="type"/>
+								<div>
+									Cílový kód: <input th:field="*{destCode}" type="text" name="destCode"/>
+								</div>
+								<div>
+									Stav tachometru: <input th:field="*{mileage}" type="number" name="mileage" min="0"/> km
+								</div>
+								<input type="submit" value="Odeslat" class="btn indent"/>
+								<div th:if="${#fields.hasErrors('destCode')}" th:errors="*{destCode}" class="error"> [ error ] </div>
+								<div th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="error"> [ error ] </div>
+								<th:block th:if="${#fields.hasGlobalErrors()}">
+									<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
+								</th:block>
+							</fieldset>
+						</form>
 
-							<th:block th:each="code : ${invalidCodes}">
-								<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
-							</th:block>
+					</div>
+				</div>
+
+				<!--/*
+				*	Wrong attempts listing
+				*/-->
+				<th:block th:with="invalidCodes=${team.contestProgress.getInvalidCodes('D0')}">
+					<th:block th:if="${invalidCodes.size() gt 0}">
+						<h3>Chybné pokusy</h3>
+
+						<th:block th:each="code : ${invalidCodes}">
+							<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
 						</th:block>
 					</th:block>
 				</th:block>
+
+
 
 				<!--/*
 				*	
 				*	2. step - upload photo
 				*	
 				*/-->
-				<th:block>
-					<h3>2. krok</h3>
-					<p>Nahrajte fotografii tachometru vytvořenou podle návodu, který se dozvíte na cílovém stanovišti.</p>
+				<div class="block golden-ratio">
+					<div class="block-inner visible firewatch-8 bg-firewatch-2">
+						<h2 class="h2">2. krok</h2>
+						<p>Nahrajte fotografii tachometru vytvořenou podle návodu, který se dozvíte na cílovém stanovišti.</p>
 
-					<!--/*
-					*	Upload photo form
-					*/-->
-					<form th:action="@{~/denik/submitDestinationPhoto}"
-						  th:object="${fileUploadForm}"
-						  method="post"
-						  enctype="multipart/form-data">
-						<fieldset th:disabled="${service.contest.checkTeamIsInPlay()}"
-								  style="padding: 0; border: none;">
-							<input th:field="*{file}" type="file" name="fole"/>
-							<input type="submit" value="Nahrát fotografii"/>
-							<div th:if="${#fields.hasErrors('file')}" th:errors="*{file}" class="error"> [ error ] </div>
-							<th:block th:if="${#fields.hasGlobalErrors()}">
-								<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
-							</th:block>
-						</fieldset>
-					</form>
-				</th:block>
+						<!--/*
+						*	Upload photo form
+						*/-->
+						<form th:action="@{~/denik/submitDestinationPhoto}"
+							  th:object="${fileUploadForm}"
+							  method="post"
+							  enctype="multipart/form-data">
+							<fieldset th:disabled="${service.contest.checkTeamIsInPlay()}"
+									  style="padding: 0; border: none;">
+								<input th:field="*{file}" type="file" name="fole"/>
+								<input type="submit" value="Nahrát fotografii" class="btn indent"/>
+								<div th:if="${#fields.hasErrors('file')}" th:errors="*{file}" class="error"> [ error ] </div>
+								<th:block th:if="${#fields.hasGlobalErrors()}">
+									<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
+								</th:block>
+							</fieldset>
+						</form>
+					</div>
+				</div>
 
 			</th:block>
 
 		</main>
 
-		<!--/* Page footer */-->
-		<footer th:replace="public/fragments/PageFooter.html :: PageFooterAdmin"> [ Copyright ] </footer>
+		<!--/* Common page footer */-->
+		<footer th:replace="public/fragments/PageFooter.html :: PageFooter"> [ Page Footer ] </footer>
 	</body>
 </html>

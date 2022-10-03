@@ -141,6 +141,7 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 					if (code.accepted()) {
 						ACodesAcquiredCount++;
 					}
+					break;
 				case "B":
 					if (code.accepted()) {
 						BCodesAcquiredCount++;
@@ -249,7 +250,7 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 		if (task == null) {
 			// incorrect solution
 			log.info("Solution \'{}\' NOT accepted: team=[{}] taskType=[{}]", solution, team.getId(), taskType.name());
-			saveInvalidSolution(team.getId(), String.valueOf(taskType), solution);
+			saveInvalidSolution(team.getId(), taskType.name(), solution);
 			return false;
 		}
 		return acceptSolutionInternal(solution, task, team);

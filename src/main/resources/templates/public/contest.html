@@ -4,68 +4,10 @@
 	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	  lang="cs">
 	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHead(
-		  pageTitle='DENIK',
-		  additionalSources=~{this :: styles})">
-		<!--/* PROTOTYPE */-->
+		  pageTitle='DENIK')">		
 		<title>24th Lhota Trophy</title>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
-		<style th:fragment="styles">
-			.locations, .row {
-				width: 410px;
-				margin: 0;
-				padding: 0;
-				list-style-type: none;
-			}
-			.locations .location {
-				display: inline-block;
-				margin: 6px;
-				width: 120px;
-				background-color: #98371B;
-				/*background-color: #ffaf1b;*/
-				border-radius: 5px;
-			}
-			.locations .location a {
-				display: inline-block;
-				width: 100%;
-				text-align: center;
-				line-height: 5rem;
-				font-size: 4rem;
-				font-weight: bold;
-				border-bottom: solid 2px #210002;
-				color: #ffe473;
-				/*color: #7a271b;*/
-			}
-			.locations .location p {
-				padding: 6px 6px 0 6px;
-				margin: 0;
-				text-align: center;
-			}
-			.row .c-codes, .row .destination {
-				display: inline-block;
-				margin: 6px;
-				width: 188px;
-				background-color: #98371B;
-				/*background-color: #ffaf1b;*/
-				border-radius: 5px;
-			}
-			.row .c-codes a, .row .destination a {
-				display: inline-block;
-				width: 100%;
-				text-align: center;
-				line-height: 5rem;
-				font-size: 2rem;
-				font-weight: bold;
-				border-bottom: solid 2px #210002;
-				color: #ffe473;
-				/*color: #7a271b;*/
-			}
-			.row .c-codes p, .row .destination p {
-				padding: 3px 6px 3px 6px;
-				margin: 0;
-				text-align: center;
-			}
-		</style>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>		
 	</head>
 	<body class="docu-theme">
 		<!--/* Page header */-->
@@ -82,7 +24,7 @@
 			  teamIsInPlay=${!inactiveTeam and !disqualifiedTeam and team.contestProgress.mileageAtStart != null}">
 			<div class="content-zone clearfix">
 				<div class="content-zone-inner">
-					
+
 					<h1>DENIK</h1>
 					<p>Digitální evidence nápověd, indicií a kódů</p>
 
@@ -129,21 +71,30 @@
 						*	
 						*/-->
 						<th:block th:if="${teamIsAtStart}">
-							<p>Zadejte stav tachometru</p>
-							<form th:action="@{~/denik/submitMileage}"
-								  th:object="${submitMileageForm}"
-								  method="post"
-								  enctype="multipart/form-data">
-								<input th:field="*{type}" type="hidden" name="type"/>
-								<input th:field="*{mileage}" type="number" name="mileage" min="0"/> km
-								<input th:field="*{file}" type="file" name="file"/> km
-								<input type="submit" value="Odeslat"/>
-								<div th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="error"> [ error ] </div>
-								<div th:if="${#fields.hasErrors('file')}" th:errors="*{file}" class="error"> [ error ] </div>
-								<th:block th:if="${#fields.hasGlobalErrors()}">
-									<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
-								</th:block>
-							</form>
+							<div class="block golden-ratio">
+								<div class="block-inner visible firewatch-8 bg-firewatch-2">
+									<form th:action="@{~/denik/submitMileage}"
+										  th:object="${submitMileageForm}"
+										  method="post"
+										  enctype="multipart/form-data"
+										  class="form">
+										<fieldset>
+											<legend class="h2 inverted">
+												Zadejte stav tachometru a&nbsp;nahrajte jeho fotografii
+											</legend>
+											<input th:field="*{type}" type="hidden" name="type"/>
+											<input th:field="*{mileage}" type="number" name="mileage" min="0"/> km
+											<input th:field="*{file}" type="file" name="file"/>
+											<input type="submit" value="Odeslat"/>
+											<div th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="error"> [ error ] </div>
+											<div th:if="${#fields.hasErrors('file')}" th:errors="*{file}" class="error"> [ error ] </div>
+											<th:block th:if="${#fields.hasGlobalErrors()}">
+												<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
+											</th:block>
+										</fieldset>
+									</form>
+								</div>
+							</div>
 						</th:block>
 
 						<!--/*
@@ -169,7 +120,8 @@
 									locationDiscovered=${service.contest.checkLocationIsDiscovered(location)},
 									aTask=${service.task.getTaskRelatedToLocation(location, 'A_CODE')},
 									bTask=${service.task.getTaskRelatedToLocation(location, 'B_CODE')}"
-									class="location">
+									class="location" 
+									th:classappend="${!location.active} 'disabled' : _">									
 									<a th:href="@{~/denik/stanoviste-__${location.code}__}">[[${iterStat.count}]]</a>
 									<p>
 										<th:block th:if="${locationDiscovered}"><th:block th:replace="public/fragments/Misc.html :: PinImage"/></th:block>
@@ -180,7 +132,7 @@
 								</li>
 							</ul>
 
-							<ul class="row">
+							<ul class="bottom-row">
 								<li class="c-codes">
 									<a href="/denik/c-kody">C KÓDY</a>
 									<p>[[${service.contest.cCodesAcquiredCount()}]]</p>
@@ -195,7 +147,7 @@
 
 				</div>
 			</div>
-			
+
 			<!--/* Common page footer */-->
 			<footer th:replace="public/fragments/PageFooter.html :: PageFooter"> [ Page Footer ] </footer>
 		</main>

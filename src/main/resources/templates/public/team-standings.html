@@ -3,24 +3,22 @@
 	  xmlns:th="http://www.thymeleaf.org"
 	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	  lang="cs">
-	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHeadAdmin">
-		<!--/* PROTOTYPE */-->
-		<title>Administrace — 24th Lhota Trophy</title>
+	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHead(
+		  pageTitle='Výsledková listina')">		
+		<title>Výsledková listina</title>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>		
 	</head>
-	<body class="docu-theme">
+	<body>
 		<!--/* Page header */-->
-		<header th:replace="public/fragments/PageHeader.html :: PageHeaderAdmin"> [ Page Header ] </header>
-		<!--/* Page navigation */-->
-		<nav th:replace="public/fragments/PageNavigation.html :: PageNavigationAdmin"> [ Navigation ] </nav>
+		<header th:replace="public/fragments/PageHeader.html :: PageHeader"> [ Page Header ] </header>
 
 		<!--/*
 		*	Page Content
 		*/-->
-		<main class="page-content">
+		<main id="content">
 
-			<h3>Výsledková listina</h3>
+			<h1>Výsledková listina</h1>
 
 			<!--/*
 			*	
@@ -76,7 +74,7 @@
 			</th:block>
 		</main>
 
-		<!--/* Page footer */-->
-		<footer th:replace="public/fragments/PageFooter.html :: PageFooterAdmin"> [ Copyright ] </footer>
+		<!--/* Common page footer */-->
+		<footer th:replace="public/fragments/PageFooter.html :: PageFooter"> [ Page Footer ] </footer>
 	</body>
 </html>

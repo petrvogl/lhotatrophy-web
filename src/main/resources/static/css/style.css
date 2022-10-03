@@ -562,6 +562,67 @@ label, .list-label {
 }
 
 
+/* DENIK */
+.locations, .bottom-row {
+	width: 410px;
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+}
+.locations .location {
+	display: inline-block;
+	margin: 6px;
+	width: 120px;
+	background-color: #98371B;
+	/*background-color: #ffaf1b;*/
+	border-radius: 5px;
+}
+.locations .location a {
+	display: inline-block;
+	width: 100%;
+	text-align: center;
+	line-height: 5rem;
+	font-size: 4rem;
+	font-weight: bold;
+	border-bottom: solid 2px #210002;
+	color: #ffe473;
+	/*color: #7a271b;*/
+}
+.locations .location.disabled {
+	    opacity: 0.3;
+}
+.locations .location.disabled a {
+	pointer-events: none;
+	cursor: default;
+	color: black;
+}
+.bottom-row .c-codes, .bottom-row .destination {
+	display: inline-block;
+	margin: 6px;
+	width: 188px;
+	background-color: #98371B;
+	/*background-color: #ffaf1b;*/
+	border-radius: 5px;
+}
+.bottom-row .c-codes a, .bottom-row .destination a {
+	display: inline-block;
+	width: 100%;
+	text-align: center;
+	line-height: 5rem;
+	font-size: 2rem;
+	font-weight: bold;
+	border-bottom: solid 2px #210002;
+	color: #ffe473;
+	/*color: #7a271b;*/
+}
+.bottom-row .c-codes p, .bottom-row .destination p {
+	padding: 3px 6px 3px 6px;
+	margin: 0;
+	text-align: center;
+}
+
+
+
 /* BREAKPOINTS */
 
 @media screen and (max-width: 1200px) {
@@ -759,4 +820,3 @@ label, .list-label {
 	}
 
 }
-

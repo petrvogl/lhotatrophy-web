@@ -3,55 +3,58 @@
 	  xmlns:th="http://www.thymeleaf.org"
 	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	  lang="cs">
-	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHeadAdmin">
-		<!--/* PROTOTYPE */-->
-		<title>Administrace — 24th Lhota Trophy</title>
+	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHead(
+		  pageTitle='C kódy')">		
+		<title>C kódy</title>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>		
 	</head>
-	<body class="docu-theme">
+	<body>
 		<!--/* Page header */-->
-		<header th:replace="public/fragments/PageHeader.html :: PageHeaderAdmin"> [ Page Header ] </header>
-		<!--/* Page navigation */-->
-		<nav th:replace="public/fragments/PageNavigation.html :: PageNavigationAdmin"> [ Navigation ] </nav>
+		<header th:replace="public/fragments/PageHeader.html :: PageHeader"> [ Page Header ] </header>
 
 		<!--/*
 		*	Page Content
 		*/-->
-		<main class="page-content">
+		<main id="content">
 
-			<h3>C KÓD</h3>
+			<div class="block golden-ratio">
+				<div class="block-inner visible firewatch-8 bg-firewatch-2">
+					<h1 class="h1">C KÓD</h1>
 
-			<!--/*
-			*	C-code input
-			*/-->
-			<form th:if="${service.contest.checkTeamIsInPlay()}"
-				  th:action="@{~/denik/submitCode}"
-				  th:object="${submitCodeForm}"
-				  method="post">
-				<input th:field="*{taskType}" type="hidden" name="taskType"/>
-				<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
-				<input th:field="*{solution}" type="text" name="solution"/>
-				<input type="submit" value="Odeslat"/>
-			</form>
+					<!--/*
+					*	C-code input
+					*/-->
+					<form th:if="${service.contest.checkTeamIsInPlay()}"
+						  th:action="@{~/denik/submitCode}"
+						  th:object="${submitCodeForm}"
+						  method="post">
+						<input th:field="*{taskType}" type="hidden" name="taskType"/>
+						<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
+						<input th:field="*{solution}" type="text" name="solution" 
+							   class="golden-ratio clearfix"/>
+						<input type="submit" value="Odeslat" class="btn indent"/>
+					</form>
+				</div>
+			</div>
 
 			<!--/*
 			*	C-code listing
 			*/-->
 			<th:block th:if="${service.contest.cCodesAcquiredCount() gt 0}">
-				<h3>Uznané C-kódy</h3>
+				<h2 class="h2">Uznané C-kódy</h2>
 
 				<th:block th:each="code : ${service.contest.cCodesAcquired()}">
 					<p> [[${code.solution}]] </p>
 				</th:block>
 			</th:block>
-			
+
 			<!--/*
 			*	Wrong attempts listing
 			*/-->
-			<th:block th:with="invalidCodes=${team.contestProgress.getInvalidCodes('C')}">
+			<th:block th:with="invalidCodes=${team.contestProgress.getInvalidCodes('C_CODE')}">
 				<th:block th:if="${invalidCodes.size() gt 0}">
-					<h3>Chybné pokusy</h3>
+					<h2>Chybné pokusy</h2>
 
 					<th:block th:each="code : ${invalidCodes}">
 						<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
@@ -59,7 +62,7 @@
 				</th:block>
 			</th:block>
 
-			<h3>Pojistka</h3>
+			<h2 class="h2">Pojistka</h2>
 
 			<!--/*
 			*	Insurance NOT available
@@ -112,7 +115,7 @@
 			</script>
 		</main>
 
-		<!--/* Page footer */-->
-		<footer th:replace="public/fragments/PageFooter.html :: PageFooterAdmin"> [ Copyright ] </footer>
+		<!--/* Common page footer */-->
+		<footer th:replace="public/fragments/PageFooter.html :: PageFooter"> [ Page Footer ] </footer>
 	</body>
 </html>
