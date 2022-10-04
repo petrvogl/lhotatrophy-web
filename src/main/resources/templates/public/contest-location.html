@@ -13,11 +13,13 @@
 		<!--/* Page header */-->
 		<header th:replace="public/fragments/PageHeader.html :: PageHeader"> [ Page Header ] </header>
 
+		<!--/* DENIK nav */-->
+		<th:block th:replace="public/fragments/Misc.html :: DenikNav"></th:block>
+
 		<!--/*
 		*	Page Content
 		*/-->
-		<main id="content"
-			  th:with="
+		<main th:with="
 			  locationDiscovered=${service.contest.checkLocationIsDiscovered(location)},
 			  aTask=${service.task.getTaskRelatedToLocation(location, 'A_CODE')},
 			  bTask=${service.task.getTaskRelatedToLocation(location, 'B_CODE')}
@@ -32,7 +34,7 @@
 			*	
 			*/-->
 			<th:block th:unless="${locationDiscovered}">
-				<h1><th:block th:replace="public/fragments/Misc.html :: PinImage (height=20)"/> Stanoviště [[${location.code}]]</h1>
+				<h1><th:block th:replace="public/fragments/Misc.html :: PinImage (height=20,fill='#fff9de')"/> Stanoviště [[${location.code}]]</h1>
 				<p>Poloha stanoviště zatím není známá</p>
 
 				<!--/*
@@ -46,13 +48,13 @@
 						  _=${aTaskCompleted} ? null : ${submitACodeForm.setFrom(aTask)}
 						  ">
 
-					<h2>KÓD [[${aTask.code}]]</h2>
+					<h2>Kód [[${aTask.code}]]</h2>
 
 					<!--/*
 					*	If code has been already aquired
 					*/-->
 					<th:block th:if="${aTaskCompleted}">
-						<p>Kód <strong>[[${progressCode.solution}]]</strong> je správný.</p>
+						<p>Kód <strong style="text-transform: uppercase;">[[${progressCode.solution}]]</strong> je správný.</p>
 
 						<!--/*
 						*	Rewards for completing this task
@@ -99,14 +101,20 @@
 						</th:block>
 						<p th:if="${progressCode?.solutionRevealed}">Řešení: [[${aTask.anySolution}]]</p>
 
-						<form th:action="@{~/denik/submitCode}"
-							  th:object="${submitACodeForm}"
-							  method="post">
-							<input th:field="*{taskType}" type="hidden" name="taskType"/>
-							<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
-							<input th:field="*{solution}" type="text" name="solution"/>
-							<input type="submit" value="Odeslat"/>
-						</form>
+						<div class="block clearfix indent half">
+							<div class="block-inner visible firewatch-8 bg-firewatch-2">
+								<form th:action="@{~/denik/submitCode}"
+									  th:object="${submitACodeForm}"
+									  method="post">
+									<legend class="h2 inverted"> Zadejte kód </legend>
+									<input th:field="*{taskType}" type="hidden" name="taskType"/>
+									<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
+									<input th:field="*{solution}" type="text" name="solution"
+										   class="golden-ratio clearfix"/>
+									<input type="submit" value="Odeslat" class="btn indent"/>
+								</form>
+							</div>
+						</div>
 					</th:block>
 
 					<!--/*
@@ -155,10 +163,10 @@
 						  _=${bTaskCompleted} ? null : ${submitBCodeForm.setFrom(bTask)}
 						  ">
 
-					<h2>KÓD [[${bTask.code}]]</h2>
+					<h2>Kód [[${bTask.code}]]</h2>
 
 					<th:block th:if="${bTaskCompleted}">
-						<p>Kód <strong>[[${progressCode.solution}]]</strong> je správný.</p>
+						<p>Kód <strong style="text-transform: uppercase;">[[${progressCode.solution}]]</strong> je správný.</p>
 
 						<!--/*
 						*	Rewards for completing this task
@@ -171,15 +179,22 @@
 					<!--/*
 					*	If B-code has not been aquired yet
 					*/-->
-					<form th:if="${!bTaskCompleted and service.contest.checkTeamIsInPlay()}"
-						  th:action="@{~/denik/submitCode}"
-						  th:object="${submitBCodeForm}"
-						  method="post">
-						<input th:field="*{taskType}" type="hidden" name="taskType"/>
-						<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
-						<input th:field="*{solution}" type="text" name="solution"/>
-						<input type="submit" value="Odeslat"/>
-					</form>
+					<th:block th:if="${!bTaskCompleted and service.contest.checkTeamIsInPlay()}">
+						<div class="block clearfix indent half">
+							<div class="block-inner visible firewatch-8 bg-firewatch-2">
+								<form th:action="@{~/denik/submitCode}"
+									  th:object="${submitBCodeForm}"
+									  method="post">
+									<legend class="h2 inverted"> Zadejte kód </legend>
+									<input th:field="*{taskType}" type="hidden" name="taskType"/>
+									<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
+									<input th:field="*{solution}" type="text" name="solution"
+										   class="golden-ratio clearfix"/>
+									<input type="submit" value="Odeslat" class="btn indent"/>
+								</form>
+							</div>
+						</div>
+					</th:block>
 
 					<!--/*
 					*	Wrong attempts listing
@@ -264,14 +279,12 @@
 						</th:block>
 						<th:block th:case="'Clue'">
 							Získali jste indicii k nalezení
-							<a href="/denik/cil">cílovéh stanovište</a>
+							<a href="/denik/cil">cílového stanovište</a>
 						</th:block>
 					</th:block>
 				</li>
 			</ul>
 		</th:block>
 
-		<!--/* Common page footer */-->
-		<footer th:replace="public/fragments/PageFooter.html :: PageFooter"> [ Page Footer ] </footer>
 	</body>
 </html>

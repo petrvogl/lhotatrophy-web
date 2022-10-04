@@ -18,60 +18,69 @@
 		*/-->
 		<main id="content">
 
-			<h1>Výsledková listina</h1>
+			<div class="content-zone clearfix">
+				<div class="content-zone-inner">
+					<div class="block-inner">
+						<div class="block full">
 
-			<!--/*
-			*	
-			*	Team standings are hidden
-			*	
-			*	
-			*	
-			*/-->
-			<th:block th:if="${now.isBefore(appConfig.gameResultsInstant)}">
-				Umístění týmů na žebříčku vítězů se zobrazí až po skončení soutěže.
-			</th:block>
+							<h1>Výsledková listina</h1>
+
+							<!--/*
+							*	
+							*	Team standings are hidden
+							*	
+							*	
+							*	
+							*/-->
+							<th:block th:if="${now.isBefore(appConfig.gameResultsInstant)}">
+								Umístění týmů na žebříčku vítězů se zobrazí až po skončení soutěže.
+							</th:block>
 
 
-			<!--/*
-			*	
-			*	Team standings are published
-			*	
-			*	
-			*	
-			*/-->
-			<th:block th:if="${now.isAfter(appConfig.gameResultsInstant)}">
+							<!--/*
+							*	
+							*	Team standings are published
+							*	
+							*	
+							*	
+							*/-->
+							<th:block th:if="${now.isAfter(appConfig.gameResultsInstant)}">
 
-				<table>
-					<tr>
-						<th class="center">#</th>
-						<th class="center">Pojistka</th>
-						<th>Tým</th>
-						<th class="center">Výsledné<br/>skóre</th>
-						<th class="center">A kódy</th>
-						<th class="center">B kódy</th>
-						<th class="center">C kódy</th>
-						<th class="center">Trasa [km]</th>
-						<th class="center">Časová<br/>penalizace</th>
-					</tr>
-					<tr th:each="team, iterStat : ${service.contest.getTeamStandings()}"
-						th:with="
-						score=${service.contest.getTeamScore(team)},
-						disqualified=${team.isDisqualified() or score == null}
-						"
-						>
-						<td class="center">[[${iterStat.count}]]</td>
-						<td class="center">[[${team.contestProgress.insuranceAgainstWinning ? 'Ano' : ''}]]</td>
-						<td>[[${team.name}]]</td>
-						<td class="right">[[${disqualified ? '--' : score}]]</td>
-						<td class="center">[[${service.contest.aCodesAcquiredCount(team)}]]</td>
-						<td class="center">[[${service.contest.bCodesAcquiredCount(team)}]]</td>
-						<td class="center">[[${service.contest.cCodesAcquiredCount(team)}]]</td>
-						<td class="right">[[${disqualified ? '--' : team.contestProgress.getMileage()}]]</td>
-						<td class="center">[[${disqualified ? '--' : service.contest.getTeamTimeExceededPenalty(team)}]]</td>
-					</tr>
-				</table>
+								<table class="table">
+									<tr>
+										<th class="center">#</th>
+										<th class="center">Pojistka</th>
+										<th>Tým</th>
+										<th class="center">Výsledné<br/>skóre</th>
+										<th class="center">A kódy</th>
+										<th class="center">B kódy</th>
+										<th class="center">C kódy</th>
+										<th class="center">Trasa<br/>[km]</th>
+										<th class="center">Časová<br/>penalizace</th>
+									</tr>
+									<tr th:each="team, iterStat : ${service.contest.getTeamStandings()}"
+										th:with="
+										score=${service.contest.getTeamScore(team)},
+										disqualified=${team.isDisqualified() or score == null}
+										"
+										>
+										<td class="center">[[${iterStat.count}]].</td>
+										<td class="center">[[${team.contestProgress.insuranceAgainstWinning ? 'Ano' : ''}]]</td>
+										<td>[[${team.name}]]</td>
+										<td class="right">[[${disqualified ? '--' : score}]]</td>
+										<td class="center">[[${service.contest.aCodesAcquiredCount(team)}]]</td>
+										<td class="center">[[${service.contest.bCodesAcquiredCount(team)}]]</td>
+										<td class="center">[[${service.contest.cCodesAcquiredCount(team)}]]</td>
+										<td class="right">[[${disqualified ? '--' : team.contestProgress.getMileage()}]]</td>
+										<td class="center">[[${disqualified ? '--' : service.contest.getTeamTimeExceededPenalty(team)}]]</td>
+									</tr>
+								</table>
 
-			</th:block>
+							</th:block>
+						</div>
+					</div>
+				</div>
+			</div>
 		</main>
 
 		<!--/* Common page footer */-->

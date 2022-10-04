@@ -13,88 +13,98 @@
 		<!--/* Page header */-->
 		<header th:replace="public/fragments/PageHeader.html :: PageHeader"> [ Page Header ] </header>
 
+		<!--/* DENIK nav */-->
+		<th:block th:replace="public/fragments/Misc.html :: DenikNav"></th:block>
+
 		<!--/*
 		*	Page Content
 		*/-->
-		<main id="content">
+		<main>
 
-			<div class="block golden-ratio">
-				<div class="block-inner visible firewatch-8 bg-firewatch-2">
-					<h1 class="h1">C KÓD</h1>
+			<div class="content-zone clearfix">
+				<div class="content-zone-inner">
+					<h1 class="h1">C kódy</h1>
+
+					<div class="block clearfix indent half">
+						<div class="block-inner visible firewatch-8 bg-firewatch-2">
+							<!--/*
+							*	C-code input
+							*/-->
+							<form th:if="${service.contest.checkTeamIsInPlay()}"
+								  th:action="@{~/denik/submitCode}"
+								  th:object="${submitCodeForm}"
+								  method="post">
+								<legend class="h2 inverted"> Zadejte kód </legend>
+								<input th:field="*{taskType}" type="hidden" name="taskType"/>
+								<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
+								<input th:field="*{solution}" type="text" name="solution" 
+									   class="golden-ratio clearfix"/>
+								<input type="submit" value="Odeslat" class="btn indent"/>
+							</form>
+						</div>
+					</div>
 
 					<!--/*
-					*	C-code input
+					*	C-code listing
 					*/-->
-					<form th:if="${service.contest.checkTeamIsInPlay()}"
-						  th:action="@{~/denik/submitCode}"
-						  th:object="${submitCodeForm}"
-						  method="post">
-						<input th:field="*{taskType}" type="hidden" name="taskType"/>
-						<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
-						<input th:field="*{solution}" type="text" name="solution" 
-							   class="golden-ratio clearfix"/>
-						<input type="submit" value="Odeslat" class="btn indent"/>
-					</form>
+					<div class="block clearfix indent" th:if="${service.contest.cCodesAcquiredCount() gt 0}">
+						<h2 class="h2">Uznané</h2>
+
+						<th:block th:each="code : ${service.contest.cCodesAcquired()}">
+							<p style="text-transform: uppercase;"> [[${code.solution}]] </p>
+						</th:block>
+					</div>
+
+					<!--/*
+					*	Wrong attempts listing
+					*/-->
+					<div class="block clearfix indent" th:with="invalidCodes=${team.contestProgress.getInvalidCodes('C_CODE')}">
+						<th:block th:if="${invalidCodes.size() gt 0}">
+							<h2>Chybné pokusy</h2>
+
+							<th:block th:each="code : ${invalidCodes}">
+								<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
+							</th:block>
+						</th:block>
+					</div>
+
+					<div class="block clearfix indent">
+						<h2 class="h2">Pojistka</h2>
+
+						<!--/*
+						*	Insurance NOT available
+						*/-->
+						<th:block th:unless="${service.contest.isInsuranceAvailable()}">
+							<p> Možnost zakoupení pojistky se odemkne až získáte [[${appConfig.insuranceCCodeLimit}]]. C kód. </p>
+						</th:block>
+
+						<th:block th:if="${service.contest.isInsuranceAvailable()}">
+							<!--/*
+							*	Insurance already obtained
+							*/-->
+							<th:block th:if="${service.contest.checkHasInsurance()}">
+								<p> 
+									Gratulujeme! Zajistili jste si posun v celkovém pořadí o jednu příčku níže.
+									Zároveň jste obdrželi penalizaci [[${appConfig.insurancePrice}]] km.
+								</p>
+							</th:block>
+
+							<!--/*
+							*	Insurance to buy
+							*/-->
+							<th:block th:if="${!service.contest.checkHasInsurance() and service.contest.checkTeamIsInPlay()}">
+								<form th:action="@{~/denik/buyInsurance}"
+									  th:object="${confirmationForm}"
+									  method="post"
+									  th:data-confirm-message="|Opravdu si přejete koupit pojistku? Bude vást to stát ${appConfig.insurancePrice} km.|">
+									<input type="submit" value="Koupit pojistku" />
+									(Cena: [[${appConfig.insurancePrice}]] km)
+								</form>
+							</th:block>
+						</th:block>
+					</div>
 				</div>
 			</div>
-
-			<!--/*
-			*	C-code listing
-			*/-->
-			<th:block th:if="${service.contest.cCodesAcquiredCount() gt 0}">
-				<h2 class="h2">Uznané C-kódy</h2>
-
-				<th:block th:each="code : ${service.contest.cCodesAcquired()}">
-					<p> [[${code.solution}]] </p>
-				</th:block>
-			</th:block>
-
-			<!--/*
-			*	Wrong attempts listing
-			*/-->
-			<th:block th:with="invalidCodes=${team.contestProgress.getInvalidCodes('C_CODE')}">
-				<th:block th:if="${invalidCodes.size() gt 0}">
-					<h2>Chybné pokusy</h2>
-
-					<th:block th:each="code : ${invalidCodes}">
-						<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
-					</th:block>
-				</th:block>
-			</th:block>
-
-			<h2 class="h2">Pojistka</h2>
-
-			<!--/*
-			*	Insurance NOT available
-			*/-->
-			<th:block th:unless="${service.contest.isInsuranceAvailable()}">
-				<p> Možnost zakoupení pojistky se odemkne až získáte [[${appConfig.insuranceCCodeLimit}]]. C kód. </p>
-			</th:block>
-
-			<th:block th:if="${service.contest.isInsuranceAvailable()}">
-				<!--/*
-				*	Insurance already obtained
-				*/-->
-				<th:block th:if="${service.contest.checkHasInsurance()}">
-					<p> 
-						Gratulujeme, získali jste pojistku proti výhře první ceny.
-						Pokud tuto pojistku získají všechny týmy, které úspěšně dorazí do cíle, tak bude pojistka ze hry vyřazena.
-					</p>
-				</th:block>
-
-				<!--/*
-				*	Insurance to buy
-				*/-->
-				<th:block th:if="${!service.contest.checkHasInsurance() and service.contest.checkTeamIsInPlay()}">
-					<form th:action="@{~/denik/buyInsurance}"
-						  th:object="${confirmationForm}"
-						  method="post"
-						  th:data-confirm-message="|Opravdu si přejete koupit pojistku? Bude vást to stát ${appConfig.insurancePrice} km.|">
-						<input type="submit" value="Koupit pojistku" />
-						(Cena: [[${appConfig.insurancePrice}]] km)
-					</form>
-				</th:block>
-			</th:block>
 
 			<script type="text/javascript">
 				/* <![CDATA[ */
@@ -115,7 +125,5 @@
 			</script>
 		</main>
 
-		<!--/* Common page footer */-->
-		<footer th:replace="public/fragments/PageFooter.html :: PageFooter"> [ Page Footer ] </footer>
 	</body>
 </html>

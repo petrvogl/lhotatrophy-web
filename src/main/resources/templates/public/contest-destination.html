@@ -13,171 +13,178 @@
 		<!--/* Page header */-->
 		<header th:replace="public/fragments/PageHeader.html :: PageHeader"> [ Page Header ] </header>
 
+		<!--/* DENIK nav */-->
+		<th:block th:replace="public/fragments/Misc.html :: DenikNav"></th:block>
+
 		<!--/*
 		*	Page Content
 		*/-->
-		<main id="content"
-			  th:with="
+		<main th:with="
 			  clues=${service.contest.getCluesDiscovered()},
 			  hasClues=${clues.size() gt 0}">
 
-			<h1 class="h1">Cílové stanoviště</h1>
-			<p th:if="${service.contest.checkDestinationRevealed()}">[[${location.description}]]</p>
+			<div class="content-zone clearfix">
+				<div class="content-zone-inner">
 
-			<!--/*
-			*	Clues listing
-			*/-->
-			<h2>Indicie k poloze cíle</h2>
-			<th:block th:unless="${hasClues}">
-				<p>Zatím jste žádnou indicii nezískali.</p>
-			</th:block>
-			<th:block th:if="${hasClues}">
-				<th:block th:each="clue : ${clues}">
-					<p> [[${clue.description}]] </p>
-				</th:block>
-			</th:block>
-
-			<!--/*
-			*	
-			*	Team has finished the game (image uploaded)
-			*	
-			*	
-			*	
-			*/-->
-			<th:block th:if="${service.contest.checkFinishImageUploaded()}">
-				<p> Hra pro vás již skončila </p>
-			</th:block>
-
-			<!--/*
-			*	
-			*	Team is in play (image NOT uploaded)
-			*	
-			*	
-			*	
-			*/-->
-			<th:block th:if="${!service.contest.checkFinishImageUploaded()}">
-
-				<!--/*
-				*	If hint has not been used
-				*/-->
-				<th:block th:if="${!service.contest.checkDestinationRevealed() and service.contest.checkTeamIsInPlay()}">
-					<form th:action="@{~/denik/revealDestination}"
-						  th:object="${confirmationForm}"
-						  method="post"
-						  th:data-confirm-message="|Opravdu si přejete odhalit polohu cílového stanoviště? Bude vást to stát ${appConfig.destinationRevealedPenalty} km.|">
-						<input type="submit" value="Odhalit polohu" />
-						(Cena: [[${appConfig.destinationRevealedPenalty}]] km)
-					</form>
-					<script type="text/javascript">
-						/* <![CDATA[ */
-						const forms = document.querySelectorAll("form");
-						forms.forEach(form => {
-							const confirmMessage = form.getAttribute("data-confirm-message");
-							if (LT.isNotEmpty(confirmMessage)) {
-								form.onsubmit = (event) => {
-									const confirmed = window.confirm(confirmMessage);
-									if (!confirmed) {
-										event.preventDefault();
-									}
-									return confirmed;
-								};
-							}
-						});
-						/* ]]> */
-					</script>
-				</th:block>
-
-				<!--/*
-				*	
-				*	1. step - submit destination code and mileage
-				*	
-				*/-->
-				<div class="block golden-ratio">
-					<div class="block-inner visible firewatch-8 bg-firewatch-2">
-
-						<h2 class="h2">1. krok</h2>
-						<p>
-							Zadejte cílový kód a stav tachometru na cílovém stanovišti. Zadáním těchto údajů pro vás hra skončí.
-							Zastaví se časomíra a nebude již možné zadávat žádné další soutěžní kódy.
-						</p>
+					<div class="block-inner">
+						<h1 class="h1">Cílové stanoviště</h1>
+						<p th:if="${service.contest.checkDestinationRevealed()}">[[${location.description}]]</p>
 
 						<!--/*
-						*	Destination code input
+						*	Clues listing
 						*/-->
-						<form th:action="@{~/denik/submitMileage}"
-							  th:object="${submitMileageForm}"
-							  method="post">
-							<fieldset th:disabled="${!service.contest.checkTeamIsInPlay()}"
-									  style="padding: 0; border: none;">
-								<input th:field="*{type}" type="hidden" name="type"/>
-								<div>
-									Cílový kód: <input th:field="*{destCode}" type="text" name="destCode"/>
-								</div>
-								<div>
-									Stav tachometru: <input th:field="*{mileage}" type="number" name="mileage" min="0"/> km
-								</div>
-								<input type="submit" value="Odeslat" class="btn indent"/>
-								<div th:if="${#fields.hasErrors('destCode')}" th:errors="*{destCode}" class="error"> [ error ] </div>
-								<div th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="error"> [ error ] </div>
-								<th:block th:if="${#fields.hasGlobalErrors()}">
-									<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
-								</th:block>
-							</fieldset>
-						</form>
-
-					</div>
-				</div>
-
-				<!--/*
-				*	Wrong attempts listing
-				*/-->
-				<th:block th:with="invalidCodes=${team.contestProgress.getInvalidCodes('D0')}">
-					<th:block th:if="${invalidCodes.size() gt 0}">
-						<h3>Chybné pokusy</h3>
-
-						<th:block th:each="code : ${invalidCodes}">
-							<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
+						<h2>Indicie k poloze cíle</h2>
+						<th:block th:unless="${hasClues}">
+							<p>Zatím jste žádnou indicii nezískali.</p>
 						</th:block>
-					</th:block>
-				</th:block>
-
-
-
-				<!--/*
-				*	
-				*	2. step - upload photo
-				*	
-				*/-->
-				<div class="block golden-ratio">
-					<div class="block-inner visible firewatch-8 bg-firewatch-2">
-						<h2 class="h2">2. krok</h2>
-						<p>Nahrajte fotografii tachometru vytvořenou podle návodu, který se dozvíte na cílovém stanovišti.</p>
+						<th:block th:if="${hasClues}">
+							<th:block th:each="clue : ${clues}">
+								<p> [[${clue.description}]] </p>
+							</th:block>
+						</th:block>
 
 						<!--/*
-						*	Upload photo form
+						*	
+						*	Team has finished the game (image uploaded)
+						*	
+						*	
+						*	
 						*/-->
-						<form th:action="@{~/denik/submitDestinationPhoto}"
-							  th:object="${fileUploadForm}"
-							  method="post"
-							  enctype="multipart/form-data">
-							<fieldset th:disabled="${service.contest.checkTeamIsInPlay()}"
-									  style="padding: 0; border: none;">
-								<input th:field="*{file}" type="file" name="fole"/>
-								<input type="submit" value="Nahrát fotografii" class="btn indent"/>
-								<div th:if="${#fields.hasErrors('file')}" th:errors="*{file}" class="error"> [ error ] </div>
-								<th:block th:if="${#fields.hasGlobalErrors()}">
-									<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
+						<th:block th:if="${service.contest.checkFinishImageUploaded()}">
+							<p> Hra pro vás již skončila </p>
+						</th:block>
+
+						<!--/*
+						*	
+						*	Team is in play (image NOT uploaded)
+						*	
+						*	
+						*	
+						*/-->
+						<th:block th:if="${!service.contest.checkFinishImageUploaded()}">
+
+							<!--/*
+							*	If hint has not been used
+							*/-->
+							<th:block th:if="${!service.contest.checkDestinationRevealed() and service.contest.checkTeamIsInPlay()}">
+								<form th:action="@{~/denik/revealDestination}"
+									  th:object="${confirmationForm}"
+									  method="post"
+									  th:data-confirm-message="|Opravdu si přejete odhalit polohu cílového stanoviště? Bude vást to stát ${appConfig.destinationRevealedPenalty} km.|">
+									<input type="submit" value="Odhalit polohu" />
+									(Cena: [[${appConfig.destinationRevealedPenalty}]] km)
+								</form>
+								<script type="text/javascript">
+									/* <![CDATA[ */
+									const forms = document.querySelectorAll("form");
+									forms.forEach(form => {
+										const confirmMessage = form.getAttribute("data-confirm-message");
+										if (LT.isNotEmpty(confirmMessage)) {
+											form.onsubmit = (event) => {
+												const confirmed = window.confirm(confirmMessage);
+												if (!confirmed) {
+													event.preventDefault();
+												}
+												return confirmed;
+											};
+										}
+									});
+									/* ]]> */
+								</script>
+							</th:block>					
+
+							<!--/*
+							*	
+							*	1. step - submit destination code and mileage
+							*	
+							*/-->
+							<div class="block golden-ratio">
+								<div class="block-inner visible firewatch-8 bg-firewatch-2">
+
+									<h2 class="h2">1. krok</h2>
+									<p>
+										Zadejte cílový kód a stav tachometru na cílovém stanovišti. Zadáním těchto údajů pro vás hra skončí.
+										Zastaví se časomíra a nebude již možné zadávat žádné další soutěžní kódy.
+									</p>
+
+									<!--/*
+									*	Destination code input
+									*/-->
+									<form th:action="@{~/denik/submitMileage}"
+										  th:object="${submitMileageForm}"
+										  method="post">
+										<fieldset th:disabled="${!service.contest.checkTeamIsInPlay()}"
+												  style="padding: 0; border: none;">
+											<input th:field="*{type}" type="hidden" name="type"/>
+											<div>
+												Cílový kód: <input th:field="*{destCode}" type="text" name="destCode"/>
+											</div>
+											<div class="indent">
+												Stav tachometru: <input th:field="*{mileage}" type="number" name="mileage" min="0"/> km
+											</div>
+											<input type="submit" value="Odeslat" class="btn indent"/>
+											<div th:if="${#fields.hasErrors('destCode')}" th:errors="*{destCode}" class="error"> [ error ] </div>
+											<div th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="error"> [ error ] </div>
+											<th:block th:if="${#fields.hasGlobalErrors()}">
+												<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
+											</th:block>
+										</fieldset>
+									</form>
+
+								</div>
+							</div>
+
+							<!--/*
+							*	Wrong attempts listing
+							*/-->
+							<th:block th:with="invalidCodes=${team.contestProgress.getInvalidCodes('D0')}">
+								<th:block th:if="${invalidCodes.size() gt 0}">
+									<h3>Chybné pokusy</h3>
+
+									<th:block th:each="code : ${invalidCodes}">
+										<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
+									</th:block>
 								</th:block>
-							</fieldset>
-						</form>
+							</th:block>
+
+
+
+							<!--/*
+							*	
+							*	2. step - upload photo
+							*	
+							*/-->
+							<div class="block golden-ratio">
+								<div class="block-inner visible firewatch-8 bg-firewatch-2">
+									<h2 class="h2">2. krok</h2>
+									<p>Nahrajte fotografii tachometru vytvořenou podle návodu, který se dozvíte na cílovém stanovišti.</p>
+
+									<!--/*
+									*	Upload photo form
+									*/-->
+									<form th:action="@{~/denik/submitDestinationPhoto}"
+										  th:object="${fileUploadForm}"
+										  method="post"
+										  enctype="multipart/form-data">
+										<fieldset th:disabled="${service.contest.checkTeamIsInPlay()}"
+												  style="padding: 0; border: none;">
+											<input th:field="*{file}" type="file" name="fole"/>
+											<input type="submit" value="Nahrát fotografii" class="btn clearfix indent"/>
+											<div th:if="${#fields.hasErrors('file')}" th:errors="*{file}" class="error"> [ error ] </div>
+											<th:block th:if="${#fields.hasGlobalErrors()}">
+												<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
+											</th:block>
+										</fieldset>
+									</form>
+								</div>
+							</div>
+
+						</th:block>
 					</div>
 				</div>
-
-			</th:block>
+			</div>
 
 		</main>
 
-		<!--/* Common page footer */-->
-		<footer th:replace="public/fragments/PageFooter.html :: PageFooter"> [ Page Footer ] </footer>
 	</body>
 </html>

@@ -305,7 +305,7 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 				contestCode = contestProgress.addContestCode(
 						task.getCode(),
 						String.valueOf(task.getType().getMark()),
-						solution,
+						_solution,
 						Instant.now().toEpochMilli()
 				);
 			}

@@ -57,6 +57,7 @@ header span {
 	margin: 0 auto;
 	padding-top: 15px;
 	padding-bottom: 10px;
+	clear: both;
 }
 
 .content-zone-inner {
@@ -561,6 +562,32 @@ label, .list-label {
 	width: 100%;
 }
 
+/* TABLE */
+
+.table {
+	border-collapse: collapse;
+	width: 100%;
+}
+.table th, .table td {
+	padding: 6px 10px;
+}
+.table tr:nth-child(odd) {
+	background-color: #98371B;
+}
+.table tr:nth-child(even) {
+	background-color: #7A271B;
+}
+.table tr:first-child {
+	background-color: transparent;
+}
+
+/* FILE INPUT */
+
+#file {
+	border: none;
+	padding: 0;
+}
+
 
 /* DENIK */
 .locations, .bottom-row {
@@ -589,12 +616,17 @@ label, .list-label {
 	/*color: #7a271b;*/
 }
 .locations .location.disabled {
-	    opacity: 0.3;
+	opacity: 0.3;
 }
 .locations .location.disabled a {
 	pointer-events: none;
 	cursor: default;
 	color: black;
+}
+.locations .location p {
+	padding: 6px 6px 0 6px;
+	margin: 0;
+	text-align: center;
 }
 .bottom-row .c-codes, .bottom-row .destination {
 	display: inline-block;
@@ -619,6 +651,17 @@ label, .list-label {
 	padding: 3px 6px 3px 6px;
 	margin: 0;
 	text-align: center;
+}
+
+/* NAV HOME */
+.home a {
+	display: block;
+	margin: 10px auto;
+    max-width: 140px;
+	padding: 10px;
+}
+.home a svg {
+    display: block;
 }
 
 

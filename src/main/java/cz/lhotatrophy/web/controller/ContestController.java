@@ -22,6 +22,7 @@ import cz.lhotatrophy.web.form.SubmitMileageForm;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -187,11 +188,7 @@ public class ContestController extends AbstractController {
 		// verify C code
 		if (taskType == TaskTypeEnum.C_CODE) {
 			if (solution != null) {
-
 				contestService.acceptSolution(solution, taskType, team);
-				//
-				// TODO - log if accepted
-				//
 			}
 			return "redirect:/denik/c-kody";
 		}
@@ -200,9 +197,6 @@ public class ContestController extends AbstractController {
 		if (solution != null) {
 			if (!contestService.checkTaskIsCompleted(task, team)) {
 				contestService.acceptSolution(solution, task, team);
-				//
-				// TODO - log if accepted
-				//
 			}
 		}
 		final Location location = taskService.getLocationRelatedToTask(task).orElse(null);
@@ -216,6 +210,7 @@ public class ContestController extends AbstractController {
 	public String submitMileage(
 			@Valid final SubmitMileageForm submitMileageForm,
 			final BindingResult bindingResult,
+			final HttpServletRequest request,
 			final Model model
 	) {
 		if (!checkContestIsOpen()) {
@@ -244,6 +239,8 @@ public class ContestController extends AbstractController {
 					// save mileage
 					contestService.setMileageAtStart(team, submitMileageForm.getMileage());
 					teamService.removeTeamFromCache(team.getId());
+					// OK info
+					request.getSession().setAttribute("MileageUpdateSuccess", true);
 				}
 			} catch (final IOException ex) {
 				log.error("Error saving image uploaded by team [{}]: \n  [{}]\n  [{}]",

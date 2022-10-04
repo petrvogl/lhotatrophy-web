@@ -127,6 +127,16 @@ public class AdminController extends AbstractController {
 	}
 
 	/**
+	 * Statistics
+	 */
+	@GetMapping("/statistics")
+	public String statistics(final Model model) {
+		log.info("STATISTICS");
+		initModel(model);
+		return "admin/statistics";
+	}
+
+	/**
 	 * Detailed user information page
 	 */
 	@GetMapping("/user-info/{userId}")

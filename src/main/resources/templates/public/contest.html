@@ -11,13 +11,12 @@
 	</head>
 	<body class="docu-theme">
 		<!--/* Page header */-->
-		<header th:replace="public/fragments/PageHeader.html :: PageHeader"> [ Page Header ] </header>
+		<header th:replace="public/fragments/PageHeader.html :: PageHeader"> [ Page Header ] </header>		
 
 		<!--/*
 		*	Page Content
 		*/-->
-		<main id="content"
-			  th:with="
+		<main th:with="
 			  inactiveTeam=${!team.isActive() || !team.owner.isActive()},
 			  disqualifiedTeam=${!inactiveTeam and team.isDisqualified()},
 			  teamIsAtStart=${!inactiveTeam and !disqualifiedTeam and team.contestProgress.mileageAtStart == null},
@@ -26,10 +25,21 @@
 				<div class="content-zone-inner">
 
 					<h1>DENIK</h1>
-					<p>Digitální evidence nápověd, indicií a kódů</p>
+					<p class="p_1">Digitální evidence nápověd, indicií a kódů</p>
 
-					<h2>[[${team.name}]]</h2>
-					<p>Startovní číslo: [[${team.id}]]</p>
+					<h2 class="indent">[[${team.name}]]</h2>
+
+					<th:block th:if="${#session.getAttribute('MileageUpdateSuccess') == true}"
+							  th:with="_=${#session.setAttribute('MileageUpdateSuccess', false)}">
+						<div class="block golden-ratio">
+							<div class="block-inner visible white bg-lt-color-3">
+								<p>
+									Nahrání stavu tachometru se podařilo. Přejeme hodně úspěchů ve hře.
+									Užijte si závod a pamatujte: není důležité vyhrát, ale nezvítězit.
+								</p>
+							</div>
+						</div>
+					</th:block>
 
 					<!--/*
 					*	
@@ -84,8 +94,8 @@
 											</legend>
 											<input th:field="*{type}" type="hidden" name="type"/>
 											<input th:field="*{mileage}" type="number" name="mileage" min="0"/> km
-											<input th:field="*{file}" type="file" name="file"/>
-											<input type="submit" value="Odeslat"/>
+											<input th:field="*{file}" type="file" name="file" class="golden-ratio indent"/>
+											<input type="submit" value="Odeslat" class="btn clearfix indent"/>
 											<div th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="error"> [ error ] </div>
 											<div th:if="${#fields.hasErrors('file')}" th:errors="*{file}" class="error"> [ error ] </div>
 											<th:block th:if="${#fields.hasGlobalErrors()}">
@@ -121,10 +131,10 @@
 									aTask=${service.task.getTaskRelatedToLocation(location, 'A_CODE')},
 									bTask=${service.task.getTaskRelatedToLocation(location, 'B_CODE')}"
 									class="location" 
-									th:classappend="${!location.active} 'disabled' : _">									
+									th:classappend="${!location.active} ? 'disabled' : _">									
 									<a th:href="@{~/denik/stanoviste-__${location.code}__}">[[${iterStat.count}]]</a>
 									<p>
-										<th:block th:if="${locationDiscovered}"><th:block th:replace="public/fragments/Misc.html :: PinImage"/></th:block>
+										<th:block th:if="${locationDiscovered}"><th:block th:replace="public/fragments/Misc.html :: PinImage (fill='#fff9de')"/></th:block>
 										<th:block th:unless="${locationDiscovered}">&nbsp;</th:block>
 										<span th:if="${service.contest.checkTaskIsCompleted(aTask)}">A</span>
 										<span th:if="${service.contest.checkTaskIsCompleted(bTask)}">B</span>
@@ -148,8 +158,6 @@
 				</div>
 			</div>
 
-			<!--/* Common page footer */-->
-			<footer th:replace="public/fragments/PageFooter.html :: PageFooter"> [ Page Footer ] </footer>
 		</main>
 
 	</body>
