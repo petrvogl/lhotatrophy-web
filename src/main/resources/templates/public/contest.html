@@ -94,13 +94,13 @@
 											</legend>
 											<input th:field="*{type}" type="hidden" name="type"/>
 											<input th:field="*{mileage}" type="number" name="mileage" min="0"/> km
+											<p th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="p-1 formalert"> [ error ] </p>
 											<input th:field="*{file}" type="file" name="file" class="golden-ratio clearfix indent"/>
-											<input type="submit" value="Odeslat" class="btn clearfix indent"/>
-											<div th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="error"> [ error ] </div>
-											<div th:if="${#fields.hasErrors('file')}" th:errors="*{file}" class="error"> [ error ] </div>
+											<p th:if="${#fields.hasErrors('file')}" th:errors="*{file}" class="p-1 formalert"> [ error ] </p>
 											<th:block th:if="${#fields.hasGlobalErrors()}">
-												<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
+												<p th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="p-1 formalert"> [ global error ] </p>
 											</th:block>
+											<input type="submit" value="Odeslat" class="btn clearfix indent"/>
 										</fieldset>
 									</form>
 								</div>

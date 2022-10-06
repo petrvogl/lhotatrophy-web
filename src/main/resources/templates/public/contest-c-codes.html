@@ -96,7 +96,7 @@
 								<form th:action="@{~/denik/buyInsurance}"
 									  th:object="${confirmationForm}"
 									  method="post"
-									  th:data-confirm-message="|Opravdu si přejete koupit pojistku? Bude vást to stát ${appConfig.insurancePrice} km.|">
+									  th:data-confirm-message="|Opravdu si přejete koupit pojistku? Bude vás to stát ${appConfig.insurancePrice} km.|">
 									<input type="submit" value="Koupit pojistku" class="hint-btn"/>
 									(Cena: [[${appConfig.insurancePrice}]] km)
 								</form>

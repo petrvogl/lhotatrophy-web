@@ -51,7 +51,7 @@
 						*
 						*/-->
 						<th:block th:if="${service.contest.checkFinishImageUploaded()}">
-							<p>
+							<p class="p_1 indent">
 								Gratulujeme! Zadali jste cílový kód, nahráli stavu tachometru
 								a&nbsp;hru máte úspěšně za sebou.
 							</p>
@@ -74,7 +74,7 @@
 									<form th:action="@{~/denik/revealDestination}"
 										  th:object="${confirmationForm}"
 										  method="post"
-										  th:data-confirm-message="|Opravdu si přejete odhalit polohu cílového stanoviště? Bude vást to stát ${appConfig.destinationRevealedPenalty} km.|"
+										  th:data-confirm-message="|Opravdu si přejete odhalit polohu cílového stanoviště? Bude vás to stát ${appConfig.destinationRevealedPenalty} km.|"
 										  class="indent">
 										<input type="submit" value="Odhalit polohu" class="hint-btn"/>
 										(Cena: [[${appConfig.destinationRevealedPenalty}]] km)
@@ -125,15 +125,15 @@
 											<div>
 												Cílový kód:<br/><input th:field="*{destCode}" type="text" name="destCode"/>
 											</div>
+											<p th:if="${#fields.hasErrors('destCode')}" th:errors="*{destCode}" class="p-1 formalert"> [ error ] </p>
 											<div style="margin-top: 15px;">
 												Stav tachometru:<br/><input th:field="*{mileage}" type="number" name="mileage" min="0"/> km
 											</div>
-											<input type="submit" value="Odeslat" class="btn indent"/>
-											<div th:if="${#fields.hasErrors('destCode')}" th:errors="*{destCode}" class="error"> [ error ] </div>
-											<div th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="error"> [ error ] </div>
+											<p th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="p-1 formalert"> [ error ] </p>
 											<th:block th:if="${#fields.hasGlobalErrors()}">
-												<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
+												<p th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="p-1 formalert"> [ global error ] </p>
 											</th:block>
+											<input type="submit" value="Odeslat" class="btn indent"/>
 										</fieldset>
 									</form>
 
@@ -175,11 +175,11 @@
 										<fieldset th:disabled="${service.contest.checkTeamIsInPlay()}"
 												  style="padding: 0; border: none;">
 											<input th:field="*{file}" type="file" name="fole"/>
-											<input type="submit" value="Nahrát fotografii" class="btn clearfix indent"/>
-											<div th:if="${#fields.hasErrors('file')}" th:errors="*{file}" class="error"> [ error ] </div>
+											<p th:if="${#fields.hasErrors('file')}" th:errors="*{file}" class="p-1 formalert"> [ error ] </p>
 											<th:block th:if="${#fields.hasGlobalErrors()}">
-												<div th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error"> [ global error ] </div>
+												<p th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="p-1 formalert"> [ global error ] </p>
 											</th:block>
+											<input type="submit" value="Nahrát fotografii" class="btn clearfix indent"/>
 										</fieldset>
 									</form>
 								</div>

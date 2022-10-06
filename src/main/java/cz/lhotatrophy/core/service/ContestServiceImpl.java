@@ -75,15 +75,20 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 
 		@Override
 		public int compare(final Team t1, final Team t2) {
-			final int byScore = getTeamScore(t1) - getTeamScore(t2);
-			if (byScore == 0) {
+			long cmp = (long) getTeamScore(t1) - (long) getTeamScore(t2);
+			if (cmp == 0) {
 				final Long time1 = t1.getContestProgress().getTimestampAtFinish();
 				final Long time2 = t2.getContestProgress().getTimestampAtFinish();
 				// then sort by timestamp of finishing the game
-				return Objects.compare(time1, time2, Comparator.nullsLast(Comparator.naturalOrder())
-				);
+				cmp = Objects.compare(time1, time2, Comparator.nullsLast(Comparator.naturalOrder()));
 			}
-			return byScore;
+			if (cmp == 0) {
+				final Long id1 = t1.getId();
+				final Long id2 = t2.getId();
+				// then sort by team ID
+				cmp = Objects.compare(id1, id2, Comparator.nullsLast(Comparator.naturalOrder()));
+			}
+			return (int) cmp;
 		}
 
 		@Override
@@ -715,7 +720,8 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 			teamService.getTeamListingStream(query).forEachOrdered(team -> {
 				// apply the effect of insurance
 				final boolean insurance = team.getContestProgress().isInsuranceAgainstWinning();
-				if (insurance) {
+				final boolean disqualified = team.isDisqualified() || getTeamScore(team) == Integer.MAX_VALUE;
+				if (insurance || disqualified) {
 					temporary.add(team);
 				} else {
 					result.add(team);
