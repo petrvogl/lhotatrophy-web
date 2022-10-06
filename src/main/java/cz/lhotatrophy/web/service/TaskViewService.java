@@ -1,6 +1,7 @@
 package cz.lhotatrophy.web.service;
 
 import cz.lhotatrophy.core.service.EntityCacheService;
+import cz.lhotatrophy.core.service.TaskListingQuerySpi;
 import cz.lhotatrophy.core.service.TaskService;
 import cz.lhotatrophy.persist.entity.EntityLongId;
 import cz.lhotatrophy.persist.entity.Location;
@@ -55,5 +56,37 @@ public final class TaskViewService {
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.iterator();
+	}
+
+	/**
+	 * {@code ${service.task.getDestinationTask()}}
+	 */
+	public Task getDestinationTask() {
+		return taskService.getTaskByCodeFromCache("D0").get();
+	}
+
+	/**
+	 * {@code ${service.task.getAllActiveTasks()}}
+	 */
+	public Iterator<Task> getAllActiveTasks() {
+		final TaskListingQuerySpi query = TaskListingQuerySpi.create()
+				.setActive(Boolean.TRUE)
+				.setSorting(Task.orderByCode());
+		return taskService.getTaskListingStream(query).iterator();
+	}
+
+	/**
+	 * {@code ${service.task.getAllActiveTasks(taskType)}}
+	 */
+	public Iterator<Task> getAllActiveTasks(@NonNull final String taskType) {
+		final Optional<TaskTypeEnum> optType = EnumUtils.decodeEnum(TaskTypeEnum.class, taskType);
+		if (optType.isEmpty()) {
+			return null;
+		}
+		final TaskListingQuerySpi query = TaskListingQuerySpi.create()
+				.setActive(Boolean.TRUE)
+				.setType(optType.get())
+				.setSorting(Task.orderByCode());
+		return taskService.getTaskListingStream(query).iterator();
 	}
 }

@@ -3,6 +3,7 @@ package cz.lhotatrophy.core.service;
 import cz.lhotatrophy.persist.entity.Location;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.NonNull;
 
 /**
@@ -73,6 +74,17 @@ public interface LocationService extends Service {
 	 * @return Cached list of {@code Location} objects
 	 */
 	List<Location> getLocationListing(@NonNull LocationListingQuerySpi query);
+
+	/**
+	 * Rerurns a stream of {@link Location} objects from the cache according to
+	 * the listing query. This method provides a simple substitute for the
+	 * conventional "if cached, return; otherwise create, cache and return"
+	 * pattern.
+	 *
+	 * @param query Listing query
+	 * @return Cached stream of {@code Location} objects
+	 */
+	Stream<Location> getLocationListingStream(@NonNull LocationListingQuerySpi query);
 
 	/**
 	 * Discards the cached {@link Location} object if it is present in the

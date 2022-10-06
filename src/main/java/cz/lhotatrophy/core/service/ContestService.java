@@ -8,6 +8,7 @@ import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.TeamContestProgress;
 import cz.lhotatrophy.persist.entity.TeamContestProgressCode;
 import java.util.List;
+import java.util.Map;
 import lombok.NonNull;
 
 /**
@@ -184,4 +185,11 @@ public interface ContestService extends Service {
 	 * @return Current team standings
 	 */
 	List<Team> getTeamStandings();
+
+	/**
+	 * Returns the current task statistics.
+	 *
+	 * @return Task statistics
+	 */
+	Map<String, Integer> getTaskStatistics(@NonNull Task task);
 }

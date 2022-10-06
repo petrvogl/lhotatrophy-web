@@ -4,10 +4,10 @@
 	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	  lang="cs">
 	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHead(
-		  pageTitle='Cíl')">		
+		  pageTitle='Cíl')">
 		<title>Cíl</title>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>		
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	</head>
 	<body>
 		<!--/* Page header */-->
@@ -28,38 +28,38 @@
 
 					<div class="block-inner">
 						<h1 class="h1">Cílové stanoviště</h1>
-						<p th:if="${service.contest.checkDestinationRevealed()}">[[${location.description}]]</p>
+						<p class="p_1" th:if="${service.contest.checkDestinationRevealed()}">[[${location.description}]]</p>
 
 						<!--/*
 						*	Clues listing
 						*/-->
-						<h2>Indicie k poloze cíle</h2>
+						<h2 class="indent">Indicie k poloze cíle</h2>
 						<th:block th:unless="${hasClues}">
 							<p>Zatím jste žádnou indicii nezískali.</p>
 						</th:block>
 						<th:block th:if="${hasClues}">
-							<th:block th:each="clue : ${clues}">
-								<p> [[${clue.description}]] </p>
-							</th:block>
+							<ul>
+								<li th:each="clue : ${clues}"> [[${clue.description}]] </li>
+							</ul>
 						</th:block>
 
 						<!--/*
-						*	
+						*
 						*	Team has finished the game (image uploaded)
-						*	
-						*	
-						*	
+						*
+						*
+						*
 						*/-->
 						<th:block th:if="${service.contest.checkFinishImageUploaded()}">
 							<p> Hra pro vás již skončila </p>
 						</th:block>
 
 						<!--/*
-						*	
+						*
 						*	Team is in play (image NOT uploaded)
-						*	
-						*	
-						*	
+						*
+						*
+						*
 						*/-->
 						<th:block th:if="${!service.contest.checkFinishImageUploaded()}">
 
@@ -67,13 +67,16 @@
 							*	If hint has not been used
 							*/-->
 							<th:block th:if="${!service.contest.checkDestinationRevealed() and service.contest.checkTeamIsInPlay()}">
-								<form th:action="@{~/denik/revealDestination}"
-									  th:object="${confirmationForm}"
-									  method="post"
-									  th:data-confirm-message="|Opravdu si přejete odhalit polohu cílového stanoviště? Bude vást to stát ${appConfig.destinationRevealedPenalty} km.|">
-									<input type="submit" value="Odhalit polohu" />
-									(Cena: [[${appConfig.destinationRevealedPenalty}]] km)
-								</form>
+								<div class="block-inner">
+									<form th:action="@{~/denik/revealDestination}"
+										  th:object="${confirmationForm}"
+										  method="post"
+										  th:data-confirm-message="|Opravdu si přejete odhalit polohu cílového stanoviště? Bude vást to stát ${appConfig.destinationRevealedPenalty} km.|"
+										  class="indent">
+										<input type="submit" value="Odhalit polohu" class="hint-btn"/>
+										(Cena: [[${appConfig.destinationRevealedPenalty}]] km)
+									</form>
+								</div>
 								<script type="text/javascript">
 									/* <![CDATA[ */
 									const forms = document.querySelectorAll("form");
@@ -91,20 +94,20 @@
 									});
 									/* ]]> */
 								</script>
-							</th:block>					
+							</th:block>
 
 							<!--/*
-							*	
+							*
 							*	1. step - submit destination code and mileage
-							*	
+							*
 							*/-->
-							<div class="block golden-ratio">
+							<div class="golden-ratio indent">
 								<div class="block-inner visible firewatch-8 bg-firewatch-2">
 
 									<h2 class="h2">1. krok</h2>
 									<p>
-										Zadejte cílový kód a stav tachometru na cílovém stanovišti. Zadáním těchto údajů pro vás hra skončí.
-										Zastaví se časomíra a nebude již možné zadávat žádné další soutěžní kódy.
+										Zadejte cílový kód a&nbsp;stav tachometru na cílovém stanovišti. Zadáním těchto údajů pro vás hra skončí.
+										Zastaví se časomíra a&nbsp;nebude již možné zadávat žádné další soutěžní kódy.
 									</p>
 
 									<!--/*
@@ -117,10 +120,10 @@
 												  style="padding: 0; border: none;">
 											<input th:field="*{type}" type="hidden" name="type"/>
 											<div>
-												Cílový kód: <input th:field="*{destCode}" type="text" name="destCode"/>
+												Cílový kód:<br/><input th:field="*{destCode}" type="text" name="destCode"/>
 											</div>
-											<div class="indent">
-												Stav tachometru: <input th:field="*{mileage}" type="number" name="mileage" min="0"/> km
+											<div style="margin-top: 15px;">
+												Stav tachometru:<br/><input th:field="*{mileage}" type="number" name="mileage" min="0"/> km
 											</div>
 											<input type="submit" value="Odeslat" class="btn indent"/>
 											<div th:if="${#fields.hasErrors('destCode')}" th:errors="*{destCode}" class="error"> [ error ] </div>
@@ -139,7 +142,7 @@
 							*/-->
 							<th:block th:with="invalidCodes=${team.contestProgress.getInvalidCodes('D0')}">
 								<th:block th:if="${invalidCodes.size() gt 0}">
-									<h3>Chybné pokusy</h3>
+									<h3 class="indent">Chybné pokusy</h3>
 
 									<th:block th:each="code : ${invalidCodes}">
 										<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
@@ -150,11 +153,11 @@
 
 
 							<!--/*
-							*	
+							*
 							*	2. step - upload photo
-							*	
+							*
 							*/-->
-							<div class="block golden-ratio">
+							<div class="golden-ratio indent">
 								<div class="block-inner visible firewatch-8 bg-firewatch-2">
 									<h2 class="h2">2. krok</h2>
 									<p>Nahrajte fotografii tachometru vytvořenou podle návodu, který se dozvíte na cílovém stanovišti.</p>

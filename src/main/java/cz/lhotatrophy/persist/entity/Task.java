@@ -2,6 +2,7 @@ package cz.lhotatrophy.persist.entity;
 
 import cz.lhotatrophy.persist.SchemaConstants;
 import cz.lhotatrophy.utils.CzechComparator;
+import cz.lhotatrophy.utils.TemporaryStorage;
 import cz.lhotatrophy.utils.TextUtils;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,9 +10,11 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -25,6 +28,7 @@ import javax.persistence.Transient;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
@@ -46,7 +50,7 @@ import org.apache.commons.lang3.StringUtils;
 @Setter
 @ToString
 @NoArgsConstructor
-public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Task> {
+public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Task>, EntityWithTemporaryStorage {
 
 	/**
 	 * Defines a separator regular expression that separates individual values
@@ -153,6 +157,12 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 	@ToString.Exclude
 	@Setter(AccessLevel.NONE)
 	private transient Set<String> rewardCodes;
+
+	@Transient
+	@ToString.Exclude
+	@Getter(AccessLevel.NONE)
+	@Setter(AccessLevel.NONE)
+	private transient TemporaryStorage temporaryStorage = TemporaryStorage.create();
 
 	/**
 	 * Sets the all valid solutions to this task. Solutions must be separated by
@@ -345,5 +355,30 @@ public class Task extends AbstractEntity<Long, Task> implements EntityLongId<Tas
 			return false;
 		}
 		return Objects.equals(this.rewardCodesString, other.rewardCodesString);
+	}
+
+	@Override
+	public <T> T getTemporary(@NonNull final Object key) {
+		return (T) temporaryStorage.get(key);
+	}
+
+	@Override
+	public <T> T getTemporaryOrDefault(@NonNull final Object key, @Nullable final T defaultValue) {
+		return (T) temporaryStorage.getOrDefault(key, defaultValue);
+	}
+
+	@Override
+	public <T> T getTemporary(@NonNull final Object key, @NonNull final Supplier<T> valueLoader) {
+		return temporaryStorage.get(key, valueLoader);
+	}
+
+	@Override
+	public <T> void setTemporary(@NonNull final Object key, @Nullable final T data) {
+		temporaryStorage.put(key, data);
+	}
+
+	@Override
+	public void invalidateTemporary(final Object key) {
+		temporaryStorage.invalidate(key);
 	}
 }

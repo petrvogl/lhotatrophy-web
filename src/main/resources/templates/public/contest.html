@@ -4,14 +4,14 @@
 	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	  lang="cs">
 	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHead(
-		  pageTitle='DENIK')">		
+		  pageTitle='DENIK')">
 		<title>24th Lhota Trophy</title>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>		
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	</head>
 	<body class="docu-theme">
 		<!--/* Page header */-->
-		<header th:replace="public/fragments/PageHeader.html :: PageHeader"> [ Page Header ] </header>		
+		<header th:replace="public/fragments/PageHeader.html :: PageHeader"> [ Page Header ] </header>
 
 		<!--/*
 		*	Page Content
@@ -42,10 +42,10 @@
 					</th:block>
 
 					<!--/*
-					*	
+					*
 					*	Inactive teams
-					*	
-					*	
+					*
+					*
 					*/-->
 					<th:block th:if="${inactiveTeam}">
 						<p>Tento tým se soutěže neúčastní</p>
@@ -53,10 +53,10 @@
 					</th:block>
 
 					<!--/*
-					*	
+					*
 					*	Disqualified teams
-					*	
-					*	
+					*
+					*
 					*/-->
 					<th:block th:if="${disqualifiedTeam}">
 						<p>Tým diskvalifikován</p>
@@ -64,9 +64,9 @@
 					</th:block>
 
 					<!--/*
-					*	
+					*
 					*	Before opening
-					*	
+					*
 					*/-->
 					<th:block th:if="${teamIsAtStart and now.isBefore(appConfig.gameOpenInstant)}">
 						<p>Vyčkejte do zahájení soutěže</p>
@@ -75,10 +75,10 @@
 					<th:block th:if="${now.isAfter(appConfig.gameOpenInstant)}">
 
 						<!--/*
-						*	
+						*
 						*	Teams at start
-						*	
-						*	
+						*
+						*
 						*/-->
 						<th:block th:if="${teamIsAtStart}">
 							<div class="block golden-ratio">
@@ -94,7 +94,7 @@
 											</legend>
 											<input th:field="*{type}" type="hidden" name="type"/>
 											<input th:field="*{mileage}" type="number" name="mileage" min="0"/> km
-											<input th:field="*{file}" type="file" name="file" class="golden-ratio indent"/>
+											<input th:field="*{file}" type="file" name="file" class="golden-ratio clearfix indent"/>
 											<input type="submit" value="Odeslat" class="btn clearfix indent"/>
 											<div th:if="${#fields.hasErrors('mileage')}" th:errors="*{mileage}" class="error"> [ error ] </div>
 											<div th:if="${#fields.hasErrors('file')}" th:errors="*{file}" class="error"> [ error ] </div>
@@ -108,19 +108,19 @@
 						</th:block>
 
 						<!--/*
-						*	
+						*
 						*	Before start
-						*	
+						*
 						*/-->
 						<th:block th:if="${teamIsInPlay and now.isBefore(appConfig.gameStartInstant)}">
 							<p>Vyčkejte do předání obálek se šiframi</p>
 						</th:block>
 
 						<!--/*
-						*	
+						*
 						*	Teams in play or finished
-						*	
-						*	
+						*
+						*
 						*/-->
 						<th:block th:if="${teamIsInPlay and now.isAfter(appConfig.gameStartInstant)}">
 
@@ -130,8 +130,8 @@
 									locationDiscovered=${service.contest.checkLocationIsDiscovered(location)},
 									aTask=${service.task.getTaskRelatedToLocation(location, 'A_CODE')},
 									bTask=${service.task.getTaskRelatedToLocation(location, 'B_CODE')}"
-									class="location" 
-									th:classappend="${!location.active} ? 'disabled' : _">									
+									class="location"
+									th:classappend="${!location.active} ? 'disabled' : _">
 									<a th:href="@{~/denik/stanoviste-__${location.code}__}">[[${iterStat.count}]]</a>
 									<p>
 										<th:block th:if="${locationDiscovered}"><th:block th:replace="public/fragments/Misc.html :: PinImage (fill='#fff9de')"/></th:block>
@@ -152,6 +152,14 @@
 									<p>[[${service.contest.getCluesDiscovered().size()}]]</p>
 								</li>
 							</ul>
+
+							<th:block th:with="
+									  score=${service.contest.getTeamScore(team)},
+									  k=${service.contest.checkTeamIsInPlay() ? appConfig.idealRouteLength : 0},
+									  score=${score != null ? (score - k) : null}">
+								<p th:if="${score != null}"> Vaše průběžné skóre je [[${score}]] km. </p>
+							</th:block>
+
 						</th:block>
 					</th:block>
 

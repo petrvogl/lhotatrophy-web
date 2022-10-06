@@ -17,14 +17,18 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +39,9 @@ import org.springframework.stereotype.Service;
 @Service
 @Log4j2
 public class ContestServiceImpl extends AbstractService implements ContestService {
+
+	private static final String TASK_STATISTICS_CACHE_KEY = "TaskStatisticsMap";
+	private static final String DESTINATION_TASK_CODE = "D0";
 
 	@Autowired
 	private transient ApplicationConfig appConfig;
@@ -310,6 +317,7 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 				);
 			}
 			teamService.updateTeam(_team);
+			invalidateTaskStatistics(task);
 			return contestCode;
 		});
 		if (c == null) {
@@ -329,13 +337,12 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 			return false;
 		}
 		final String _solution = normalizeSolution(solution);
-		final String rightSolution = taskService.getTaskByCodeFromCache("D0")
-				.map(Task::getAnySolution)
-				.orElse("");
+		final Task task = taskService.getTaskByCodeFromCache(DESTINATION_TASK_CODE).get();
+		final String rightSolution = task.getAnySolution();
 		if (!rightSolution.equals(_solution)) {
 			// incorrect solution
 			log.info("Solution \'{}\' NOT accepted: team=[{}] task=[DEST]", solution, team.getId());
-			saveInvalidSolution(team.getId(), "D0", solution);
+			saveInvalidSolution(team.getId(), DESTINATION_TASK_CODE, solution);
 			return false;
 		}
 		// update contest progress
@@ -348,6 +355,7 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 			}
 			contestProgress.setDestinationSolution(solution);
 			teamService.updateTeam(_team);
+			invalidateTaskStatistics(task);
 			return true;
 		});
 		if (updated) {
@@ -431,6 +439,7 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 				);
 			}
 			teamService.updateTeam(_team);
+			invalidateTaskStatistics(task);
 			return contestCode;
 		});
 		if (c == null) {
@@ -447,6 +456,7 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 			return false;
 		}
 		// update contest progress
+		final Task task = taskService.getTaskByCodeFromCache(DESTINATION_TASK_CODE).get();
 		final Boolean revealed = runInTransaction(() -> {
 			final Team _team = teamService.getTeamById(team.getId()).get();
 			final TeamContestProgress contestProgress = _team.getContestProgress();
@@ -456,6 +466,7 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 			}
 			contestProgress.setDestinationRevealed(true);
 			teamService.updateTeam(_team);
+			invalidateTaskStatistics(task);
 			return true;
 		});
 		if (revealed == null) {
@@ -720,5 +731,72 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 			return result;
 		}, 1l, TimeUnit.MINUTES).get();
 		return resultCached;
+	}
+
+	@Nonnull
+	@Override
+	public Map<String, Integer> getTaskStatistics(@NonNull final Task task) {
+		final Map<String, Integer> resultCached = task.getTemporary(TASK_STATISTICS_CACHE_KEY, () -> {
+			final MutableInt completedTotal = new MutableInt(0);
+			final MutableInt unsolvedTotal = new MutableInt(0);
+			final MutableInt completedWithoutHints = new MutableInt(0);
+			final MutableInt hintRevealedCount = new MutableInt(0);
+			final MutableInt procedureRevealedCount = new MutableInt(0);
+			final MutableInt solutionRevealedCount = new MutableInt(0);
+			final TeamListingQuerySpi query = TeamListingQuerySpi.create().setActive(Boolean.TRUE);
+			teamService.getTeamListingStream(query)
+					.map(Team::getContestProgress)
+					.forEach(progress -> {
+						if (DESTINATION_TASK_CODE.equals(task.getCode())) {
+							if (progress.getDestinationSolution() != null) {
+								completedTotal.increment();
+								if (!progress.isDestinationRevealed()) {
+									completedWithoutHints.increment();
+								} else {
+									hintRevealedCount.increment();
+								}
+							} else {
+								unsolvedTotal.increment();
+							}
+						} else {
+							final TeamContestProgressCode progressCode = progress.getContestCode(task.getCode());
+							if (progressCode != null) {
+								if (progressCode.accepted()) {
+									completedTotal.increment();
+									if (progressCode.noHintUsed()) {
+										completedWithoutHints.increment();
+									}
+								} else {
+									unsolvedTotal.increment();
+								}
+								if (progressCode.isHintRevealed()) {
+									hintRevealedCount.increment();
+								}
+								if (progressCode.isProcedureRevealed()) {
+									procedureRevealedCount.increment();
+								}
+								if (progressCode.isSolutionRevealed()) {
+									solutionRevealedCount.increment();
+								}
+							} else {
+								unsolvedTotal.increment();
+							}
+						}
+					});
+			final Map<String, Integer> statMap = new HashMap<>();
+			statMap.put("completedTotal", completedTotal.getValue());
+			statMap.put("unsolvedTotal", unsolvedTotal.getValue());
+			statMap.put("completedWithoutHints", completedWithoutHints.getValue());
+			statMap.put("hintRevealed", hintRevealedCount.getValue());
+			statMap.put("procedureRevealed", procedureRevealedCount.getValue());
+			statMap.put("solutionRevealed", solutionRevealedCount.getValue());
+			return statMap;
+		});
+		return resultCached;
+	}
+
+	@Nonnull
+	public void invalidateTaskStatistics(@NonNull final Task task) {
+		task.invalidateTemporary(TASK_STATISTICS_CACHE_KEY);
 	}
 }

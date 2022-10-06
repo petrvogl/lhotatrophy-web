@@ -4,10 +4,10 @@
 	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	  lang="cs">
 	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHead(
-		  pageTitle='C kódy')">		
+		  pageTitle='C kódy')">
 		<title>C kódy</title>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>		
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	</head>
 	<body>
 		<!--/* Page header */-->
@@ -25,19 +25,19 @@
 				<div class="content-zone-inner">
 					<h1 class="h1">C kódy</h1>
 
-					<div class="block clearfix indent half">
+					<div th:if="${service.contest.checkTeamIsInPlay()}"
+						 class="clearfix half">
 						<div class="block-inner visible firewatch-8 bg-firewatch-2">
 							<!--/*
 							*	C-code input
 							*/-->
-							<form th:if="${service.contest.checkTeamIsInPlay()}"
-								  th:action="@{~/denik/submitCode}"
+							<form th:action="@{~/denik/submitCode}"
 								  th:object="${submitCodeForm}"
 								  method="post">
 								<legend class="h2 inverted"> Zadejte kód </legend>
 								<input th:field="*{taskType}" type="hidden" name="taskType"/>
 								<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
-								<input th:field="*{solution}" type="text" name="solution" 
+								<input th:field="*{solution}" type="text" name="solution"
 									   class="golden-ratio clearfix"/>
 								<input type="submit" value="Odeslat" class="btn indent"/>
 							</form>
@@ -47,8 +47,8 @@
 					<!--/*
 					*	C-code listing
 					*/-->
-					<div class="block clearfix indent" th:if="${service.contest.cCodesAcquiredCount() gt 0}">
-						<h2 class="h2">Uznané</h2>
+					<div class="clearfix indent" th:if="${service.contest.cCodesAcquiredCount() gt 0}">
+						<h3 class="indent">Uznané</h3>
 
 						<th:block th:each="code : ${service.contest.cCodesAcquired()}">
 							<p style="text-transform: uppercase;"> [[${code.solution}]] </p>
@@ -58,9 +58,9 @@
 					<!--/*
 					*	Wrong attempts listing
 					*/-->
-					<div class="block clearfix indent" th:with="invalidCodes=${team.contestProgress.getInvalidCodes('C_CODE')}">
+					<div class="clearfix indent" th:with="invalidCodes=${team.contestProgress.getInvalidCodes('C_CODE')}">
 						<th:block th:if="${invalidCodes.size() gt 0}">
-							<h2>Chybné pokusy</h2>
+							<h3 class="indent">Chybné pokusy</h3>
 
 							<th:block th:each="code : ${invalidCodes}">
 								<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
@@ -68,14 +68,14 @@
 						</th:block>
 					</div>
 
-					<div class="block clearfix indent">
+					<div class="clearfix indent half">
 						<h2 class="h2">Pojistka</h2>
 
 						<!--/*
 						*	Insurance NOT available
 						*/-->
 						<th:block th:unless="${service.contest.isInsuranceAvailable()}">
-							<p> Možnost zakoupení pojistky se odemkne až získáte [[${appConfig.insuranceCCodeLimit}]]. C kód. </p>
+							<p> Možnost zakoupení pojistky se odemkne až získáte [[${appConfig.insuranceCCodeLimit}]]. C&nbsp;kód. </p>
 						</th:block>
 
 						<th:block th:if="${service.contest.isInsuranceAvailable()}">
@@ -83,9 +83,9 @@
 							*	Insurance already obtained
 							*/-->
 							<th:block th:if="${service.contest.checkHasInsurance()}">
-								<p> 
-									Gratulujeme! Zajistili jste si posun v celkovém pořadí o jednu příčku níže.
-									Zároveň jste obdrželi penalizaci [[${appConfig.insurancePrice}]] km.
+								<p>
+									Gratulujeme! Zajistili jste si posun v&nbsp;celkovém pořadí o&nbsp;jednu příčku níže.
+									Zároveň jste obdrželi penalizaci [[${appConfig.insurancePrice}]]&nbsp;km.
 								</p>
 							</th:block>
 
@@ -97,7 +97,7 @@
 									  th:object="${confirmationForm}"
 									  method="post"
 									  th:data-confirm-message="|Opravdu si přejete koupit pojistku? Bude vást to stát ${appConfig.insurancePrice} km.|">
-									<input type="submit" value="Koupit pojistku" />
+									<input type="submit" value="Koupit pojistku" class="hint-btn"/>
 									(Cena: [[${appConfig.insurancePrice}]] km)
 								</form>
 							</th:block>

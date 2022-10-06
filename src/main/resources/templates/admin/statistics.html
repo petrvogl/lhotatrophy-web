@@ -1,15 +1,173 @@
 <!DOCTYPE html>
-<!--
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
--->
-<html>
-	<head>
-		<title>TODO supply a title</title>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="http://www.thymeleaf.org"
+	  lang="cs">
+	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHeadAdmin">
+		<!--/* PROTOTYPE */-->
+		<title>Administrace — 24th Lhota Trophy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	</head>
-	<body>
-		<div>TODO write content</div>
+	<body class="docu-theme">
+		<!--/* Page header */-->
+		<header th:replace="public/fragments/PageHeader.html :: PageHeaderAdmin"> [ Page Header ] </header>
+		<!--/* Page navigation */-->
+		<nav th:replace="public/fragments/PageNavigation.html :: PageNavigationAdmin"> [ Navigation ] </nav>
+
+		<!--/*
+		*	Page Content
+		*/-->
+		<main class="page-content">
+
+			<h2>Statistiky</h2>
+
+			<!--/*
+			*	
+			*	
+			*	
+			*/-->
+			<h3>Průběžné pořadí týmů</h3>
+
+			<table class="disabled-borders enabled-rows-hover width-100pct">
+				<tr>
+					<th class="center">#</th>
+					<th class="center">Poj.</th>
+					<th>Tým</th>
+					<th class="center">Výsledné<br/>skóre</th>
+					<th class="center">A kódy</th>
+					<th class="center">B kódy</th>
+					<th class="center">C kódy</th>
+					<th class="center">Trasa<br/>[ km ]</th>
+					<th class="center">Časová<br/>pen.</th>
+				</tr>
+				<tr th:each="team, iterStat : ${service.contest.getTeamStandings()}"
+					th:with="
+					score=${service.contest.getTeamScore(team)},
+					disqualified=${team.isDisqualified() or score == null}"
+					th:classappend="${disqualified} ? 'inactive' : _"
+					>
+					<td class="center">[[${iterStat.count}]].</td>
+					<td class="center">[[${team.contestProgress.insuranceAgainstWinning ? 'Ano' : ''}]]</td>
+					<td>[[${team.name}]]</td>
+					<td class="right">[[${disqualified ? 'DISQ' : score}]]</td>
+					<td class="center">[[${service.contest.aCodesAcquiredCount(team)}]]</td>
+					<td class="center">[[${service.contest.bCodesAcquiredCount(team)}]]</td>
+					<td class="center">[[${service.contest.cCodesAcquiredCount(team)}]]</td>
+					<td class="right">[[${disqualified ? '--' : team.contestProgress.getMileage()}]]</td>
+					<td class="center">[[${disqualified ? '--' : service.contest.getTeamTimeExceededPenalty(team)}]]</td>
+				</tr>
+			</table>
+
+			<!--/*
+			*	
+			*	
+			*	
+			*/-->
+			<h3>A kódy</h3>
+
+			<table class="disabled-borders enabled-rows-hover width-100pct">
+				<tr>
+					<th>Kód</th>
+					<th class="center">Bez nápovědy</th>
+					<th class="center">S nápovědou</th>
+					<th class="center">S řešením</th>
+					<th class="center">Nezadán</th>
+					<th class="center">Celkem<br/>zadán</th>
+				</tr>
+				<th:block th:each="task : ${service.task.getAllActiveTasks('A_CODE')}"
+						  th:with="
+						  taskStatMap=${service.contest.getTaskStatistics(task)},
+						  solutionRevealed=${taskStatMap.get('solutionRevealed')},
+						  hintRevealed=${taskStatMap.get('hintRevealed') - solutionRevealed}
+						  ">
+					<tr>
+						<th >[[${task.code}]] &mdash; [[${task.name}]]</th>
+						<td class="center">[[${taskStatMap.get('completedWithoutHints')}]]</td>
+						<td class="center">[[${hintRevealed}]]</td>
+						<td class="center">[[${solutionRevealed}]]</td>
+						<td class="center">[[${taskStatMap.get('unsolvedTotal')}]]</td>
+						<td class="center highlight">[[${taskStatMap.get('completedTotal')}]]</td>
+					</tr>
+				</th:block>
+			</table>
+
+			<!--/*
+			*	
+			*	
+			*	
+			*/-->
+			<h3>B kódy</h3>
+
+			<table class="disabled-borders enabled-rows-hover width-100pct">
+				<tr>
+					<th>Kód</th>
+					<th class="center">Celkem zadán</th>
+					<th class="center">Nezadán</th>
+				</tr>
+				<th:block th:each="task : ${service.task.getAllActiveTasks('B_CODE')}"
+						  th:with="taskStatMap=${service.contest.getTaskStatistics(task)}">
+					<tr>
+						<th >[[${task.code}]] &mdash; [[${task.name}]]</th>
+						<td class="center">[[${taskStatMap.get('completedTotal')}]]</td>
+						<td class="center">[[${taskStatMap.get('unsolvedTotal')}]]</td>
+					</tr>
+				</th:block>
+			</table>
+
+			<!--/*
+			*	
+			*	
+			*	
+			*/-->
+			<h3>C kódy</h3>
+
+			<table class="disabled-borders enabled-rows-hover width-100pct">
+				<tr>
+					<th:block th:each="task : ${service.task.getAllActiveTasks('C_CODE')}">
+						<th class="center">[[${task.code}]]</th>
+					</th:block>
+				</tr>
+				<tr>
+					<th:block th:each="task : ${service.task.getAllActiveTasks('C_CODE')}">
+						<td class="center">[[${task.anySolution}]]</td>
+					</th:block>
+				</tr>
+				<tr>
+					<th:block th:each="task : ${service.task.getAllActiveTasks('C_CODE')}"
+							  th:with="taskStatMap=${service.contest.getTaskStatistics(task)}">
+						<td class="center">[[${taskStatMap.get('completedTotal')}]]</td>
+					</th:block>
+				</tr>
+			</table>
+
+			<!--/*
+			*	
+			*	
+			*	
+			*/-->
+			<h3>Cílové stanoviště</h3>
+
+			<table th:with="
+				   task=${service.task.getDestinationTask()},
+				   taskStatMap=${service.contest.getTaskStatistics(task)}"
+				   class="disabled-borders enabled-rows-hover width-100pct">
+				<tr>
+					<th colspan="4" class="center">Cílové stanoviště (kód zadán celkem [[${taskStatMap.get('completedTotal')}]]x)</th>
+				</tr>
+				<tr>
+					<th class="center">Bez odhalení polohy</th>
+					<th class="center">S odhalením polohy</th>
+					<th class="center">Kód nezadán</th>
+				</tr>
+				<tr>
+					<td class="center">[[${taskStatMap.get('completedWithoutHints')}]]</td>
+					<td class="center">[[${taskStatMap.get('hintRevealed')}]]</td>
+					<td class="center">[[${taskStatMap.get('unsolvedTotal')}]]</td>
+				</tr>
+			</table>
+		</main>
+
+		<!--/* Page footer */-->
+		<footer th:replace="public/fragments/PageFooter.html :: PageFooterAdmin"> [ Copyright ] </footer>
 	</body>
 </html>

@@ -4,10 +4,10 @@
 	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	  lang="cs">
 	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHead(
-		  pageTitle='Stanoviště')">		
+		  pageTitle='Stanoviště')">
 		<title>Stanoviště</title>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1"/>		
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	</head>
 	<body>
 		<!--/* Page header */-->
@@ -24,220 +24,230 @@
 			  aTask=${service.task.getTaskRelatedToLocation(location, 'A_CODE')},
 			  bTask=${service.task.getTaskRelatedToLocation(location, 'B_CODE')}
 			  ">
+			<div class="content-zone clearfix">
+				<div class="content-zone-inner">
 
 
-			<!--/*
-			*	
-			*	Exact location has NOT been discovered yet
-			*	
-			*	
-			*	
-			*/-->
-			<th:block th:unless="${locationDiscovered}">
-				<h1><th:block th:replace="public/fragments/Misc.html :: PinImage (height=20,fill='#fff9de')"/> Stanoviště [[${location.code}]]</h1>
-				<p>Poloha stanoviště zatím není známá</p>
-
-				<!--/*
-				*	If A-code exists for this location
-				*/-->
-				<th:block th:fragment="aTaskBlock"
-						  th:if="${aTask}"
-						  th:with="
-						  aTaskCompleted=${service.contest.checkTaskIsCompleted(aTask)},
-						  progressCode=${team.contestProgress.getContestCode(aTask.code)},
-						  _=${aTaskCompleted} ? null : ${submitACodeForm.setFrom(aTask)}
-						  ">
-
-					<h2>Kód [[${aTask.code}]]</h2>
 
 					<!--/*
-					*	If code has been already aquired
+					*
+					*	Exact location has NOT been discovered yet
+					*
+					*
+					*
 					*/-->
-					<th:block th:if="${aTaskCompleted}">
-						<p>Kód <strong style="text-transform: uppercase;">[[${progressCode.solution}]]</strong> je správný.</p>
+					<th:block th:unless="${locationDiscovered}">
+						<div class="clearfix indent half">
+							<h1><th:block th:replace="public/fragments/Misc.html :: PinImage (height=38,fill='#D56C1B')"/> Stanoviště [[${location.code}]]</h1>
+							<p class="p_1">Poloha stanoviště zatím není známá</p>
+							<!--/*
+							*	If A-code exists for this location
+							*/-->
+							<th:block th:fragment="aTaskBlock"
+									  th:if="${aTask}"
+									  th:with="
+									  aTaskCompleted=${service.contest.checkTaskIsCompleted(aTask)},
+									  progressCode=${team.contestProgress.getContestCode(aTask.code)},
+									  _=${aTaskCompleted} ? null : ${submitACodeForm.setFrom(aTask)}
+									  ">
+								<h2 class="indent">Kód [[${aTask.code}]]</h2>
 
-						<!--/*
-						*	Rewards for completing this task
-						*/-->
-						<th:block th:replace="this :: taskRewards(${aTask})">
-							[ A-code rewards ]
-						</th:block>
+								<!--/*
+								*	If code has been already aquired
+								*/-->
+								<th:block th:if="${aTaskCompleted}">
+									<p>Kód <strong style="text-transform: uppercase;">[[${progressCode.solution}]]</strong> je správný.</p>
+
+									<!--/*
+									*	Rewards for completing this task
+									*/-->
+									<th:block th:replace="this :: taskRewards(${aTask})">
+										[ A-code rewards ]
+									</th:block>
+								</th:block>
+								<!--/*
+								*	If code has not been aquired yet
+								*/-->
+								<th:block th:if="${!aTaskCompleted and service.contest.checkTeamIsInPlay()}">
+									<!--/*
+									*	If solution hint is available
+									*/-->
+									<th:block th:if="${aTask.hasSolutionHint() and (progressCode == null or !progressCode.hintRevealed)}">
+										<div class="block-inner">
+											<th:block th:replace="this :: hintForm(
+													  _task=${aTask},
+													  _progressCode=${progressCode},
+													  _type='hint',
+													  _label='Získat nápovědu',
+													  _message=|(Cena: ${appConfig.hintRevealedPenalty} km)|,
+													  _confirmMessage=|Opravdu chcete odhalit nápovědu? Bude vás to stát ${appConfig.hintRevealedPenalty} km.|
+													  )">
+												[ Reveal Hint Form ]
+											</th:block>
+										</div>
+									</th:block>
+									<p th:if="${progressCode?.hintRevealed}">Nápověda: [[${aTask.solutionHint}]]</p>
+									<!--/*
+									*	If solution of this task can be revealed
+									*/-->
+									<th:block th:if="${aTask.revealSolutionAllowed == true and progressCode != null and progressCode.hintRevealed and !progressCode.solutionRevealed}">
+										<th:block th:replace="this :: hintForm(
+												  _task=${aTask},
+												  _progressCode=${progressCode},
+												  _type='solution',
+												  _label='Odhalit řešení',
+												  _message=|(Cena: ${appConfig.solutionRevealedPenalty} km)|,
+												  _confirmMessage=|Opravdu chcete odhalit řešení? Bude vás to stát ${appConfig.solutionRevealedPenalty} km.|
+												  )">
+											[ Reveal Solution Form ]
+										</th:block>
+									</th:block>
+									<p th:if="${progressCode?.solutionRevealed}">Řešení: [[${aTask.anySolution}]]</p>
+
+									<div class="clearfix indent">
+										<div class="block-inner visible firewatch-8 bg-firewatch-2">
+											<form th:action="@{~/denik/submitCode}"
+												  th:object="${submitACodeForm}"
+												  method="post">
+												<legend class="h2 inverted"> Zadejte kód </legend>
+												<input th:field="*{taskType}" type="hidden" name="taskType"/>
+												<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
+												<input th:field="*{solution}" type="text" name="solution"
+													   class="golden-ratio clearfix"/>
+												<input type="submit" value="Odeslat" class="btn indent"/>
+											</form>
+										</div>
+									</div>
+								</th:block>
+
+								<!--/*
+								*	Wrong attempts listing
+								*/-->
+								<th:block th:with="invalidCodes=${team.contestProgress.getInvalidCodes(aTask.code)}">
+									<th:block th:if="${invalidCodes.size() gt 0}">
+										<h3 class="indent">Chybné pokusy</h3>
+
+										<th:block th:each="code : ${invalidCodes}">
+											<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
+										</th:block>
+									</th:block>
+								</th:block>
+
+							</th:block>
+						</div>
+
 					</th:block>
 
-					<!--/*
-					*	If code has not been aquired yet
-					*/-->
-					<th:block th:if="${!aTaskCompleted and service.contest.checkTeamIsInPlay()}">
-						<!--/*
-						*	If solution hint is available
-						*/-->
-						<th:block th:if="${aTask.hasSolutionHint() and (progressCode == null or !progressCode.hintRevealed)}">
-							<th:block th:replace="this :: hintForm(
-									  _task=${aTask},
-									  _progressCode=${progressCode},
-									  _type='hint',
-									  _label='Získat nápovědu',
-									  _message=|(Cena: ${appConfig.hintRevealedPenalty} km)|,
-									  _confirmMessage=|Opravdu chcete odhalit nápovědu? Bude vás to stát ${appConfig.hintRevealedPenalty} km.|
-									  )">
-								[ Reveal Hint Form ]
-							</th:block>
-						</th:block>
-						<p th:if="${progressCode?.hintRevealed}">Nápověda: [[${aTask.solutionHint}]]</p>
-						<!--/*
-						*	If solution of this task can be revealed
-						*/-->
-						<th:block th:if="${aTask.revealSolutionAllowed == true and progressCode != null and progressCode.hintRevealed and !progressCode.solutionRevealed}">
-							<th:block th:replace="this :: hintForm(
-									  _task=${aTask},
-									  _progressCode=${progressCode},
-									  _type='solution',
-									  _label='Odhalit řešení',
-									  _message=|(Cena: ${appConfig.solutionRevealedPenalty} km)|,
-									  _confirmMessage=|Opravdu chcete odhalit řešení? Bude vás to stát ${appConfig.solutionRevealedPenalty} km.|
-									  )">
-								[ Reveal Solution Form ]
-							</th:block>
-						</th:block>
-						<p th:if="${progressCode?.solutionRevealed}">Řešení: [[${aTask.anySolution}]]</p>
 
-						<div class="block clearfix indent half">
-							<div class="block-inner visible firewatch-8 bg-firewatch-2">
-								<form th:action="@{~/denik/submitCode}"
-									  th:object="${submitACodeForm}"
-									  method="post">
-									<legend class="h2 inverted"> Zadejte kód </legend>
-									<input th:field="*{taskType}" type="hidden" name="taskType"/>
-									<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
-									<input th:field="*{solution}" type="text" name="solution"
-										   class="golden-ratio clearfix"/>
-									<input type="submit" value="Odeslat" class="btn indent"/>
-								</form>
+					<!--/*
+					*
+					*	Exact location has been discovered already
+					*
+					*
+					*
+					*/-->
+					<th:block th:if="${locationDiscovered}">
+						<div class="clearfix indent half">
+							<div class="block-inner visible">
+								<h1><th:block th:replace="public/fragments/Misc.html :: PinImage (height=38,fill='#D56C1B')"/> [[${location.code}]]: [[${location.name}]]</h1>
+								<p class="p_1">[[${location.description}]]</p>
+
+								<!--/*
+								*	If A-code exists for this location
+								*/-->
+								<th:block th:replace="this :: aTaskBlock">
+									[ A-code block ]
+								</th:block>
+
+								<!--/*
+								*	If B-code exists for this location
+								*/-->
+								<th:block th:if="${bTask}"
+										  th:with="
+										  bTaskCompleted=${service.contest.checkTaskIsCompleted(bTask)},
+										  progressCode=${team.contestProgress.getContestCode(bTask.code)},
+										  _=${bTaskCompleted} ? null : ${submitBCodeForm.setFrom(bTask)}
+										  ">
+
+									<h2 class="indent">Kód [[${bTask.code}]]</h2>
+
+									<th:block th:if="${bTaskCompleted}">
+										<p>Kód <strong style="text-transform: uppercase;">[[${progressCode.solution}]]</strong> je správný.</p>
+
+										<!--/*
+										*	Rewards for completing this task
+										*/-->
+										<th:block th:replace="this :: taskRewards(${bTask})">
+											[ B-code rewards ]
+										</th:block>
+									</th:block>
+
+									<!--/*
+									*	If B-code has not been aquired yet
+									*/-->
+									<th:block th:if="${!bTaskCompleted and service.contest.checkTeamIsInPlay()}">
+										<div class="clearfix indent">
+											<div class="block-inner visible firewatch-8 bg-firewatch-2">
+												<form th:action="@{~/denik/submitCode}"
+													  th:object="${submitBCodeForm}"
+													  method="post">
+													<legend class="h2 inverted"> Zadejte kód </legend>
+													<input th:field="*{taskType}" type="hidden" name="taskType"/>
+													<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
+													<input th:field="*{solution}" type="text" name="solution"
+														   class="golden-ratio clearfix"/>
+													<input type="submit" value="Odeslat" class="btn indent"/>
+												</form>
+											</div>
+										</div>
+									</th:block>
+
+									<!--/*
+									*	Wrong attempts listing
+									*/-->
+									<th:block th:with="invalidCodes=${team.contestProgress.getInvalidCodes(bTask.code)}">
+										<th:block th:if="${invalidCodes.size() gt 0}">
+											<h3 class="indent">Chybné pokusy</h3>
+
+											<th:block th:each="code : ${invalidCodes}">
+												<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
+											</th:block>
+										</th:block>
+									</th:block>
+
+								</th:block>
 							</div>
 						</div>
 					</th:block>
 
-					<!--/*
-					*	Wrong attempts listing
-					*/-->
-					<th:block th:with="invalidCodes=${team.contestProgress.getInvalidCodes(aTask.code)}">
-						<th:block th:if="${invalidCodes.size() gt 0}">
-							<h3>Chybné pokusy</h3>
-
-							<th:block th:each="code : ${invalidCodes}">
-								<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
-							</th:block>
-						</th:block>
-					</th:block>
-
-				</th:block>
-
-			</th:block>
-
-
-			<!--/*
-			*	
-			*	Exact location has been discovered already
-			*	
-			*	
-			*	
-			*/-->
-			<th:block th:if="${locationDiscovered}">
-				<h1><th:block th:replace="public/fragments/Misc.html :: PinImage (height=20)"/> [[${location.code}]]: [[${location.name}]]</h1>
-				<p>[[${location.description}]]</p>
-
-				<!--/*
-				*	If A-code exists for this location
-				*/-->
-				<th:block th:replace="this :: aTaskBlock">
-					[ A-code block ]
-				</th:block>
-
-				<!--/*
-				*	If B-code exists for this location
-				*/-->
-				<th:block th:if="${bTask}"
-						  th:with="
-						  bTaskCompleted=${service.contest.checkTaskIsCompleted(bTask)},
-						  progressCode=${team.contestProgress.getContestCode(bTask.code)},
-						  _=${bTaskCompleted} ? null : ${submitBCodeForm.setFrom(bTask)}
-						  ">
-
-					<h2>Kód [[${bTask.code}]]</h2>
-
-					<th:block th:if="${bTaskCompleted}">
-						<p>Kód <strong style="text-transform: uppercase;">[[${progressCode.solution}]]</strong> je správný.</p>
-
-						<!--/*
-						*	Rewards for completing this task
-						*/-->
-						<th:block th:replace="this :: taskRewards(${bTask})">
-							[ B-code rewards ]
-						</th:block>
-					</th:block>
-
-					<!--/*
-					*	If B-code has not been aquired yet
-					*/-->
-					<th:block th:if="${!bTaskCompleted and service.contest.checkTeamIsInPlay()}">
-						<div class="block clearfix indent half">
-							<div class="block-inner visible firewatch-8 bg-firewatch-2">
-								<form th:action="@{~/denik/submitCode}"
-									  th:object="${submitBCodeForm}"
-									  method="post">
-									<legend class="h2 inverted"> Zadejte kód </legend>
-									<input th:field="*{taskType}" type="hidden" name="taskType"/>
-									<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
-									<input th:field="*{solution}" type="text" name="solution"
-										   class="golden-ratio clearfix"/>
-									<input type="submit" value="Odeslat" class="btn indent"/>
-								</form>
-							</div>
-						</div>
-					</th:block>
-
-					<!--/*
-					*	Wrong attempts listing
-					*/-->
-					<th:block th:with="invalidCodes=${team.contestProgress.getInvalidCodes(bTask.code)}">
-						<th:block th:if="${invalidCodes.size() gt 0}">
-							<h3>Chybné pokusy</h3>
-
-							<th:block th:each="code : ${invalidCodes}">
-								<p> Kód <strong>[[${code}]]</strong> je nesprávný. </p>
-							</th:block>
-						</th:block>
-					</th:block>
-
-				</th:block>
-			</th:block>
-
-			<script type="text/javascript">
-				/* <![CDATA[ */
-				const forms = document.querySelectorAll("form");
-				forms.forEach(form => {
-					const confirmMessage = form.getAttribute("data-confirm-message");
-					if (LT.isNotEmpty(confirmMessage)) {
-						form.onsubmit = (event) => {
-							const confirmed = window.confirm(confirmMessage);
-							if (!confirmed) {
-								event.preventDefault();
+					<script type="text/javascript">
+						/* <![CDATA[ */
+						const forms = document.querySelectorAll("form");
+						forms.forEach(form => {
+							const confirmMessage = form.getAttribute("data-confirm-message");
+							if (LT.isNotEmpty(confirmMessage)) {
+								form.onsubmit = (event) => {
+									const confirmed = window.confirm(confirmMessage);
+									if (!confirmed) {
+										event.preventDefault();
+									}
+									return confirmed;
+								};
 							}
-							return confirmed;
-						};
-					}
-				});
-				/* ]]> */
-			</script>
+						});
+						/* ]]> */
+					</script>
+				</div>
+			</div>
 		</main>
 
 
 		<!--/*
-		*	
+		*
 		*	Local fragment
-		*	
-		*	
-		*	
+		*
+		*
+		*
 		*/-->
 		<th:block th:fragment="hintForm(_task, _progressCode, _type, _label, _message, _confirmMessage)"
 				  th:if="${_task}">
@@ -250,22 +260,22 @@
 					  th:data-confirm-message="${_confirmMessage} ?: _">
 					<input th:field="*{taskCode}" type="hidden" name="taskCode"/>
 					<input th:field="*{type}" type="hidden" name="type"/>
-					<input type="submit" th:value="${_label}" />
+					<input type="submit" th:value="${_label}" class="hint-btn"/>
 					[[${_message}]]
 				</form>
 			</th:block>
 		</th:block>
 
 		<!--/*
-		*	
+		*
 		*	Local fragment
-		*	
-		*	
-		*	
+		*
+		*
+		*
 		*/-->
 		<th:block th:fragment="taskRewards(_task)"
 				  th:if="${_task}">
-			<h4>Odměny</h4>
+			<h3 class="indent">Odměny</h3>
 
 			<p th:if="${_task.rewardCodes.isEmpty()}"> Za tento kód nejsou žádné odměny. </p>
 

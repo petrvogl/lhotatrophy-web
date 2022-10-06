@@ -245,11 +245,11 @@ select {
 	font-size: 16px;
 }
 
-.block ul {
+.block ul, .block-inner ul {
 	padding-left: 40px;
 }
 
-.block li {
+.block li, .block-inner li {
 	line-height: 1.375;
 }
 
@@ -580,12 +580,21 @@ label, .list-label {
 .table tr:first-child {
 	background-color: transparent;
 }
+.table .left {
+	text-align: left;
+}
 
 /* FILE INPUT */
 
 #file {
 	border: none;
 	padding: 0;
+}
+
+/* KM INPUT */
+
+#mileage {
+	width: calc(100% - 50px);
 }
 
 
@@ -656,14 +665,26 @@ label, .list-label {
 /* NAV HOME */
 .home a {
 	display: block;
-	margin: 10px auto;
+	margin: 10px auto 20px;
     max-width: 140px;
 	padding: 10px;
 }
 .home a svg {
     display: block;
+	margin: auto;
 }
 
+fieldset[disabled="disabled"] {
+	opacity: 0.4;
+    pointer-events: none;
+}
+
+/* HINT BUTTON */
+.hint-btn {
+	font-size: 22px;
+    height: 40px;
+    max-width: 210px;
+}
 
 
 /* BREAKPOINTS */

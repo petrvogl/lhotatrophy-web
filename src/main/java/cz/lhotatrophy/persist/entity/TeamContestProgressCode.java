@@ -59,6 +59,15 @@ public class TeamContestProgressCode implements Serializable {
 	}
 
 	/**
+	 * Indicates whether any of available hints were not used.
+	 *
+	 * @return {@code true} if hints were not used
+	 */
+	public boolean noHintUsed() {
+		return !(hintRevealed || procedureRevealed || solutionRevealed);
+	}
+
+	/**
 	 * Checks whether the hint, procedure or solution has been revealed. Exactly
 	 * one of the boolean arguments must be set to {@code true}.
 	 *

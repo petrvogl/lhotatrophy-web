@@ -1,13 +1,13 @@
 package cz.lhotatrophy.core.service;
 
 import cz.lhotatrophy.persist.dao.LocationDao;
-import cz.lhotatrophy.persist.entity.EntityLongId;
 import cz.lhotatrophy.persist.entity.Location;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -70,6 +70,11 @@ public class LocationServiceImpl extends AbstractService implements LocationServ
 	@Override
 	public List<Location> getLocationListing(@NonNull final LocationListingQuerySpi query) {
 		return cacheService.getEntityListing(query, getDefaultIdsLoader());
+	}
+
+	@Override
+	public Stream<Location> getLocationListingStream(@NonNull final LocationListingQuerySpi query) {
+		return cacheService.getEntityListingStream(query, getDefaultIdsLoader());
 	}
 
 	@Override

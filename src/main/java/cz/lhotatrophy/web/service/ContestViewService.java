@@ -11,6 +11,7 @@ import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.TeamContestProgressCode;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -229,5 +230,12 @@ public final class ContestViewService {
 	 */
 	public List<Team> getTeamStandings() {
 		return contestService.getTeamStandings();
+	}
+
+	/**
+	 * {@code ${service.contest.getTaskStatistics(task)}}
+	 */
+	public Map<String, Integer> getTaskStatistics(final Task task) {
+		return contestService.getTaskStatistics(task);
 	}
 }
