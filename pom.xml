@@ -6,10 +6,13 @@
 	
 	<groupId>cz.lhotatrophy</groupId>
 	<artifactId>lhotatrophy-web</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>2022.0</version>
 	
 	<name>LhotaTrophy - web</name>
-	<description>Support site for LhotaTrophy - the outdoor game with puzzles and ciphers</description>
+	<description>
+		A website for the management of competitors, the progress of the competition and the ranking of the LhotaTrophy teams.
+		LhotaTrophy is a one-day strongly competitive team game (also car race), based on solving ciphers and puzzles.
+	</description>
 	<inceptionYear>2021</inceptionYear>
 
 	<parent>
