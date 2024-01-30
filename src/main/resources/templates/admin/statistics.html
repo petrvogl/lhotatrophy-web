@@ -77,14 +77,15 @@
 				<th:block th:each="task : ${service.task.getAllActiveTasks('A_CODE')}"
 						  th:with="
 						  taskStatMap=${service.contest.getTaskStatistics(task)},
-						  solutionRevealed=${taskStatMap.get('solutionRevealed')},
-						  hintRevealed=${taskStatMap.get('hintRevealed') - solutionRevealed}
+						  completedWithoutHints=${taskStatMap.get('completedWithoutHints')},
+						  completedWithHint=${taskStatMap.get('completedWithHint')},
+						  completedWithSolution=${taskStatMap.get('completedWithSolution')}
 						  ">
 					<tr>
 						<th >[[${task.code}]] &mdash; [[${task.name}]]</th>
-						<td class="center">[[${taskStatMap.get('completedWithoutHints')}]]</td>
-						<td class="center">[[${hintRevealed}]]</td>
-						<td class="center">[[${solutionRevealed}]]</td>
+						<td class="center">[[${completedWithoutHints}]]</td>
+						<td class="center">[[${completedWithHint}]]</td>
+						<td class="center">[[${completedWithSolution}]]</td>
 						<td class="center">[[${taskStatMap.get('unsolvedTotal')}]]</td>
 						<td class="center highlight">[[${taskStatMap.get('completedTotal')}]]</td>
 					</tr>
@@ -101,15 +102,26 @@
 			<table class="disabled-borders enabled-rows-hover width-100pct">
 				<tr>
 					<th>Kód</th>
-					<th class="center">Celkem zadán</th>
+					<th class="center">Bez nápovědy</th>
+					<th class="center">S nápovědou</th>
+					<th class="center">S řešením</th>
 					<th class="center">Nezadán</th>
+					<th class="center">Celkem<br/>zadán</th>
 				</tr>
 				<th:block th:each="task : ${service.task.getAllActiveTasks('B_CODE')}"
-						  th:with="taskStatMap=${service.contest.getTaskStatistics(task)}">
+						  th:with="
+						  taskStatMap=${service.contest.getTaskStatistics(task)},
+						  completedWithoutHints=${taskStatMap.get('completedWithoutHints')},
+						  completedWithHint=${taskStatMap.get('completedWithHint')},
+						  completedWithSolution=${taskStatMap.get('completedWithSolution')}
+						  ">
 					<tr>
 						<th >[[${task.code}]] &mdash; [[${task.name}]]</th>
-						<td class="center">[[${taskStatMap.get('completedTotal')}]]</td>
+						<td class="center">[[${completedWithoutHints}]]</td>
+						<td class="center">[[${completedWithHint}]]</td>
+						<td class="center">[[${completedWithSolution}]]</td>
 						<td class="center">[[${taskStatMap.get('unsolvedTotal')}]]</td>
+						<td class="center highlight">[[${taskStatMap.get('completedTotal')}]]</td>
 					</tr>
 				</th:block>
 			</table>
@@ -145,26 +157,28 @@
 			*	
 			*	
 			*/-->
-			<h3>Cílové stanoviště</h3>
-
-			<table th:with="
-				   task=${service.task.getDestinationTask()},
-				   taskStatMap=${service.contest.getTaskStatistics(task)}"
-				   class="disabled-borders enabled-rows-hover width-100pct">
-				<tr>
-					<th colspan="4" class="center">Cílové stanoviště (kód zadán celkem [[${taskStatMap.get('completedTotal')}]]x)</th>
-				</tr>
-				<tr>
-					<th class="center">Bez odhalení polohy</th>
-					<th class="center">S odhalením polohy</th>
-					<th class="center">Kód nezadán</th>
-				</tr>
-				<tr>
-					<td class="center">[[${taskStatMap.get('completedWithoutHints')}]]</td>
-					<td class="center">[[${taskStatMap.get('hintRevealed')}]]</td>
-					<td class="center">[[${taskStatMap.get('unsolvedTotal')}]]</td>
-				</tr>
-			</table>
+			<th:block th:with="task=${service.task.getDestinationTask()}">
+				<th:block
+					th:if="${task}"
+					th:with="taskStatMap=${service.contest.getTaskStatistics(task)}">
+					<h3>Cílové stanoviště</h3>
+					<table class="disabled-borders enabled-rows-hover width-100pct">
+						<tr>
+							<th colspan="4" class="center">Cílové stanoviště (kód zadán celkem [[${taskStatMap.get('completedTotal')}]]x)</th>
+						</tr>
+						<tr>
+							<th class="center">Bez odhalení polohy</th>
+							<th class="center">S odhalením polohy</th>
+							<th class="center">Kód nezadán</th>
+						</tr>
+						<tr>
+							<td class="center">[[${taskStatMap.get('completedWithoutHints')}]]</td>
+							<td class="center">[[${taskStatMap.get('completedWithHint')}]]</td>
+							<td class="center">[[${taskStatMap.get('unsolvedTotal')}]]</td>
+						</tr>
+					</table>
+				</th:block>
+			</th:block>
 		</main>
 
 		<!--/* Page footer */-->

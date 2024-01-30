@@ -155,6 +155,9 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 					}
 					break;
 				case "B":
+					totalMileage += code.isHintRevealed() ? appConfig.getHintRevealedPenalty() : 0;
+					totalMileage += code.isProcedureRevealed() ? appConfig.getProcedureRevealedPenalty() : 0;
+					totalMileage += code.isSolutionRevealed() ? appConfig.getSolutionRevealedPenalty() : 0;
 					if (code.accepted()) {
 						BCodesAcquiredCount++;
 					}
@@ -746,6 +749,9 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 			final MutableInt completedTotal = new MutableInt(0);
 			final MutableInt unsolvedTotal = new MutableInt(0);
 			final MutableInt completedWithoutHints = new MutableInt(0);
+			final MutableInt completedWithHint = new MutableInt(0);
+			final MutableInt completedWithProcedure = new MutableInt(0);
+			final MutableInt completedWithSolution = new MutableInt(0);
 			final MutableInt hintRevealedCount = new MutableInt(0);
 			final MutableInt procedureRevealedCount = new MutableInt(0);
 			final MutableInt solutionRevealedCount = new MutableInt(0);
@@ -756,13 +762,16 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 						if (DESTINATION_TASK_CODE.equals(task.getCode())) {
 							if (progress.getDestinationSolution() != null) {
 								completedTotal.increment();
-								if (!progress.isDestinationRevealed()) {
-									completedWithoutHints.increment();
+								if (progress.isDestinationRevealed()) {
+									completedWithHint.increment();
 								} else {
-									hintRevealedCount.increment();
+									completedWithoutHints.increment();
 								}
 							} else {
 								unsolvedTotal.increment();
+							}
+							if (progress.isDestinationRevealed()) {
+								hintRevealedCount.increment();
 							}
 						} else {
 							final TeamContestProgressCode progressCode = progress.getContestCode(task.getCode());
@@ -771,6 +780,12 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 									completedTotal.increment();
 									if (progressCode.noHintUsed()) {
 										completedWithoutHints.increment();
+									} else if (progressCode.isSolutionRevealed()) {
+										completedWithSolution.increment();
+									} else if (progressCode.isProcedureRevealed()) {
+										completedWithProcedure.increment();
+									} else if (progressCode.isHintRevealed()) {
+										completedWithHint.increment();
 									}
 								} else {
 									unsolvedTotal.increment();
@@ -793,6 +808,9 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 			statMap.put("completedTotal", completedTotal.getValue());
 			statMap.put("unsolvedTotal", unsolvedTotal.getValue());
 			statMap.put("completedWithoutHints", completedWithoutHints.getValue());
+			statMap.put("completedWithHint", completedWithHint.getValue());
+			statMap.put("completedWithProcedure", completedWithProcedure.getValue());
+			statMap.put("completedWithSolution", completedWithSolution.getValue());
 			statMap.put("hintRevealed", hintRevealedCount.getValue());
 			statMap.put("procedureRevealed", procedureRevealedCount.getValue());
 			statMap.put("solutionRevealed", solutionRevealedCount.getValue());
