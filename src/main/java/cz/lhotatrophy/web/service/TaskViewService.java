@@ -62,7 +62,7 @@ public final class TaskViewService {
 	 * {@code ${service.task.getDestinationTask()}}
 	 */
 	public Task getDestinationTask() {
-		return taskService.getTaskByCodeFromCache("D0").get();
+		return taskService.getTaskByCodeFromCache("D0").orElse(null);
 	}
 
 	/**
