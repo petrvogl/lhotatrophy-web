@@ -69,9 +69,11 @@ public class MainController extends AbstractController {
 	 */
 	@GetMapping("/register")
 	public String getRegistration(
-			final TeamRegistrationForm teamRegistrationForm
+			final TeamRegistrationForm teamRegistrationForm,
+			final Model model
 	) {
 		log.info("TEAM REGISTRATION (GET)");
+		initModel(model);
 		if (!isLoggedInUserSuperadmin()) {
 			// not allowed now
 			return "redirect:/";
@@ -127,6 +129,7 @@ public class MainController extends AbstractController {
 			//					log.info("FieldError: {} [ {} \"{}\" ]", error.getField(), error.getCode(), error.getDefaultMessage());
 			//				});
 			//	}
+			initModel(model);
 			return "public/register";
 		}
 		// save new team
@@ -152,6 +155,7 @@ public class MainController extends AbstractController {
 						"GlobalError",
 						"Něco se pokazilo, zkus se registrovat znovu.");
 			}
+			initModel(model);
 			return "public/register";
 		}
 		// autologin and redirect
@@ -167,9 +171,11 @@ public class MainController extends AbstractController {
 	public String passwordRecovery(
 			@PathVariable final Long userId,
 			@PathVariable final String token,
-			final UserPasswordRecoveryForm userPasswordRecoveryForm
+			final UserPasswordRecoveryForm userPasswordRecoveryForm,
+			final Model model
 	) {
 		log.info("PASSWORD RECOVERY (GET)");
+		initModel(model);
 		// user must exist
 		final User user = userService.getUserByIdFromCache(userId).get();
 		// token must be valid
@@ -191,7 +197,8 @@ public class MainController extends AbstractController {
 	@PostMapping("/zmena-hesla")
 	public String postPasswordRecovery(
 			@Valid final UserPasswordRecoveryForm userPasswordRecoveryForm,
-			final BindingResult bindingResult
+			final BindingResult bindingResult,
+			final Model model
 	) {
 		log.info("PASSWORD RECOVERY (POST)");
 		final Long userId = userPasswordRecoveryForm.getId();
@@ -210,6 +217,7 @@ public class MainController extends AbstractController {
 					"Odkaz pro změnu hesla už není platný.");
 		}
 		if (bindingResult.hasErrors()) {
+			initModel(model);
 			return "public/password-recovery";
 		}
 		// set new password
