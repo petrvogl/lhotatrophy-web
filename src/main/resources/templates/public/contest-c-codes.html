@@ -31,7 +31,7 @@
 							<!--/*
 							*	C-code input
 							*/-->
-							<form th:action="@{~/denik/submitCode}"
+							<form th:action="@{~/vykaz/submitCode}"
 								  th:object="${submitCodeForm}"
 								  method="post">
 								<legend class="h2 inverted"> Zadejte kód </legend>
@@ -75,7 +75,8 @@
 						*	Insurance NOT available
 						*/-->
 						<th:block th:unless="${service.contest.isInsuranceAvailable()}">
-							<p> Možnost zakoupení pojistky se odemkne až získáte [[${appConfig.insuranceCCodeLimit}]]. C&nbsp;kód. </p>
+							<!--<p> Možnost zakoupení pojistky se odemkne až získáte [[${appConfig.insuranceCCodeLimit}]]. C&nbsp;kód. </p>-->
+							<p> Možnost výměny místa ve frontě se otevírá až po získání [[${appConfig.insuranceCCodeLimit}]].&nbsp;C&nbsp;kódu. </p>
 						</th:block>
 
 						<th:block th:if="${service.contest.isInsuranceAvailable()}">
@@ -83,9 +84,13 @@
 							*	Insurance already obtained
 							*/-->
 							<th:block th:if="${service.contest.checkHasInsurance()}">
-								<p>
+<!--								<p>
 									Gratulujeme! Zajistili jste si posun v&nbsp;celkovém pořadí o&nbsp;jednu příčku níže.
 									Zároveň jste obdrželi penalizaci [[${appConfig.insurancePrice}]]&nbsp;km.
+								</p>-->
+								<p>
+									Třeseme! Ze solidarity jste ze své pozice v&nbsp;celkovém pořadí sestoupili o&nbsp;příčku níž.
+									Toto gesto je po zásluze potrestáno penalizací [[${appConfig.insurancePrice}]]&nbsp;km.
 								</p>
 							</th:block>
 
@@ -93,7 +98,7 @@
 							*	Insurance to buy
 							*/-->
 							<th:block th:if="${!service.contest.checkHasInsurance() and service.contest.checkTeamIsInPlay()}">
-								<form th:action="@{~/denik/buyInsurance}"
+								<form th:action="@{~/vykaz/buyInsurance}"
 									  th:object="${confirmationForm}"
 									  method="post"
 									  th:data-confirm-message="|Opravdu si přejete koupit pojistku? Bude vás to stát ${appConfig.insurancePrice} km.|">

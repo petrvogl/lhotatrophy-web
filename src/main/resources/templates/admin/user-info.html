@@ -173,7 +173,7 @@
 				Pro případnou opakovanou změnu hesla bude nutné vygenerovat odkaz nový.
 			</p>
 			<pre id="passwdRecoveryLink" th:text="${passwdRecoveryToken}
-				 ? ${'https://24.lhotatrophy.net/zmena-hesla/' + user?.id + '/' + passwdRecoveryToken}
+				 ? ${'https://25.lhotatrophy.net/zmena-hesla/' + user?.id + '/' + passwdRecoveryToken}
 				 : _">—odkaz—</pre>
 
 			<script type="text/javascript" th:inline="javascript">
@@ -188,7 +188,7 @@
 						const data = xhr.responseJSON;
 						if (textStatus === "success" && data.success === true) {
 							const passwdRecoveryLink = document.getElementById("passwdRecoveryLink");
-							passwdRecoveryLink.innerText = 'https://24.lhotatrophy.net/zmena-hesla/' + userId + '/' + data.token;
+							passwdRecoveryLink.innerText = 'https://25.lhotatrophy.net/zmena-hesla/' + userId + '/' + data.token;
 						} else {
 							window.alert("Došlo k chbě při generování odkazu.");
 							passwdRecoveryLink.innerText = '—odkaz—';

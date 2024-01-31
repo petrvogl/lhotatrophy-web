@@ -28,11 +28,12 @@
 
 					<div class="block-inner">
 						<h1 class="h1">Cílové stanoviště</h1>
-						<p class="p_1" th:if="${service.contest.checkDestinationRevealed()}">[[${location.description}]]</p>
+						<p class="p_1" th:if="${service.contest.checkDestinationRevealed()}">[(${location.description})]</p>
 
 						<!--/*
 						*	Clues listing
-						*/-->
+						*	
+						*   TODO: Pokud hra neobsahuje indicie, tak tento blok (a souvisejici) schovat
 						<h2 class="indent">Indicie k poloze cíle</h2>
 						<th:block th:unless="${hasClues}">
 							<p>Zatím jste žádnou indicii nezískali.</p>
@@ -42,6 +43,7 @@
 								<li th:each="clue : ${clues}"> [[${clue.description}]] </li>
 							</ul>
 						</th:block>
+						*/-->
 
 						<!--/*
 						*
@@ -51,9 +53,14 @@
 						*
 						*/-->
 						<th:block th:if="${service.contest.checkFinishImageUploaded()}">
-							<p class="p_1 indent">
+							<!--	<p class="p_1 indent">
 								Gratulujeme! Zadali jste cílový kód, nahráli stavu tachometru
 								a&nbsp;hru máte úspěšně za sebou.
+							</p>-->
+							<p class="p_1 indent">
+								Třeseme jako blázen! Splnili jste, co se dalo, a&nbsp;tímto pro vás hra končí!
+								Slyšíte, jak v&nbsp;dáli cinkají zvony na vaši počest? Nebo, že by to nebyly zvony?
+								Ať je to, jak to je, teď se každopádně vraťte na Start!
 							</p>
 						</th:block>
 
@@ -71,7 +78,7 @@
 							*/-->
 							<th:block th:if="${!service.contest.checkDestinationRevealed() and service.contest.checkTeamIsInPlay()}">
 								<div class="block-inner">
-									<form th:action="@{~/denik/revealDestination}"
+									<form th:action="@{~/vykaz/revealDestination}"
 										  th:object="${confirmationForm}"
 										  method="post"
 										  th:data-confirm-message="|Opravdu si přejete odhalit polohu cílového stanoviště? Bude vás to stát ${appConfig.destinationRevealedPenalty} km.|"
@@ -107,7 +114,7 @@
 							<div class="golden-ratio indent">
 								<div class="block-inner visible firewatch-8 bg-firewatch-2">
 
-									<h2 class="h2">1. krok</h2>
+									<h2 class="h2 inverted">1. krok</h2>
 									<p>
 										Zadejte cílový kód a&nbsp;stav tachometru na cílovém stanovišti. Zadáním těchto údajů pro vás hra skončí.
 										Zastaví se časomíra a&nbsp;nebude již možné zadávat žádné další soutěžní kódy.
@@ -116,7 +123,7 @@
 									<!--/*
 									*	Destination code input
 									*/-->
-									<form th:action="@{~/denik/submitMileage}"
+									<form th:action="@{~/vykaz/submitMileage}"
 										  th:object="${submitMileageForm}"
 										  method="post">
 										<fieldset th:disabled="${!service.contest.checkTeamIsInPlay()}"
@@ -162,13 +169,13 @@
 							*/-->
 							<div class="golden-ratio indent">
 								<div class="block-inner visible firewatch-8 bg-firewatch-2">
-									<h2 class="h2">2. krok</h2>
+									<h2 class="h2 inverted">2. krok</h2>
 									<p>Nahrajte fotografii tachometru vytvořenou podle návodu, který se dozvíte na cílovém stanovišti.</p>
 
 									<!--/*
 									*	Upload photo form
 									*/-->
-									<form th:action="@{~/denik/submitDestinationPhoto}"
+									<form th:action="@{~/vykaz/submitDestinationPhoto}"
 										  th:object="${fileUploadForm}"
 										  method="post"
 										  enctype="multipart/form-data">

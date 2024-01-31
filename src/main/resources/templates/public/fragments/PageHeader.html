@@ -5,7 +5,7 @@
 	  lang="cs">
 	<head>
 		<!--/* PROTOTYPE */-->
-		<title>24th Lhota Trophy</title>
+		<title>25. Lhota Trophy</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	</head>
@@ -41,8 +41,8 @@
 						<li><a href="/">Úvod a registrace</a></li>
 						<li><a href="/prihlasene-tymy">Přihlášené týmy</a></li>
 						<li><a href="https://www.facebook.com/groups/lhotatrophy">Facebook</a></li>
-						<li><a href="/muj-tym">Můj tým</a></li>
-						<li th:if="${now.isAfter(appConfig.gameOpenInstant)}"><a href="/denik">DENIK</a></li>
+						<!--<li><a href="/muj-tym">Můj tým</a></li>-->
+						<li th:if="${now.isAfter(appConfig.gameOpenInstant)}"><a href="/vykaz">Výkaz</a></li>
 						<li th:if="${now.isAfter(appConfig.gameResultsInstant)}"><a href="/vysledky">Výsledky</a></li>
 					</ul>
 					<form th:if="${user}"

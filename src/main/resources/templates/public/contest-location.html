@@ -38,7 +38,7 @@
 					*/-->
 					<th:block th:unless="${locationDiscovered}">
 						<div class="clearfix indent half">
-							<h1><th:block th:replace="public/fragments/Misc.html :: PinImage (height=38,fill='#D56C1B')"/> Stanoviště [[${location.code}]]</h1>
+							<h1><th:block th:replace="public/fragments/Misc.html :: PinImage (height=38,fill='#ee7d3b')"/> Stanoviště [[${location.code}]]</h1>
 							<p class="p_1">Poloha stanoviště zatím není známá</p>
 							<!--/*
 							*	If A-code exists for this location
@@ -53,7 +53,7 @@
 								<h2 class="indent">Kód [[${aTask.code}]]</h2>
 
 								<!--/*
-								*	If code has been already aquired
+								*	If code has been already acquired
 								*/-->
 								<th:block th:if="${aTaskCompleted}">
 									<p>Kód <strong style="text-transform: uppercase;">[[${progressCode.solution}]]</strong> je správný.</p>
@@ -66,7 +66,7 @@
 									</th:block>
 								</th:block>
 								<!--/*
-								*	If code has not been aquired yet
+								*	If code has not been acquired yet
 								*/-->
 								<th:block th:if="${!aTaskCompleted and service.contest.checkTeamIsInPlay()}">
 									<!--/*
@@ -106,7 +106,7 @@
 
 									<div class="clearfix indent">
 										<div class="block-inner visible firewatch-8 bg-firewatch-2">
-											<form th:action="@{~/denik/submitCode}"
+											<form th:action="@{~/vykaz/submitCode}"
 												  th:object="${submitACodeForm}"
 												  method="post">
 												<legend class="h2 inverted"> Zadejte kód </legend>
@@ -149,7 +149,7 @@
 					<th:block th:if="${locationDiscovered}">
 						<div class="clearfix indent half">
 							<div class="block-inner visible">
-								<h1><th:block th:replace="public/fragments/Misc.html :: PinImage (height=38,fill='#D56C1B')"/> [[${location.code}]]: [[${location.name}]]</h1>
+								<h1><th:block th:replace="public/fragments/Misc.html :: PinImage (height=38,fill='#ee7d3b')"/> [[${location.code}]]: [[${location.name}]]</h1>
 								<p class="p_1">[[${location.description}]]</p>
 
 								<!--/*
@@ -183,12 +183,47 @@
 									</th:block>
 
 									<!--/*
-									*	If B-code has not been aquired yet
+									*	If B-code has not been acquired yet
 									*/-->
 									<th:block th:if="${!bTaskCompleted and service.contest.checkTeamIsInPlay()}">
+										<!--/*
+										*	If solution hint is available
+										*/-->
+										<th:block th:if="${bTask.hasSolutionHint() and (progressCode == null or !progressCode.hintRevealed)}">
+											<div class="block-inner">
+												<th:block th:replace="this :: hintForm(
+														  _task=${bTask},
+														  _progressCode=${progressCode},
+														  _type='hint',
+														  _label='Získat nápovědu',
+														  _message=|(Cena: ${appConfig.hintRevealedPenalty} km)|,
+														  _confirmMessage=|Opravdu chcete odhalit nápovědu? Bude vás to stát ${appConfig.hintRevealedPenalty} km.|
+														  )">
+													[ Reveal Hint Form ]
+												</th:block>
+											</div>
+										</th:block>
+										<p th:if="${progressCode?.hintRevealed}">Nápověda: [[${bTask.solutionHint}]]</p>
+										<!--/*
+										*	If solution of this task can be revealed
+										*/-->
+										<th:block th:if="${bTask.revealSolutionAllowed == true and progressCode != null and progressCode.hintRevealed and !progressCode.solutionRevealed}">
+											<th:block th:replace="this :: hintForm(
+													  _task=${bTask},
+													  _progressCode=${progressCode},
+													  _type='solution',
+													  _label='Odhalit řešení',
+													  _message=|(Cena: ${appConfig.solutionRevealedPenalty} km)|,
+													  _confirmMessage=|Opravdu chcete odhalit řešení? Bude vás to stát ${appConfig.solutionRevealedPenalty} km.|
+													  )">
+												[ Reveal Solution Form ]
+											</th:block>
+										</th:block>
+										<p th:if="${progressCode?.solutionRevealed}">Řešení: [[${bTask.anySolution}]]</p>
+
 										<div class="clearfix indent">
 											<div class="block-inner visible firewatch-8 bg-firewatch-2">
-												<form th:action="@{~/denik/submitCode}"
+												<form th:action="@{~/vykaz/submitCode}"
 													  th:object="${submitBCodeForm}"
 													  method="post">
 													<legend class="h2 inverted"> Zadejte kód </legend>
@@ -254,7 +289,7 @@
 			<th:block th:with="
 					  _=${hintRevealForm.setTaskCode(_task.code)},
 					  _=${hintRevealForm.setType(_type)}">
-				<form th:action="@{~/denik/revealHint}"
+				<form th:action="@{~/vykaz/revealHint}"
 					  th:object="${hintRevealForm}"
 					  method="post"
 					  th:data-confirm-message="${_confirmMessage} ?: _">
@@ -285,11 +320,11 @@
 					<th:block th:switch="${entityClass}">
 						<th:block th:case="'Location'">
 							Získali jste polohu
-							<a th:href="@{~/denik/stanoviste-__${reward.code}__}">stanovište [[${reward.code}]]</a>
+							<a th:href="@{~/vykaz/stanoviste-__${reward.code}__}">stanovište [[${reward.code}]]</a>
 						</th:block>
 						<th:block th:case="'Clue'">
 							Získali jste indicii k nalezení
-							<a href="/denik/cil">cílového stanovište</a>
+							<a href="/vykaz/cil">cílového stanovište</a>
 						</th:block>
 					</th:block>
 				</li>
