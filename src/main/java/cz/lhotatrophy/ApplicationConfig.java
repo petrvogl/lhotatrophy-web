@@ -62,6 +62,13 @@ public class ApplicationConfig {
 	@Value("${contest.mileage.idealRouteLength:170}")
 	private transient Integer idealRouteLength;
 	/**
+	 * The exact timestamp of publication of the start location.
+	 */
+	@Nonnull
+	@Value("${contest.timeLimit.startLocationPublished:2022-10-01 00:00}")
+	private transient String startLocationPublicString;
+	private transient Instant startLocationPublicInstant;
+	/**
 	 * The exact timestamp of opening the game for starting mileage inputs.
 	 */
 	@Nonnull
@@ -87,7 +94,7 @@ public class ApplicationConfig {
 	 */
 	@Nonnull
 	@Value("${contest.timeLimit.gameResults:2022-10-09 00:00}")
-	private transient String gameResultsTimeString;
+	private transient String gameResultsString;
 	private transient Instant gameResultsInstant;
 	/**
 	 * Penalty (given in kilometers) for every minute that exceeds the limit if
@@ -168,9 +175,11 @@ public class ApplicationConfig {
 				+ "General:\n"
 				+ "  registrationsOpen\t{}\n"
 				+ "  registrationsClosed\t{}\n"
+				+ "  startLocationPublic\t{}\n"
 				+ "  gameOpen\t\t{}\n"
 				+ "  gameStart\t\t{}\n"
 				+ "  gameEnd\t\t{}\n"
+				+ "  gameResults\t\t{}\n"
 				+ "  penaltyPerMinute\t{} km\n"
 				+ "  maxOverLimitSeconds\t{} sec\n"
 				+ "  idealRouteLength\t{} km\n"
@@ -187,9 +196,11 @@ public class ApplicationConfig {
 				+ "  destinationRevealedPenalty\t{} km\n",
 				teamRegistrationOpenString,
 				teamRegistrationClosedString,
+				startLocationPublicString,
 				gameOpenTimeString,
 				gameStartTimeString,
 				gameEndTimeString,
+				gameResultsString,
 				penaltyPerMinute,
 				maxOverLimitSeconds,
 				idealRouteLength,
@@ -237,6 +248,23 @@ public class ApplicationConfig {
 			}
 		}
 		return teamRegistrationClosedInstant;
+	}
+
+	/**
+	 * Return the exact instant of the start location publication.
+	 */
+	@Nonnull
+	@SuppressWarnings("DoubleCheckedLocking")
+	public Instant getStartLocationPublicInstant() {
+		if (startLocationPublicInstant == null) {
+			synchronized (this) {
+				if (startLocationPublicInstant == null) {
+					final LocalDateTime dateTime = DateTimeUtils.parse(startLocationPublicString, DateTimeUtils.YYYY_MM_DD__HH_MM);
+					startLocationPublicInstant = DateTimeUtils.toInstant(dateTime);
+				}
+			}
+		}
+		return startLocationPublicInstant;
 	}
 
 	/**
@@ -299,7 +327,7 @@ public class ApplicationConfig {
 		if (gameResultsInstant == null) {
 			synchronized (this) {
 				if (gameResultsInstant == null) {
-					final LocalDateTime dateTime = DateTimeUtils.parse(gameResultsTimeString, DateTimeUtils.YYYY_MM_DD__HH_MM);
+					final LocalDateTime dateTime = DateTimeUtils.parse(gameResultsString, DateTimeUtils.YYYY_MM_DD__HH_MM);
 					gameResultsInstant = DateTimeUtils.toInstant(dateTime);
 				}
 			}
