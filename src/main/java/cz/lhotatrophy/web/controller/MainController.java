@@ -92,10 +92,11 @@ public class MainController extends AbstractController {
 			final Model model
 	) {
 		log.info("TEAM REGISTRATION (POST)");
-		if (!isLoggedInUserSuperadmin()) {
-			// not allowed now
-			return "redirect:/";
-		}
+		//	TODO: ridit z konfigurace
+		//		if (!isLoggedInUserSuperadmin()) {
+		//			// not allowed now
+		//			return "redirect:/";
+		//		}
 		final String email = teamRegistrationForm.getEmail().trim().toLowerCase();
 		final String passwd = teamRegistrationForm.getPassword().trim();
 		final String teamName = teamRegistrationForm.getTeamName().trim();
@@ -271,10 +272,10 @@ public class MainController extends AbstractController {
 			final Model model
 	) {
 		log.info("TEAM EDIT (POST)");
-		if (true) {
-			// not allowed now
-			return "redirect:/muj-tym";
-		}
+		// if (true) {
+		// 	// not allowed now
+		// 	return "redirect:/muj-tym";
+		// }
 		final Optional<User> optUser = userService.getEffectiveUser();
 		final Optional<Team> optTeam = optUser.map(User::getTeam);
 
