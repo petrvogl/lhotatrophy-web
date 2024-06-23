@@ -7,6 +7,8 @@
 /sql/dump/
 *.devel.*
 *.prod.*
+*.demo.*
+*.demo-local.*
 
 
 ### App build ###

@@ -94,7 +94,6 @@
 						</div>
 					</div>
 
-					<!--/*
 					<div class="block rest-of-2-fifths">
 						<div class="block-inner">
 
@@ -135,7 +134,6 @@
 
 						</div>
 					</div>
-					*/-->
 
 					<div th:if="${team != null and teamSettings != null}"
 						 th:with="ordersClosed=${now.isAfter(appConfig.teamRegistrationClosedInstant) or now.isBefore(appConfig.teamRegistrationOpenInstant)}"
