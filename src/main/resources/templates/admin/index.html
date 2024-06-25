@@ -22,7 +22,9 @@
 			  th:with="
 			  FridayOfferEnum=${T(cz.lhotatrophy.persist.entity.FridayOfferEnum)},
 			  SaturdayOfferEnum=${T(cz.lhotatrophy.persist.entity.SaturdayOfferEnum)},
-			  TshirtOfferEnum=${T(cz.lhotatrophy.persist.entity.TshirtOfferEnum)}">
+			  TshirtOfferEnum=${T(cz.lhotatrophy.persist.entity.TshirtOfferEnum)},
+			  AccommodationOfferEnum=${T(cz.lhotatrophy.persist.entity.AccommodationOfferEnum)}
+			  ">
 
 			<h2>Seznam týmů a platby</h2>
 
@@ -31,18 +33,24 @@
 					<th class="center">ID</th>
 					<th class="center">Název týmu</th>
 					<th class="center">Kontakt</th>
-					<th class="center" colspan="2">Ubytování</th>
+					<!--<th class="center" colspan="2">Ubytování</th>-->
+					<th class="center">Ubytování</th>
 					<th class="center">Částka</th>
 					<th class="center">Zaplaceno</th>
 				</tr>
+				<!--/*
+					friday=(${team.active} ? ${team.getCount(FridayOfferEnum.RIZOTO) + team.getCount(FridayOfferEnum.VRABEC) + team.getCount(FridayOfferEnum.KURE)} : ${0}),
+					saturday=(${team.active} ? ${team.getCount(SaturdayOfferEnum.ALL_INCLUSIVE)} : ${0}),
+					_=${fridayTotal.add(friday)},
+					_=${saturdayTotal.add(saturday)}
+				*/-->
 				<tr th:each="team : ${teamListing}"
 					th:with="
 					owner=${team.owner},
 					zaplaceno=${owner.getProperty('zaplaceno').orElse(false)},
-					friday=(${team.active} ? ${team.getCount(FridayOfferEnum.RIZOTO) + team.getCount(FridayOfferEnum.VRABEC) + team.getCount(FridayOfferEnum.KURE)} : ${0}),
-					saturday=(${team.active} ? ${team.getCount(SaturdayOfferEnum.ALL_INCLUSIVE)} : ${0}),
-					_=${fridayTotal.add(friday)},
-					_=${saturdayTotal.add(saturday)}"
+					accommodation=(${team.active} ? ${team.getCount(AccommodationOfferEnum.YES)} : ${0}),
+					_=${accommodationTotal.add(accommodation)}
+					"
 					th:class="${team.active} ? _ : 'disabled removed'">
 					<td class="center"> [[${team.id}]] </td>
 					<td>
@@ -61,8 +69,9 @@
 								th:attr="onClick=${onClick}">Switch back</button>
 						[[${owner.email}]]
 					</td>
-					<td> [[${friday}]] / [[${fridayTotal.value}]] </td>
-					<td> [[${saturday}]] / [[${saturdayTotal.value}]] </td>
+					<!--/* <td> [[${friday}]] / [[${fridayTotal.value}]] </td> */-->
+					<!--/* <td> [[${saturday}]] / [[${saturdayTotal.value}]] </td> */-->
+					<td class="center"> [[${accommodation}]] / [[${accommodationTotal.value}]] </td>
 					<td class="right"> [[${team.expenses}]] Kč</td>
 					<td class="right" th:classappend="${!team.active or zaplaceno} ? _ : 'highlight'">
 						<span th:id="|paidText-${owner.id}|"

@@ -150,13 +150,15 @@
 											  memberName=${#strings.isEmpty(member.name) ? null : member.name},
 											  memberFriday=${member.getProperty('friday').orElse('NONE')},
 											  memberSaturday=${member.getProperty('saturday').orElse('NONE')},
-											  memberTshirt=${member.getProperty('tshirtCode').orElse('NONE')}
+											  memberTshirt=${member.getProperty('tshirtCode').orElse('NONE')},
+											  memberAccommodation=${member.getProperty('accommodation').orElse('NO')}
 											  ">
 										<!--/* KAPITÁN */-->
 										<th:block th:if="${stat.count == 1}">
 											<label class="label-type-1" for="member-1" id="column-label-name-member-1">Jméno</label>
-											<label class="label-type-4" for="friday-member-1" id="column-label-friday">Pátek</label>
-											<label class="label-type-4" for="saturday-member-1">Sobota</label>
+											<!--<label class="label-type-4" for="friday-member-1" id="column-label-friday">Pátek</label>-->
+											<!--<label class="label-type-4" for="saturday-member-1">Sobota</label>-->
+											<label class="label-type-4" for="accommodation-member-1" id="column-label-friday">Ubytování</label>
 											<label class="label-type-4" for="tshirt-member-1">Tričko</label>
 											<label class="label-type-3" for="member-1">Jméno</label>
 											<input th:value="${memberName}"
@@ -172,8 +174,9 @@
 										<th:block th:if="${stat.count != 1}">
 											<label class="label-type-3" th:for="|member-${stat.count}|">Jméno</label>
 											<label class="label-type-2" th:for="|member-${stat.count}|">Jméno</label>
-											<label class="label-type-2" th:for="|friday-member-${stat.count}|">Pátek</label>
-											<label class="label-type-2" th:for="|saturday-member-${stat.count}|">Sobota</label>
+											<!--<label class="label-type-2" th:for="|friday-member-${stat.count}|">Pátek</label>-->
+											<!--<label class="label-type-2" th:for="|saturday-member-${stat.count}|">Sobota</label>-->
+											<label class="label-type-2" th:for="|accommodation-member-${stat.count}|">Ubytování</label>
 											<label class="label-type-2" th:for="|tshirt-member-${stat.count}|">Tričko</label>
 											<input th:value="${memberName}"
 												   type="text"
@@ -183,6 +186,7 @@
 												   class="input-name"/>
 										</th:block>
 
+										<!--/*
 										<label class="label-type-3" th:for="|friday-member-${stat.count}|">Pátek</label>
 										<select class="select" th:name="|friday_${stat.count}|" th:id="|friday-member-${stat.count}|">
 											<option value="NONE" th:selected="${memberFriday == 'NONE'}">bez ubytování (0&nbsp;Kč)</option>
@@ -196,6 +200,13 @@
 											<option value="NONE" th:selected="${memberSaturday == 'NONE'}">bez ubytování (0&nbsp;Kč)</option>
 											<option value="VECERE" th:selected="${memberSaturday == 'VECERE'}">bez ubytování, ale s&nbsp;večeří (260&nbsp;Kč)</option>
 											<option value="ALL_INCLUSIVE" th:selected="${memberSaturday == 'ALL_INCLUSIVE'}">ubytování + večeře (970&nbsp;Kč)</option>
+										</select>
+										*/-->
+										
+										<label class="label-type-3" th:for="|accommodation-member-${stat.count}|">Ubytování</label>
+										<select class="select" th:name="|accommodation_${stat.count}|" th:id="|accommodation-member-${stat.count}|">
+											<option value="NO" th:selected="${memberAccommodation == 'NO'}">bez ubytování (0&nbsp;Kč)</option>
+											<option value="YES" th:selected="${memberAccommodation == 'YES'}">s ubytováním (2040&nbsp;Kč)</option>
 										</select>
 
 										<label class="label-type-3" th:for="|tshirt-member-${stat.count}|">Tričko</label>

@@ -110,4 +110,20 @@ public final class DateTimeUtils {
 		return DateTimeFormatter.ofPattern(formatPattern)
 				.format(LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
 	}
+
+	public static boolean isBetween(final Instant from, final Instant to) {
+		if (from == null || to == null) {
+			return false;
+		}
+		final Instant now = Instant.now();
+		return now.isAfter(from) && now.isBefore(to);
+	}
+	
+	public static boolean isBetween(final LocalDateTime from, final LocalDateTime to) {
+		if (from == null || to == null) {
+			return false;
+		}
+		final LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+		return now.isAfter(from) && now.isBefore(to);
+	}
 }

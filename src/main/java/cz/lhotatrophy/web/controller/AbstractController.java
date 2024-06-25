@@ -187,19 +187,11 @@ public abstract class AbstractController {
 			}
 			final LocalDateTime _from = DateTimeUtils.parse(from, DateTimeUtils.YYYY_MM_DD__HH_MM);
 			final LocalDateTime _to = DateTimeUtils.parse(to, DateTimeUtils.YYYY_MM_DD__HH_MM);
-			if (_from == null || _to == null) {
-				return false;
-			}
-			final Instant now = Instant.now();
-			return now.isAfter(DateTimeUtils.toInstant(_from)) && now.isBefore(DateTimeUtils.toInstant(_to));
+			return DateTimeUtils.isBetween(_from, _to);
 		}
 
 		public boolean isBetween(final Instant from, final Instant to) {
-			if (from == null || to == null) {
-				return false;
-			}
-			final Instant now = Instant.now();
-			return now.isAfter(from) && now.isBefore(to);
+			return DateTimeUtils.isBetween(from, to);
 		}
 	}
 }

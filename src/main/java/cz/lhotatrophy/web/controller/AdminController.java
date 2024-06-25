@@ -12,6 +12,7 @@ import cz.lhotatrophy.core.service.TaskListingQuerySpi;
 import cz.lhotatrophy.core.service.TaskService;
 import cz.lhotatrophy.core.service.TeamListingQuerySpi;
 import cz.lhotatrophy.core.service.TeamService;
+import cz.lhotatrophy.persist.entity.AccommodationOfferEnum;
 import cz.lhotatrophy.persist.entity.Clue;
 import cz.lhotatrophy.persist.entity.FridayOfferEnum;
 import cz.lhotatrophy.persist.entity.Location;
@@ -73,6 +74,7 @@ public class AdminController extends AbstractController {
 		model.addAttribute("teamListing", teamService.getTeamListing(TeamListingQuerySpi.create()));
 		model.addAttribute("fridayTotal", new MutableInt(0));
 		model.addAttribute("saturdayTotal", new MutableInt(0));
+		model.addAttribute("accommodationTotal", new MutableInt(0));
 		return "admin/index";
 	}
 
@@ -113,6 +115,7 @@ public class AdminController extends AbstractController {
 		model.addAttribute("fridayOrders", teamService.getTeamOrdersFrequency(FridayOfferEnum.class));
 		model.addAttribute("saturdayOrders", teamService.getTeamOrdersFrequency(SaturdayOfferEnum.class));
 		model.addAttribute("tshirtOrders", teamService.getTeamOrdersFrequency(TshirtOfferEnum.class));
+		model.addAttribute("accommodationOrders", teamService.getTeamOrdersFrequency(AccommodationOfferEnum.class));
 		return "admin/orders";
 	}
 

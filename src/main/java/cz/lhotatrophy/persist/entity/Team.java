@@ -229,6 +229,10 @@ public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Tea
 							.flatMap(val -> EnumUtils.decodeEnum(TshirtOfferEnum.class, (String) val))
 							.map(TshirtOfferEnum::getPrice)
 							.orElse(0));
+					totalPrice.add(m.getProperty("accommodation")
+							.flatMap(val -> EnumUtils.decodeEnum(AccommodationOfferEnum.class, (String) val))
+							.map(AccommodationOfferEnum::getPrice)
+							.orElse(0));
 				});
 		return totalPrice.getValue();
 	}
@@ -244,6 +248,8 @@ public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Tea
 			cacheKey = SaturdayOfferEnum.class.getSimpleName();
 		} else if (TshirtOfferEnum.class.isInstance(propertyValue)) {
 			cacheKey = TshirtOfferEnum.class.getSimpleName();
+		} else if (AccommodationOfferEnum.class.isInstance(propertyValue)) {
+			cacheKey = AccommodationOfferEnum.class.getSimpleName();
 		} else {
 			throw new IllegalArgumentException();
 		}
@@ -257,12 +263,13 @@ public class Team extends AbstractEntity<Long, Team> implements EntityLongId<Tea
 			synchronized (Team.class) {
 				if (frequencyCacheSupplier == null) {
 					final com.google.common.base.Supplier<Map<String, Frequency>> memoizeWithExpiration = Suppliers.memoizeWithExpiration(() -> {
-						final Map<String, Frequency> cachedMap = new HashMap<>(3);
+						final Map<String, Frequency> cachedMap = new HashMap<>(4);
 
 						final ArrayList<Pair<String, Class>> propertiesDef = Lists.newArrayList(
 								new Pair("friday", FridayOfferEnum.class),
 								new Pair("saturday", SaturdayOfferEnum.class),
-								new Pair("tshirtCode", TshirtOfferEnum.class)
+								new Pair("tshirtCode", TshirtOfferEnum.class),
+								new Pair("accommodation", AccommodationOfferEnum.class)
 						);
 						propertiesDef.forEach(def -> {
 							final String propertyKey = def.getKey();

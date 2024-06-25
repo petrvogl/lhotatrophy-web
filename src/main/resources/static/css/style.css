@@ -442,8 +442,15 @@ select {
 #team-settings fieldset {
 	display: grid;
 	align-items: end;
+	
+	/* Four columns
 	grid-template-columns: repeat(4, 1fr);
 	grid-template-rows: repeat(6, 1fr) 1.5fr;
+    */
+	/* Three columns */
+	grid-template-columns: repeat(3, 1fr);
+	grid-template-rows: repeat(6, 1fr) 1.5fr;
+	
 	justify-items: start;
 }
 
@@ -706,7 +713,13 @@ fieldset[disabled="disabled"] {
 	#team-settings fieldset {
 		display: grid;
 		align-items: end;
+		
+		/* Four columns
 		grid-template-columns: repeat(4, 1fr);
+		grid-template-rows: repeat(10, 1fr) 1.5fr;
+		*/
+		/* Three columns */
+		grid-template-columns: repeat(3, 1fr);
 		grid-template-rows: repeat(10, 1fr) 1.5fr;
 	}
 	.label-type-1 {
@@ -786,8 +799,15 @@ fieldset[disabled="disabled"] {
 	#team-settings fieldset {
 		display: grid;
 		align-items: end;
+		
+		/* Four columns
 		grid-template-columns: 1fr 3fr;
 		grid-template-rows: repeat(4, 1fr) 1.5fr repeat(3, 1fr) 1.5fr repeat(3, 1fr) 1.5fr repeat(3, 1fr) 1.5fr repeat(3, 1fr) 1.5fr;
+		*/
+		/* Three columns */
+		grid-template-columns: 1fr 3fr;
+		grid-template-rows: repeat(3, 1fr) 1.5fr repeat(2, 1fr) 1.5fr repeat(2, 1fr) 1.5fr repeat(2, 1fr) 1.5fr repeat(2, 1fr) 1.5fr;
+		
 		width: 61.8%;
 		justify-items: end;
 	}

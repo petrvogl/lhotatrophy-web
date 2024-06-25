@@ -7,9 +7,11 @@ import cz.lhotatrophy.core.service.TeamService;
 import cz.lhotatrophy.persist.entity.Team;
 import cz.lhotatrophy.persist.entity.TeamMember;
 import cz.lhotatrophy.persist.entity.User;
+import cz.lhotatrophy.utils.DateTimeUtils;
 import cz.lhotatrophy.web.form.TeamRegistrationForm;
 import cz.lhotatrophy.web.form.TeamSettingsForm;
 import cz.lhotatrophy.web.form.UserPasswordRecoveryForm;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -92,11 +94,13 @@ public class MainController extends AbstractController {
 			final Model model
 	) {
 		log.info("TEAM REGISTRATION (POST)");
-		//  TODO: ridit z konfigurace
-		//	if (!isLoggedInUserSuperadmin()) {
-		//		// not allowed now
-		//		return "redirect:/";
-		//	}
+		final Instant from = getApplicationConfig().getTeamRegistrationOpenInstant();
+		final Instant to = getApplicationConfig().getTeamRegistrationClosedInstant();
+		if (!DateTimeUtils.isBetween(from, to) && !isLoggedInUserSuperadmin()) {
+			// not allowed now
+			return "redirect:/";
+		}
+
 		final String email = teamRegistrationForm.getEmail().trim().toLowerCase();
 		final String passwd = teamRegistrationForm.getPassword().trim();
 		final String teamName = teamRegistrationForm.getTeamName().trim();
@@ -272,12 +276,20 @@ public class MainController extends AbstractController {
 			final Model model
 	) {
 		log.info("TEAM EDIT (POST)");
-		// if (true) {
-		// 	// not allowed now
-		// 	return "redirect:/muj-tym";
-		// }
 		final Optional<User> optUser = userService.getEffectiveUser();
 		final Optional<Team> optTeam = optUser.map(User::getTeam);
+		final Instant from = getApplicationConfig().getTeamRegistrationOpenInstant();
+		final Instant to = getApplicationConfig().getTeamRegistrationClosedInstant();
+
+		final Boolean paid = optUser
+				.flatMap(u -> u.getProperty("zaplaceno"))
+				.map(Boolean.class::cast)
+				.orElse(false);
+
+		if ((paid || !DateTimeUtils.isBetween(from, to)) && !isLoggedInUserSuperadmin()) {
+			// not allowed now
+			return "redirect:/muj-tym";
+		}
 
 		final Mutable<Set<TeamMember>> members = new MutableObject();
 		optTeam.map(Team::getId).ifPresent(teamId -> {

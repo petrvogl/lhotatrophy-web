@@ -4,6 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import cz.lhotatrophy.persist.dao.TeamDao;
 import cz.lhotatrophy.persist.dao.TeamMemberDao;
+import cz.lhotatrophy.persist.entity.AccommodationOfferEnum;
 import cz.lhotatrophy.persist.entity.FridayOfferEnum;
 import cz.lhotatrophy.persist.entity.SaturdayOfferEnum;
 import cz.lhotatrophy.persist.entity.Team;
@@ -173,6 +174,8 @@ public class TeamServiceImpl extends AbstractService implements TeamService {
 			propertyKey = "saturday";
 		} else if (enumClass.isAssignableFrom(TshirtOfferEnum.class)) {
 			propertyKey = "tshirtCode";
+		} else if (enumClass.isAssignableFrom(AccommodationOfferEnum.class)) {
+			propertyKey = "accommodation";
 		} else {
 			throw new IllegalArgumentException();
 		}

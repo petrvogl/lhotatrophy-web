@@ -122,7 +122,9 @@
 					  th:with="
 					  FridayOfferEnum=${T(cz.lhotatrophy.persist.entity.FridayOfferEnum)},
 					  SaturdayOfferEnum=${T(cz.lhotatrophy.persist.entity.SaturdayOfferEnum)},
-					  TshirtOfferEnum=${T(cz.lhotatrophy.persist.entity.TshirtOfferEnum)}">
+					  TshirtOfferEnum=${T(cz.lhotatrophy.persist.entity.TshirtOfferEnum)},
+					  AccommodationOfferEnum=${T(cz.lhotatrophy.persist.entity.AccommodationOfferEnum)}
+					  ">
 				<h2>Členové týmu</h2>
 
 				<table class="width-100pct">
@@ -132,6 +134,7 @@
 
 						<th>Pátek</th>
 						<th>Sobota</th>
+						<th>Ubytování</th>
 						<th>Tričko</th>
 					</tr>
 					<tr th:each="member : ${team.getMembersOrdered()}"
@@ -142,7 +145,9 @@
 						saturday=${properties.get('saturday')},
 						saturday=${saturday != null ? SaturdayOfferEnum.valueOf(saturday) : null},
 						tshirtCode=${properties.get('tshirtCode')},
-						tshirtCode=${tshirtCode != null ? TshirtOfferEnum.valueOf(tshirtCode) : null}
+						tshirtCode=${tshirtCode != null ? TshirtOfferEnum.valueOf(tshirtCode) : null},
+						accommodation=${properties.get('accommodation')},
+						accommodation=${accommodation != null ? AccommodationOfferEnum.valueOf(accommodation) : null}
 						">
 						<td> [[${member.name}]] </td>
 						<!--/*
@@ -160,6 +165,7 @@
 
 						<td><th:block th:if="${friday}"> [[${friday.description}]] ([[${friday.price}]] Kč) </th:block></td>
 						<td><th:block th:if="${saturday}">  [[${saturday.description}]] ([[${saturday.price}]] Kč) </th:block></td>
+						<td><th:block th:if="${accommodation}">  [[${accommodation.description}]] ([[${accommodation.price}]] Kč) </th:block></td>
 						<td><th:block th:if="${tshirtCode}">  [[${tshirtCode.description}]] ([[${tshirtCode.price}]] Kč) </th:block></td>
 					</tr>
 				</table>

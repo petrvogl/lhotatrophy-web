@@ -22,7 +22,9 @@
 			  th:with="
 			  FridayOfferEnum=${T(cz.lhotatrophy.persist.entity.FridayOfferEnum)},
 			  SaturdayOfferEnum=${T(cz.lhotatrophy.persist.entity.SaturdayOfferEnum)},
-			  TshirtOfferEnum=${T(cz.lhotatrophy.persist.entity.TshirtOfferEnum)}">
+			  TshirtOfferEnum=${T(cz.lhotatrophy.persist.entity.TshirtOfferEnum)},
+			  AccommodationOfferEnum=${T(cz.lhotatrophy.persist.entity.AccommodationOfferEnum)}
+			  ">
 
 			<h2>Objednávky</h2>
 
@@ -55,6 +57,23 @@
 					th:with="
 					offerText=${offer.description ?: '--'},
 					offerCount=${saturdayOrders.getCount(offer)}
+					">
+					<td> [[${offerText}]] </td> <td class="center"> [[${offerCount}]] </td>
+				</tr>
+			</table>
+			
+			<h3>Ubytování</h3>
+
+			<table class="width-min-50pct">
+				<tr>
+					<th> Možnost </th>
+					<th class="center"> Počet </th>
+				</tr>
+				<tr th:each="offer : ${AccommodationOfferEnum.values()}"
+					th:unless="${offer.equals(AccommodationOfferEnum.NO)}"
+					th:with="
+					offerText=${offer.description ?: '--'},
+					offerCount=${accommodationOrders.getCount(offer)}
 					">
 					<td> [[${offerText}]] </td> <td class="center"> [[${offerCount}]] </td>
 				</tr>
