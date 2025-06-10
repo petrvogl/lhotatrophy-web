@@ -4,8 +4,8 @@
 	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	  lang="cs">
 	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHead(
-		  pageTitle='Výkaz')">
-		<title>24th Lhota Trophy</title>
+		  pageTitle='INDEX')">
+		<title>26th Lhota Trophy</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	</head>
@@ -24,10 +24,8 @@
 			<div class="content-zone clearfix">
 				<div class="content-zone-inner">
 
-					<!--<h1>DENIK</h1>-->
-					<!--<p class="p_1">Digitální evidence nápověd, indicií a kódů</p>-->
-					<h1>VÝKAZ</h1>
-					<p class="p_1">Každý správný šifrař vyplní svůj výkaz!</p>
+					<h1>INDEX</h1>
+					<p class="p_1">Digitální výkaz o studiu</p>
 
 					<h2 class="indent">[[${team.name}]]</h2>
 
@@ -36,8 +34,8 @@
 						<div class="block golden-ratio">
 							<div class="block-inner visible white bg-lt-color-3">
 								<p>
-									Nahrání stavu tachometru se podařilo. Přejeme hodně úspěchů ve hře.
-									Užijte si závod a pamatujte: není důležité vyhrát, ale nezvítězit.
+									Nahrání stavu tachometru se podařilo. Přejeme hodně úspěchů ve studiu.
+									Užijte si mimosemestrální kurz a pamatujte: není důležité vyhrát, ale nezvítězit.
 								</p>
 							</div>
 						</div>
@@ -50,8 +48,9 @@
 					*
 					*/-->
 					<th:block th:if="${inactiveTeam}">
-						<p>Tento tým se soutěže neúčastní</p>
-
+						<div class="block golden-ratio">
+							<p>Tento tým se soutěže neúčastní</p>
+						</div>
 					</th:block>
 
 					<!--/*
@@ -61,8 +60,9 @@
 					*
 					*/-->
 					<th:block th:if="${disqualifiedTeam}">
-						<p>Tým diskvalifikován</p>
-
+						<div class="block golden-ratio">
+							<p>Tým diskvalifikován</p>
+						</div>
 					</th:block>
 
 					<!--/*
@@ -71,7 +71,9 @@
 					*
 					*/-->
 					<th:block th:if="${teamIsAtStart and now.isBefore(appConfig.gameOpenInstant)}">
-						<p>Vyčkejte do zahájení soutěže</p>
+						<div class="block golden-ratio">
+							<p>Vyčkejte do zahájení soutěže</p>
+						</div>
 					</th:block>
 
 					<th:block th:if="${now.isAfter(appConfig.gameOpenInstant)}">
@@ -85,7 +87,7 @@
 						<th:block th:if="${teamIsAtStart}">
 							<div class="block golden-ratio">
 								<div class="block-inner visible firewatch-8 bg-firewatch-2">
-									<form th:action="@{~/vykaz/submitMileage}"
+									<form th:action="@{~/index/submitMileage}"
 										  th:object="${submitMileageForm}"
 										  method="post"
 										  enctype="multipart/form-data"
@@ -115,7 +117,9 @@
 						*
 						*/-->
 						<th:block th:if="${teamIsInPlay and now.isBefore(appConfig.gameStartInstant)}">
-							<p>Vyčkejte do předání obálek se šiframi</p>
+							<div class="block golden-ratio">
+								<p>Vyčkejte do předání obálek se šiframi</p>
+							</div>
 						</th:block>
 
 						<!--/*
@@ -134,23 +138,23 @@
 									bTask=${service.task.getTaskRelatedToLocation(location, 'B_CODE')}"
 									class="location"
 									th:classappend="${!location.active} ? 'disabled' : _">
-									<a th:href="@{~/vykaz/stanoviste-__${location.code}__}">[[${iterStat.count}]]</a>
+									<a th:href="@{~/index/stanoviste-__${location.code}__}">[[${iterStat.count}]]</a>
 									<p>
 										<th:block th:if="${locationDiscovered}"><th:block th:replace="public/fragments/Misc.html :: PinImage (fill='#fff9de')"/></th:block>
 										<th:block th:unless="${locationDiscovered}">&nbsp;</th:block>
-										<span th:if="${service.contest.checkTaskIsCompleted(aTask)}">A</span>
-										<span th:if="${service.contest.checkTaskIsCompleted(bTask)}">B</span>
+										<span th:if="${service.contest.checkTaskIsCompleted(aTask)}">T</span>
+										<span th:if="${service.contest.checkTaskIsCompleted(bTask)}">P</span>
 									</p>
 								</li>
 							</ul>
 
 							<ul class="bottom-row">
 								<li class="c-codes">
-									<a href="/vykaz/c-kody">C KÓDY</a>
+									<a href="/index/c-kody">C KÓDY</a>
 									<p>[[${service.contest.cCodesAcquiredCount()}]]</p>
 								</li>
 								<li class="destination">
-									<a href="/vykaz/cil">CÍL</a>
+									<a href="/index/cil">CÍL</a>
 									<p>[[${service.contest.getCluesDiscovered().size()}]]</p>
 								</li>
 							</ul>
@@ -159,7 +163,7 @@
 									  score=${service.contest.getTeamScore(team)},
 									  k=${service.contest.checkTeamIsInPlay() ? appConfig.idealRouteLength : 0},
 									  score=${score != null ? (score - k) : null}">
-								<p th:if="${score != null}"> Vaše průběžné skóre je [[${score}]] km. </p>
+								<p th:if="${score != null}"> Vaše průběžné skóre je [[${score}]] km.</p>
 							</th:block>
 
 						</th:block>

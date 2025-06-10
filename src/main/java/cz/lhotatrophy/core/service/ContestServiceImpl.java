@@ -819,8 +819,21 @@ public class ContestServiceImpl extends AbstractService implements ContestServic
 		return resultCached;
 	}
 
-	@Nonnull
 	public void invalidateTaskStatistics(@NonNull final Task task) {
 		task.invalidateTemporary(TASK_STATISTICS_CACHE_KEY);
+	}
+
+	@Override
+	public void invalidateTaskStatistics() {
+		final TaskListingQuerySpi query = TaskListingQuerySpi.create();
+		taskService.getTaskListingStream(query)
+				.forEach(task -> task.invalidateTemporary(TASK_STATISTICS_CACHE_KEY));
+	}
+
+	@Override
+	public void invalidateTeamStatistics() {
+		final TeamListingQuerySpi query = TeamListingQuerySpi.create().setActive(Boolean.TRUE);
+		teamService.getTeamListingStream(query)
+				.forEach(team -> team.invalidateTemporary("TeamScore"));
 	}
 }

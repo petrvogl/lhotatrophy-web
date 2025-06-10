@@ -130,6 +130,10 @@ public abstract class AbstractController {
 				&& NowInstatntUtils.INSTANCE.isBefore(limit);
 	}
 
+	protected boolean checkContestHasBeenOpen() {
+		return NowInstatntUtils.INSTANCE.isAfter(appConfig.getGameOpenInstant());
+	}
+
 	/**
 	 * Date utils object.
 	 * <ul>

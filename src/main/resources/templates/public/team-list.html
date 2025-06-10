@@ -5,7 +5,7 @@
 	  lang="cs">
 	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHead(pageTitle='Přihlášené týmy')">
 		<!--/* PROTOTYPE */-->
-		<title>24th Lhota Trophy</title>
+		<title>26th Lhota Trophy</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	</head>
@@ -23,12 +23,21 @@
 						<div class="block-inner">
 							<h1 class="indent">Přihlášené týmy</h1>
 							<p>
-								Níže naleznete aktuální seznam účastníků XXV.&nbsp;Lhota Trophy v&nbsp;abecedním pořadí.
-								Sloupeček $ značí, zda tým uhradil celkové náklady na účast ve&nbsp;hře.
+								Níže naleznete aktuální seznam posádek 26.&nbsp;Lhota Trophy v&nbsp;pořadí uskutečněné registrace.
+								Týmy s&nbsp;pořadovým číslem 56 a&nbsp;vyšším prozatím zůstávají náhradníky.
+								Hry se budou moci zúčastnit místo týmů, které do 31.&nbsp;července neuhradí náklady na účast ve hře,
+								nebo dojde-li k&nbsp;rozšíření startovní listiny z&nbsp;rozhodnutí organizátorů.
 							</p>
 							<p>
+								Sloupeček $ značí, zda tým uhradil celkové náklady na účast ve&nbsp;hře.
+								Tuto informaci průběžně aktualizujeme ručně, proto prosíme o&nbsp;vaši trpělivost.
+							</p>
+
+							<!--/* Registration link */-->
+							<p th:if="${now.isBetween(appConfig.teamRegistrationOpenInstant, appConfig.teamRegistrationClosedInstant)}">
 								Chcete hrát, ale nejste na seznamu? <a href="/#registrace">Registrujte se!</a>
 							</p>
+
 						</div>
 					</div>
 
@@ -54,10 +63,10 @@
 										<p class="p-1 right">[[${teamData.id}]].</p>
 										<p class="p-1"><strong>[[${teamData.name}]]</strong><!--/*
 											*/--><th:block th:each="member, stat : ${teamData.getMembersOrdered()}"
-													  th:unless="${#strings.isEmpty(member.name)}"><!--/*
-											*/--><strong th:if="${stat.index == 0}">: </strong><!--/*
-											*/-->[[${(stat.index != 0) ? (', ' + member.name) : member.name}]]<!--/*
-										*/--></th:block>
+														   th:unless="${#strings.isEmpty(member.name)}"><!--/*
+												 */--><strong th:if="${stat.index == 0}">: </strong><!--/*
+												 */-->[[${(stat.index != 0) ? (', ' + member.name) : member.name}]]<!--/*
+											 */--></th:block>
 										</p>
 										<p th:text="${zaplaceno ? 'ANO' : 'NE'}"
 										   class="p-1 center">
@@ -67,7 +76,7 @@
 								</th:block>
 							</div>
 						</div>
-					</div>					
+					</div>
 
 				</div>
 			</div>

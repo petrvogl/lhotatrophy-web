@@ -192,4 +192,8 @@ public interface ContestService extends Service {
 	 * @return Task statistics
 	 */
 	Map<String, Integer> getTaskStatistics(@NonNull Task task);
+
+	void invalidateTaskStatistics();
+
+	void invalidateTeamStatistics();
 }

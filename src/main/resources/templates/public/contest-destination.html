@@ -53,14 +53,9 @@
 						*
 						*/-->
 						<th:block th:if="${service.contest.checkFinishImageUploaded()}">
-							<!--	<p class="p_1 indent">
-								Gratulujeme! Zadali jste cílový kód, nahráli stavu tachometru
-								a&nbsp;hru máte úspěšně za sebou.
-							</p>-->
 							<p class="p_1 indent">
-								Třeseme jako blázen! Splnili jste, co se dalo, a&nbsp;tímto pro vás hra končí!
-								Slyšíte, jak v&nbsp;dáli cinkají zvony na vaši počest? Nebo, že by to nebyly zvony?
-								Ať je to, jak to je, teď se každopádně vraťte na Start!
+								Gratulujeme! Zadali jste cílový kód, nahráli stav tachometru
+								a&nbsp;hru máte úspěšně za sebou.
 							</p>
 						</th:block>
 
@@ -78,7 +73,7 @@
 							*/-->
 							<th:block th:if="${!service.contest.checkDestinationRevealed() and service.contest.checkTeamIsInPlay()}">
 								<div class="block-inner">
-									<form th:action="@{~/vykaz/revealDestination}"
+									<form th:action="@{~/index/revealDestination}"
 										  th:object="${confirmationForm}"
 										  method="post"
 										  th:data-confirm-message="|Opravdu si přejete odhalit polohu cílového stanoviště? Bude vás to stát ${appConfig.destinationRevealedPenalty} km.|"
@@ -123,7 +118,7 @@
 									<!--/*
 									*	Destination code input
 									*/-->
-									<form th:action="@{~/vykaz/submitMileage}"
+									<form th:action="@{~/index/submitMileage}"
 										  th:object="${submitMileageForm}"
 										  method="post">
 										<fieldset th:disabled="${!service.contest.checkTeamIsInPlay()}"
@@ -175,7 +170,7 @@
 									<!--/*
 									*	Upload photo form
 									*/-->
-									<form th:action="@{~/vykaz/submitDestinationPhoto}"
+									<form th:action="@{~/index/submitDestinationPhoto}"
 										  th:object="${fileUploadForm}"
 										  method="post"
 										  enctype="multipart/form-data">

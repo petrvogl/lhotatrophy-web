@@ -42,9 +42,11 @@ import org.springframework.web.multipart.MultipartFile;
  * @author Petr Vogl
  */
 @Controller
-@RequestMapping("/vykaz")
+@RequestMapping(ContestController.ROOT_URI)
 @Log4j2
 public class ContestController extends AbstractController {
+	
+	public static final String ROOT_URI = "/index";
 
 	@Autowired
 	private transient EntityCacheService cacheService;
@@ -75,7 +77,8 @@ public class ContestController extends AbstractController {
 	) {
 		log.info("CONTEST INDEX");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
-		if (optTeam.isEmpty()) {
+		if (!checkContestHasBeenOpen() || optTeam.isEmpty()) {
+			// not allowed now or
 			// logged in user has no team so cannot compete
 			return "redirect:/";
 		}
@@ -107,13 +110,13 @@ public class ContestController extends AbstractController {
 			final Model model
 	) {
 		if (!checkContestIsOn()) {
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		log.info("LOCATION {}", locationCode);
 		final Optional<Location> optLocation = locationService.getLocationByCodeFromCache(locationCode);
 		if (optLocation.isEmpty()) {
 			// location does not exists
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		// NOTE: HintRevealForm is initialized in template
 		initModel(model);
@@ -131,7 +134,7 @@ public class ContestController extends AbstractController {
 			final Model model
 	) {
 		if (!checkContestIsOn()) {
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		log.info("C-CODES");
 		submitCodeForm.setTaskType("C");
@@ -150,13 +153,13 @@ public class ContestController extends AbstractController {
 			final Model model
 	) {
 		if (!checkContestIsOn()) {
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		log.info("DESTINATION");
 		final Optional<Location> optLocation = locationService.getLocationByCodeFromCache("DEST");
 		if (optLocation.isEmpty()) {
 			// location does not exists
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		submitMileageForm.setType(FINISH_MILEAGE_FORM_TYPE);
 		initModel(model);
@@ -172,7 +175,7 @@ public class ContestController extends AbstractController {
 			final SubmitCodeForm submitCodeForm
 	) {
 		if (!checkContestIsOn() || !checkTeamIsInPlay()) {
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		log.info("SUBMIT CODE");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
@@ -182,7 +185,7 @@ public class ContestController extends AbstractController {
 		final String solution = submitCodeForm.getSolution();
 		if (optTeam.isEmpty() || taskType == null || (taskType != TaskTypeEnum.C_CODE && optTask.isEmpty())) {
 			// not valid
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		final Team team = optTeam.get();
 		// verify C code
@@ -190,7 +193,7 @@ public class ContestController extends AbstractController {
 			if (solution != null) {
 				contestService.acceptSolution(solution, taskType, team);
 			}
-			return "redirect:/vykaz/c-kody";
+			return "redirect:" + ROOT_URI + "/c-kody";
 		}
 		// verify A/B code
 		final Task task = optTask.get();
@@ -200,7 +203,7 @@ public class ContestController extends AbstractController {
 			}
 		}
 		final Location location = taskService.getLocationRelatedToTask(task).orElse(null);
-		return "redirect:/vykaz/stanoviste-" + location.getCode();
+		return "redirect:" + ROOT_URI + "/stanoviste-" + location.getCode();
 	}
 
 	/**
@@ -214,7 +217,7 @@ public class ContestController extends AbstractController {
 			final Model model
 	) {
 		if (!checkContestIsOpen()) {
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		log.info("SUBMIT MILEAGE");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
@@ -225,7 +228,7 @@ public class ContestController extends AbstractController {
 		final Team team = optTeam.get();
 		if (!team.isActive() || !team.getOwner().isActive() || team.isDisqualified()) {
 			// not active or disqualified
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		if (START_MILEAGE_FORM_TYPE.equals(submitMileageForm.getType()) && team.getContestProgress().getMileageAtStart() == null) {
 			try {
@@ -282,11 +285,11 @@ public class ContestController extends AbstractController {
 					return "public/contest-destination";
 				}
 			}
-			return "redirect:/vykaz/cil";
+			return "redirect:" + ROOT_URI + "/cil";
 		} else {
 			// ignoring invalid form and invalid states
 		}
-		return "redirect:/vykaz";
+		return "redirect:" + ROOT_URI;
 	}
 
 	/**
@@ -299,7 +302,7 @@ public class ContestController extends AbstractController {
 			final Model model
 	) {
 		if (!checkContestIsOpen()) {
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		log.info("SUBMIT DESTINATION PHOTO");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
@@ -330,7 +333,7 @@ public class ContestController extends AbstractController {
 			model.addAttribute("submitMileageForm", new SubmitMileageForm());
 			return "public/contest-destination";
 		}
-		return "redirect:/vykaz/cil";
+		return "redirect:" + ROOT_URI + "/cil";
 	}
 
 	/**
@@ -341,7 +344,7 @@ public class ContestController extends AbstractController {
 			final HintRevealForm hintRevealForm
 	) {
 		if (!checkContestIsOn() || !checkTeamIsInPlay()) {
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		log.info("REVEAL HINT");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
@@ -349,7 +352,7 @@ public class ContestController extends AbstractController {
 				.flatMap(code -> taskService.getTaskByCodeFromCache(code));
 		if (optTeam.isEmpty() || optTask.isEmpty() || hintRevealForm.getType() == null) {
 			// task does not exist or logged in user has no team so cannot compete
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		final Team team = optTeam.get();
 		final Task task = optTask.get();
@@ -382,10 +385,10 @@ public class ContestController extends AbstractController {
 				break;
 			default:
 				// ignoring invalid form and invalid states
-				return "redirect:/vykaz";
+				return "redirect:" + ROOT_URI;
 		}
 		final Location location = taskService.getLocationRelatedToTask(task).orElse(null);
-		return "redirect:/vykaz/stanoviste-" + location.getCode();
+		return "redirect:" + ROOT_URI + "/stanoviste-" + location.getCode();
 	}
 
 	/**
@@ -396,13 +399,13 @@ public class ContestController extends AbstractController {
 			final ConfirmationForm confirmationForm
 	) {
 		if (!checkContestIsOn() || !checkTeamIsInPlay()) {
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		log.info("BUY INSURANCE");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
 		if (optTeam.isEmpty()) {
 			// logged in user has no team so cannot compete
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		final Team team = optTeam.get();
 		if (!contestService.checkHasInsurance(team)) {
@@ -413,7 +416,7 @@ public class ContestController extends AbstractController {
 				//
 			}
 		}
-		return "redirect:/vykaz/c-kody";
+		return "redirect:" + ROOT_URI + "/c-kody";
 	}
 
 	/**
@@ -424,13 +427,13 @@ public class ContestController extends AbstractController {
 			final ConfirmationForm confirmationForm
 	) {
 		if (!checkContestIsOn() || !checkTeamIsInPlay()) {
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		log.info("REVEAL DESTINATION");
 		final Optional<Team> optTeam = teamService.getEffectiveTeam();
 		if (optTeam.isEmpty()) {
 			// logged in user has no team so cannot compete
-			return "redirect:/vykaz";
+			return "redirect:" + ROOT_URI;
 		}
 		final Team team = optTeam.get();
 		if (!contestService.checkDestinationRevealed(team)) {
@@ -441,7 +444,7 @@ public class ContestController extends AbstractController {
 				//
 			}
 		}
-		return "redirect:/vykaz/cil";
+		return "redirect:" + ROOT_URI + "/cil";
 	}
 
 	private boolean checkTeamIsInPlay() {

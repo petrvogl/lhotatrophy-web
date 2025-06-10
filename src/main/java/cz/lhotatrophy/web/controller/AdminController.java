@@ -5,6 +5,7 @@ import cz.lhotatrophy.core.exceptions.WeakPasswordException;
 import cz.lhotatrophy.core.security.UserDetails;
 import cz.lhotatrophy.core.service.ClueListingQuerySpi;
 import cz.lhotatrophy.core.service.ClueService;
+import cz.lhotatrophy.core.service.ContestService;
 import cz.lhotatrophy.core.service.EntityCacheService;
 import cz.lhotatrophy.core.service.LocationListingQuerySpi;
 import cz.lhotatrophy.core.service.LocationService;
@@ -63,6 +64,8 @@ public class AdminController extends AbstractController {
 	private transient LocationService locationService;
 	@Autowired
 	private transient ClueService clueService;
+	@Autowired
+	private transient ContestService contestService;
 
 	/**
 	 * Admin homepage
@@ -76,6 +79,38 @@ public class AdminController extends AbstractController {
 		model.addAttribute("saturdayTotal", new MutableInt(0));
 		model.addAttribute("accommodationTotal", new MutableInt(0));
 		return "admin/index";
+	}
+
+	/**
+	 * Clean up caches
+	 */
+	@GetMapping("/clean-cache/{scope}")
+	public String cleanUpCaches(
+			@PathVariable(required = false) String scope
+	) {
+		final String _scope = scope == null
+				? "all"
+				: scope;
+		log.info("CLEAN CACHE [scope={}]", _scope);
+		switch (scope) {
+			case "entities":
+				cacheService.cleanEntityCache();
+				break;
+			case "listings":
+				cacheService.cleanEntityListingCache();
+				break;
+			case "statistics":
+				contestService.invalidateTaskStatistics();
+				contestService.invalidateTeamStatistics();
+				break;
+			case "all":
+				cacheService.cleanEntityCache();
+				cacheService.cleanEntityListingCache();
+				break;
+			default:
+				log.error("Cannot clear cache: Invalid cache scope " + _scope);
+		}
+		return "redirect:/admin";
 	}
 
 	/**

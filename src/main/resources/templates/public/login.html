@@ -5,7 +5,7 @@
 	  lang="cs">
 	<head th:replace="public/fragments/HtmlDocument.html :: DocumentHead(pageTitle='Přihlášení')">
 		<!--/* PROTOTYPE */-->
-		<title>24th Lhota Trophy</title>
+		<title>26th Lhota Trophy</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	</head>
@@ -21,10 +21,11 @@
 
 					<div class="block full">
 						<div class="block-inner">
-							<h1 class="indent">Můj tým</h1>
+							<h1>Můj tým</h1>
 						</div>
 					</div>
 
+					<!--/* Login form */-->
 					<div class="block golden-ratio">
 						<div class="block-inner visible firewatch-8 bg-firewatch-2">
 
@@ -44,13 +45,13 @@
 						</div>
 					</div>
 
-					<div class="block golden-ratio">
+					<!--/* Registration link */-->
+					<div th:if="${now.isBetween(appConfig.teamRegistrationOpenInstant, appConfig.teamRegistrationClosedInstant)}"
+						 class="block golden-ratio">
 						<div class="block-inner">
-
 							<p>Váš tým ještě nemá účet? <a href="/#registrace">Registrujte se!</a></p>
-
 						</div>
-					</div>					
+					</div>
 
 				</div>
 			</div>
